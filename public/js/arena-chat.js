@@ -681,18 +681,8 @@
   Chat._playScript = function(script, match){
     if (!script || !script.lines) return origPlayScript(script, match);
 
-    // Build augmented timeline: insert chimes/system between content lines randomly
-    var aug = [];
-    script.lines.forEach(function(line, idx){
-      aug.push(line);
-      // 35% chance after each non-system line, drop a spectator chime
-      if (!line.system && idx > 0 && Math.random() < 0.35) {
-        var c = pick(SPECTATOR_CHIMES);
-        aug.push({
-          who: c.who, text: c.text, react: c.react || '',
-          delay: 600, typing: 900,
-          spectator: true,
-        });
+    // v10.1: pure 1v1 — no spectator chimes
+    var aug = script.lines.slice();
       }
       // 25% chance to drop a "joined" notice
       if (!line.system && Math.random() < 0.25) {
