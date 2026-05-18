@@ -1,0 +1,269 @@
+/* ============================================================
+   FORGE ATLAS · v10 · SWARM CINEMATIC VS INTRO
+   Multi-agent entrance card. Matches arena's UFC-walkout energy
+   but built for swarm-vs-swarm — formations, not lone fighters.
+   ============================================================ */
+
+.swarm-vs-stage{
+  position:relative;
+  margin:32px 0 40px;
+  border:1px solid var(--line-gold);
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 50%, rgba(212,168,67,.10), transparent 70%),
+    linear-gradient(180deg, #0a0a0d 0%, #06060a 100%);
+  border-radius:6px;
+  overflow:hidden;
+  min-height:420px;
+  display:flex;
+  flex-direction:column;
+}
+
+.swarm-vs-stage::before{
+  content:"";
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(90deg, rgba(212,168,67,.04) 1px, transparent 1px),
+    linear-gradient(0deg,  rgba(212,168,67,.04) 1px, transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 50%, black, transparent 80%);
+}
+
+/* Scan-line */
+.swarm-vs-stage::after{
+  content:"";
+  position:absolute; top:-2px; left:-100%;
+  width:60%; height:1px;
+  background:linear-gradient(90deg, transparent, var(--gold), var(--cyan), var(--gold), transparent);
+  animation:swarmScan 6s linear infinite;
+}
+@keyframes swarmScan{
+  0%   { left:-60%; opacity:0; }
+  10%  { opacity:1; }
+  90%  { opacity:1; }
+  100% { left:120%; opacity:0; }
+}
+
+/* Top bar: phase + countdown */
+.swarm-vs-topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 22px;
+  border-bottom:1px solid var(--line);
+  background:rgba(0,0,0,.40);
+  position:relative; z-index:2;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.swarm-vs-phase{
+  font-family:var(--font-mono);
+  font-size:10.5px;
+  letter-spacing:.20em;
+  color:var(--gold);
+  text-transform:uppercase;
+  display:flex; align-items:center; gap:8px;
+}
+.swarm-vs-phase::before{
+  content:""; width:6px; height:6px; border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 8px var(--gold);
+  animation:phaseLive 1.4s ease-in-out infinite;
+}
+@keyframes phaseLive{ 0%,100%{opacity:1} 50%{opacity:.40} }
+.swarm-vs-countdown{
+  font-family:var(--font-mono);
+  font-size:14px;
+  letter-spacing:.10em;
+  color:var(--cyan);
+  font-weight:500;
+}
+
+/* Center stage: two swarms facing off */
+.swarm-vs-center{
+  flex:1;
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  gap:24px;
+  padding:32px 22px;
+  align-items:center;
+  position:relative; z-index:2;
+}
+@media (max-width:760px){
+  .swarm-vs-center{ grid-template-columns:1fr; gap:16px; }
+}
+
+.swarm-side{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  align-items:center;
+  text-align:center;
+  animation:swarmEnter .8s var(--ease) both;
+}
+.swarm-side.left{ animation-delay:.10s; }
+.swarm-side.right{ animation-delay:.30s; }
+@keyframes swarmEnter{
+  from{ opacity:0; transform:translateY(20px); filter:blur(8px); }
+  to  { opacity:1; transform:translateY(0); filter:blur(0); }
+}
+
+.swarm-emblem{
+  width:96px; height:96px;
+  border:2px solid;
+  border-radius:50%;
+  display:grid; place-items:center;
+  background:radial-gradient(circle at 30% 30%, color-mix(in srgb, currentColor 30%, transparent), color-mix(in srgb, currentColor 8%, transparent));
+  position:relative;
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:32px;
+  color:var(--swarm-color,#D4A843);
+  box-shadow:0 0 32px color-mix(in srgb, var(--swarm-color,#D4A843) 40%, transparent);
+}
+.swarm-emblem::before{
+  content:""; position:absolute; inset:-6px;
+  border:1px dashed var(--swarm-color,#D4A843);
+  border-radius:50%;
+  opacity:.40;
+  animation:emblemRing 6s linear infinite;
+}
+@keyframes emblemRing{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
+
+/* Formation pips — 5 agents per swarm */
+.swarm-formation{
+  display:flex; gap:5px;
+  margin-top:4px;
+}
+.swarm-agent-pip{
+  width:9px; height:9px; border-radius:50%;
+  background:var(--swarm-color, var(--gold));
+  box-shadow:0 0 6px var(--swarm-color, var(--gold));
+  animation:pipPulse 2s ease-in-out infinite;
+}
+.swarm-agent-pip:nth-child(2){ animation-delay:.20s; }
+.swarm-agent-pip:nth-child(3){ animation-delay:.40s; }
+.swarm-agent-pip:nth-child(4){ animation-delay:.60s; }
+.swarm-agent-pip:nth-child(5){ animation-delay:.80s; }
+@keyframes pipPulse{
+  0%,100%{ opacity:.35; transform:scale(.85); }
+  50%    { opacity:1; transform:scale(1.10); }
+}
+
+.swarm-name{
+  font-family:var(--font-display);
+  font-size:24px;
+  font-weight:500;
+  letter-spacing:-.005em;
+  color:var(--fg);
+  line-height:1.1;
+  margin:6px 0 0;
+}
+.swarm-slogan{
+  font-family:var(--font-display);
+  font-style:italic;
+  font-size:14px;
+  color:var(--muted);
+  margin:2px 0 0;
+}
+
+.swarm-stats{
+  display:flex;
+  gap:14px;
+  margin-top:10px;
+  padding:8px 14px;
+  background:rgba(0,0,0,.40);
+  border:1px solid var(--line-2);
+  border-radius:99px;
+  font-family:var(--font-mono);
+  font-size:10px;
+  letter-spacing:.10em;
+  color:var(--muted-2);
+  text-transform:uppercase;
+}
+.swarm-stats strong{ color:var(--swarm-color,var(--gold)); font-weight:500; }
+
+/* The VS divider */
+.swarm-vs-divider{
+  display:grid;
+  place-items:center;
+  position:relative;
+}
+.swarm-vs-glyph{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:64px;
+  letter-spacing:.05em;
+  color:var(--gold);
+  text-shadow:0 0 24px rgba(212,168,67,.50);
+  position:relative;
+  animation:vsGlow 2.4s ease-in-out infinite;
+}
+@keyframes vsGlow{
+  0%,100%{ transform:scale(1); text-shadow:0 0 24px rgba(212,168,67,.50); }
+  50%    { transform:scale(1.05); text-shadow:0 0 36px rgba(212,168,67,.80), 0 0 60px rgba(126,234,255,.30); }
+}
+.swarm-vs-glyph::before,
+.swarm-vs-glyph::after{
+  content:"";
+  position:absolute; top:50%;
+  width:48px; height:1px;
+  background:linear-gradient(90deg, transparent, var(--gold));
+}
+.swarm-vs-glyph::before{ right:100%; margin-right:14px; transform:rotate(180deg) translateY(50%); }
+.swarm-vs-glyph::after{  left:100%; margin-left:14px; transform:translateY(-50%); }
+@media (max-width:760px){
+  .swarm-vs-glyph{ font-size:48px; }
+  .swarm-vs-glyph::before, .swarm-vs-glyph::after{ display:none; }
+}
+
+/* Objective panel — sits below VS */
+.swarm-vs-objective{
+  text-align:center;
+  padding:14px 22px;
+  background:linear-gradient(90deg, transparent, rgba(126,234,255,.06), transparent);
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  position:relative; z-index:2;
+}
+.swarm-vs-objective-label{
+  font-family:var(--font-mono);
+  font-size:10px;
+  letter-spacing:.20em;
+  color:var(--cyan);
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.swarm-vs-objective-text{
+  font-family:var(--font-display);
+  font-size:17px;
+  font-style:italic;
+  color:var(--fg);
+  line-height:1.4;
+  max-width:60ch;
+  margin:0 auto;
+}
+
+/* Action bar */
+.swarm-vs-actions{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  padding:18px 22px;
+  background:rgba(0,0,0,.30);
+  flex-wrap:wrap;
+  position:relative; z-index:2;
+}
+.swarm-vs-actions .btn{ min-width:160px; justify-content:center; }
+
+/* Side colors — Sigma vs Omega defaults */
+.swarm-side.left  { --swarm-color:#7eeaff; }   /* cyan */
+.swarm-side.right { --swarm-color:#f87171; }   /* rose */
+
+@media (prefers-reduced-motion: reduce){
+  .swarm-vs-stage::after,
+  .swarm-side, .swarm-emblem::before, .swarm-agent-pip, .swarm-vs-glyph, .swarm-vs-phase::before{
+    animation:none !important;
+  }
+  .swarm-side{ opacity:1; filter:none; transform:none; }
+}

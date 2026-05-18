@@ -1,0 +1,158 @@
+# ============================================================
+# FORGE ATLAS · wrangler.toml
+# Configuration for the three Atlas Workers.
+# Each Worker can also deploy as a Cloudflare Pages Function via
+# functions/api/*.js wrappers — same code, zero extra config.
+# ============================================================
+
+# Default account placeholder. Set via `wrangler login` or env var.
+# account_id = "YOUR_ACCOUNT_ID"
+
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ============================================================
+# WORKER 1 — atlas-helper-worker
+# Rules-driven expert helper. Optional live-AI adapter.
+# ============================================================
+[env.helper]
+name = "atlas-helper-worker"
+main = "workers/atlas-helper-worker.js"
+workers_dev = false
+
+[env.helper.vars]
+# Lock the CORS origin to the deployed Pages domain.
+# Replace with your actual domain.
+ALLOWED_ORIGIN = "https://forge-atlas.pages.dev"
+
+# Optional: URL of a separate Worker that holds the Anthropic key
+# and proxies POST {message: string} → {reply: string}.
+# Leaving this unset keeps the helper fully rules-driven.
+# LIVE_AI_URL = "https://forge-ai-adapter.YOUR-SUBDOMAIN.workers.dev"
+
+# Recommended Worker route (custom domain attached to Pages):
+# [[env.helper.routes]]
+# pattern = "forge-atlas.com/api/atlas-helper"
+# zone_name = "forge-atlas.com"
+
+# ============================================================
+# WORKER 2 — seo-audit-worker
+# Same-origin HTML auditor.
+# ============================================================
+[env.audit]
+name = "seo-audit-worker"
+main = "workers/seo-audit-worker.js"
+workers_dev = false
+
+[env.audit.vars]
+ALLOWED_ORIGIN = "https://forge-atlas.pages.dev"
+
+# [[env.audit.routes]]
+# pattern = "forge-atlas.com/api/seo-audit"
+# zone_name = "forge-atlas.com"
+
+# ============================================================
+# WORKER 3 — ops-status-worker
+# Machine-readable env state.
+# ============================================================
+[env.ops]
+name = "ops-status-worker"
+main = "workers/ops-status-worker.js"
+workers_dev = false
+
+[env.ops.vars]
+ALLOWED_ORIGIN = "https://forge-atlas.pages.dev"
+SITE_MODE = "static"
+ENV = "production"
+
+# Optional integration flags. Strings only.
+# Setting these to "true" reflects in /api/ops-status output.
+# ANALYTICS_ENABLED = "false"
+# ANALYTICS_PROVIDER = "none"
+
+# [[env.ops.routes]]
+# pattern = "forge-atlas.com/api/ops-status"
+# zone_name = "forge-atlas.com"
+
+# ============================================================
+# SECRETS (set with `wrangler secret put`)
+# ============================================================
+# Never put real keys in this file. Use:
+#   wrangler secret put ANTHROPIC_API_KEY  --env <env>
+#   wrangler secret put GITHUB_APP_ID      --env <env>
+#   wrangler secret put CF_API_TOKEN       --env <env>
+# These are referenced by name in the workers via env.NAME.
+
+# ============================================================
+# PAGES FUNCTIONS PATH (alternative to deploying as Workers)
+# If you deploy via Cloudflare Pages, the files in
+#   functions/api/*.js
+# auto-mount as routes under /api/*. No wrangler.toml needed.
+# Set env vars in: Pages project → Settings → Environment variables.
+# ============================================================
+
+# ============================================================
+# WORKER 5 — cf-ai-worker (Cloudflare Workers AI bridge)
+# Free-tier inference for fast/cheap LLM calls.
+# Uses native [ai] binding — no API key needed.
+# ============================================================
+[env.cf-ai]
+name = "cf-ai-worker"
+main = "workers/cf-ai-worker.js"
+[env.cf-ai.ai]
+binding = "AI"
+[env.cf-ai.vars]
+ALLOWED_ORIGIN = "*"  # tighten to your domain in production
+
+# ============================================================
+# WORKER 6 — seo-copilot-worker
+# Tiered AI: CF Workers AI for fast fixes, Anthropic for deep audits.
+# ============================================================
+[env.seo-copilot]
+name = "seo-copilot-worker"
+main = "workers/seo-copilot-worker.js"
+[env.seo-copilot.ai]
+binding = "AI"
+[env.seo-copilot.vars]
+ALLOWED_ORIGIN = "*"
+ANTHROPIC_MODEL = "claude-opus-4-5"
+# Set ANTHROPIC_API_KEY via:  wrangler secret put ANTHROPIC_API_KEY --env seo-copilot
+
+# ============================================================
+# WORKER 7 — forum-bridge-worker (v10)
+# Bridges static forum frontend to GitHub Issues as backend.
+# Each thread = a GH Issue. Each reply = an Issue comment.
+# Free, audit-trail built-in, content survives even if site is down.
+# ============================================================
+[env.forum-bridge]
+name = "forum-bridge-worker"
+main = "workers/forum-bridge-worker.js"
+[env.forum-bridge.vars]
+ALLOWED_ORIGIN = "*"  # tighten to forge-atlas.io in production
+# Secrets to set:
+#   wrangler secret put GITHUB_TOKEN --env forum-bridge
+#     · Fine-grained PAT with Issues read+write on the forum repo
+#   wrangler secret put GITHUB_REPO --env forum-bridge
+#     · Format: "Forge-Atlas-Founder/Forge-Atlas-Forum"
+#     · Recommended: separate repo from the website. Easier moderation, public-by-default.
+
+# ============================================================
+# WORKER 8 — atlas-rescuer-worker (v10)
+# Generates Atlas replies for Town Square threads stuck >24h.
+# Primary: Cloudflare Workers AI (free, fast).
+# Fallback: Anthropic (if ANTHROPIC_API_KEY secret is set).
+# ============================================================
+[env.atlas-rescuer]
+name = "atlas-rescuer-worker"
+main = "workers/atlas-rescuer-worker.js"
+[env.atlas-rescuer.ai]
+binding = "AI"
+[env.atlas-rescuer.vars]
+ALLOWED_ORIGIN = "*"
+ANTHROPIC_MODEL = "claude-opus-4-5"
+# Optional fallback:
+#   wrangler secret put ANTHROPIC_API_KEY --env atlas-rescuer
+#
+# Optional scheduled scan (cron) — uncomment to run every 6h:
+# [env.atlas-rescuer.triggers]
+# crons = ["0 */6 * * *"]
