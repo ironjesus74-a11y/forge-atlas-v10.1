@@ -8,3 +8,36 @@
 .mcp.json
 opencode.json
 config/mcporter.json
+
+# =========================
+# AI / MCP / Editor noise
+# =========================
+.codex/
+.cursor/
+.gemini/
+.vscode/
+.zed/
+.mcp.json
+*.mcp.json
+opencode.json
+config/mcporter.json
+
+# =========================
+# OS / system junk
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# dependencies / builds
+# =========================
+node_modules/
+dist/
+build/
+*.log
+
+# =========================
+# env secrets
+# =========================
+.env
+.env.*
