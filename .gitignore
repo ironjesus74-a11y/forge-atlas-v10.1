@@ -1,5 +1,6 @@
 
 # AI / MCP / Editor local configs
+.claude/
 .codex/
 .cursor/
 .gemini/
