@@ -1,0 +1,10 @@
+
+# AI / MCP / Editor local configs
+.codex/
+.cursor/
+.gemini/
+.vscode/
+.zed/
+.mcp.json
+opencode.json
+config/mcporter.json
