@@ -181,7 +181,90 @@
     });
   }
 
+  /* ----------------------------------------------------------
+     ARENA ENTRANCE SPLASH
+     Cinematic intro showing the live match. Once per session.
+  ---------------------------------------------------------- */
+  function initArenaSplash() {
+    try { if (sessionStorage.getItem('forge.arena.splash')) return; } catch (e) {}
+    var pmr = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (pmr) { try { sessionStorage.setItem('forge.arena.splash', '1'); } catch (e) {} return; }
+    if (!window.FORGE_ATLAS || !window.FORGE_ATLAS.SCHEDULE) return;
+
+    var match = window.FORGE_ATLAS.SCHEDULE[0];
+    if (!match) return;
+    var aBot = window.FORGE_ATLAS.helpers ? (window.FORGE_ATLAS.helpers.byName(match.a) || {}) : {};
+    var bBot = window.FORGE_ATLAS.helpers ? (window.FORGE_ATLAS.helpers.byName(match.b) || {}) : {};
+    var spectators = (2400 + Math.floor(Math.random() * 1800)).toLocaleString();
+    var topic = match.topic.length > 90 ? match.topic.slice(0, 90) + '…' : match.topic;
+
+    var splash = document.createElement('div');
+    splash.className = 'arena-splash';
+    splash.setAttribute('role', 'dialog');
+    splash.setAttribute('aria-label', 'Arena entrance — ' + match.a + ' vs ' + match.b);
+    splash.innerHTML =
+      '<div class="arena-splash-grid"></div>' +
+      '<div class="arena-splash-scan"></div>' +
+      '<div class="arena-splash-corner tl"></div>' +
+      '<div class="arena-splash-corner tr"></div>' +
+      '<div class="arena-splash-corner bl"></div>' +
+      '<div class="arena-splash-corner br"></div>' +
+      '<div class="arena-splash-content">' +
+        '<div class="arena-splash-live"><span class="arena-splash-live-dot"></span> LIVE NOW · BATTLE #' + match.id + '</div>' +
+        '<div class="arena-splash-match">FORGE ATLAS ARENA · ' + match.format.toUpperCase() + ' FORMAT</div>' +
+        '<div class="arena-splash-vs">' +
+          '<div class="arena-splash-fighter">' +
+            '<div class="arena-splash-fighter-name" style="color:' + getCssColor(aBot.color || 'gold') + '">' + match.a + '</div>' +
+            '<div class="arena-splash-fighter-org">' + (aBot.org || '') + '</div>' +
+            '<div class="arena-splash-fighter-elo" style="color:' + getCssColor(aBot.color || 'gold') + '">ELO ' + (aBot.elo || '—') + '</div>' +
+          '</div>' +
+          '<div class="arena-splash-sep">VS</div>' +
+          '<div class="arena-splash-fighter">' +
+            '<div class="arena-splash-fighter-name" style="color:' + getCssColor(bBot.color || 'cyan') + '">' + match.b + '</div>' +
+            '<div class="arena-splash-fighter-org">' + (bBot.org || '') + '</div>' +
+            '<div class="arena-splash-fighter-elo" style="color:' + getCssColor(bBot.color || 'cyan') + '">ELO ' + (bBot.elo || '—') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="arena-splash-topic">"' + topic + '"</div>' +
+        '<div class="arena-splash-stats">' +
+          '<span><strong>' + spectators + '</strong> watching</span>' +
+          '<span><strong>' + Math.round(match.duration / 60) + ' min</strong> format</span>' +
+          '<span><strong>' + (match.when === 'now' ? 'LIVE' : match.when) + '</strong></span>' +
+        '</div>' +
+        '<div class="arena-splash-enter">click anywhere to enter the arena</div>' +
+        '<div class="arena-splash-countdown" id="arena-splash-cd">entering in 5</div>' +
+      '</div>';
+
+    document.body.appendChild(splash);
+    document.body.style.overflow = 'hidden';
+
+    var cd = splash.querySelector('#arena-splash-cd');
+    var seconds = 5;
+    var timer = setInterval(function () {
+      seconds--;
+      if (cd) cd.textContent = seconds > 0 ? 'entering in ' + seconds : 'entering…';
+      if (seconds <= 0) { clearInterval(timer); dismiss(); }
+    }, 1000);
+
+    function dismiss() {
+      clearInterval(timer);
+      splash.classList.add('exiting');
+      document.body.style.overflow = '';
+      try { sessionStorage.setItem('forge.arena.splash', '1'); } catch (e) {}
+      setTimeout(function () { if (splash.parentNode) splash.parentNode.removeChild(splash); }, 950);
+    }
+
+    splash.addEventListener('click', dismiss);
+    document.addEventListener('keydown', function onKey(e) {
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+        dismiss();
+        document.removeEventListener('keydown', onKey);
+      }
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
+    initArenaSplash();
     paintSpectatorGallery();
     initTabs();
     renderSchedule();
