@@ -40,45 +40,73 @@ export default {
     const format = String(body.format || "Debate").slice(0, 40);
     if (!a || !b || !topic) return json({ error: "missing_inputs" }, 400, env);
 
-    if (!env.ANTHROPIC_API_KEY) {
-      return json({ error: "not_configured", hint: "Set ANTHROPIC_API_KEY as a Worker secret." }, 503, env);
-    }
-
-    // Voice tunings — keep tight; they read the bot personality from the message
     const systemPrompt = buildSystemPrompt(format);
     const userPrompt = buildUserPrompt(a, b, topic, format);
 
     let lines;
-    try {
-      const r = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "x-api-key": env.ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          model: env.MODEL || "claude-opus-4-5",
-          max_tokens: 2400,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
-        }),
-      });
-      if (!r.ok) {
-        const errTxt = await r.text();
-        return json({ error: "upstream", status: r.status, detail: errTxt.slice(0, 500) }, 502, env);
-      }
-      const data = await r.json();
-      const text = (data.content && data.content[0] && data.content[0].text) || "";
-      lines = parseTranscript(text, a, b);
-      if (!lines.length) {
-        return json({ error: "parse_failed", raw: text.slice(0, 1000) }, 502, env);
-      }
-    } catch (err) {
-      return json({ error: "exception", detail: String(err.message || err) }, 500, env);
+    let usedModel = "unknown";
+
+    // ── Primary: Cloudflare Workers AI (free, no API key needed) ──
+    if (env.AI) {
+      try {
+        const cfModel = env.CF_MODEL || "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+        const res = await env.AI.run(cfModel, {
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          max_tokens: 1800,
+        });
+        const text = ((res && (res.response || res.output || "")) + "").trim();
+        if (text && text.length > 80) {
+          lines = parseTranscript(text, a, b);
+          usedModel = cfModel;
+        }
+      } catch (_) { /* fall through to Anthropic */ }
     }
 
-    return json({ version: VERSION, format, a, b, topic, lines }, 200, env);
+    // ── Fallback: Anthropic (Claude) ──
+    if (!lines || !lines.length) {
+      if (!env.ANTHROPIC_API_KEY) {
+        return json({ error: "not_configured", hint: "Deploy with [ai] binding for free CF Workers AI, or set ANTHROPIC_API_KEY secret." }, 503, env);
+      }
+      try {
+        // Route through AI Gateway if configured (caching + analytics)
+        const anthropicBase = env.CF_AI_GATEWAY
+          ? env.CF_AI_GATEWAY + "/anthropic"
+          : "https://api.anthropic.com";
+        const r = await fetch(anthropicBase + "/v1/messages", {
+          method: "POST",
+          headers: {
+            "x-api-key": env.ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            model: env.MODEL || "claude-opus-4-5",
+            max_tokens: 2400,
+            system: systemPrompt,
+            messages: [{ role: "user", content: userPrompt }],
+          }),
+        });
+        if (!r.ok) {
+          const errTxt = await r.text();
+          return json({ error: "upstream", status: r.status, detail: errTxt.slice(0, 500) }, 502, env);
+        }
+        const data = await r.json();
+        const text = (data.content && data.content[0] && data.content[0].text) || "";
+        lines = parseTranscript(text, a, b);
+        usedModel = env.MODEL || "claude-opus-4-5";
+      } catch (err) {
+        return json({ error: "exception", detail: String(err.message || err) }, 500, env);
+      }
+    }
+
+    if (!lines || !lines.length) {
+      return json({ error: "parse_failed" }, 502, env);
+    }
+
+    return json({ version: VERSION, format, a, b, topic, lines, model: usedModel }, 200, env);
   },
 };
 

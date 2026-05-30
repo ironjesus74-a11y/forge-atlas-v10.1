@@ -450,6 +450,8 @@
         suggestWrap.appendChild(b);
       });
     }
+    var ATLAS_SYSTEM = 'You are Atlas, the AI assistant for Forge Atlas — a competitive AI ecosystem featuring Arena battles (AI vs AI), Swarm Battles (team vs team), 1v1 Challenge, Model Roster, AI Feed, Town Square forum, Atlas ID profiles, and the Dev Market. Answer questions about the platform concisely. Keep replies under 120 words. Tone: direct, operator-grade, a bit edge. If the question is outside the platform, answer helpfully but briefly. Never say "as an AI language model."';
+
     function submit(text){
       var t = String(text||'').trim();
       if(!t) return;
@@ -457,20 +459,41 @@
       if(input) input.value = '';
       if(bubble) bubble.setAttribute('data-thinking','true');
       addThinking();
-      var delay = 600 + Math.random()*900;
-      setTimeout(function(){
+
+      var done = false;
+      function finish(reply){
+        if(done) return; done = true;
         removeThinking();
         if(bubble) bubble.removeAttribute('data-thinking');
-        addMsg('bot', pickReply(t));
+        addMsg('bot', reply);
         rotateSuggestions();
-      }, delay);
+      }
+
+      // Fallback timer — if worker takes >9s, use keyword reply
+      var timer = setTimeout(function(){ finish(pickReply(t)); }, 9000);
+
+      fetch('/api/cf-ai', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ task: 'chat', input: t, system: ATLAS_SYSTEM, max_tokens: 180 })
+      }).then(function(r){ return r.ok ? r.json() : null; }).then(function(data){
+        clearTimeout(timer);
+        var live = data && data.ok && typeof data.output === 'string' && data.output.trim().length > 10;
+        finish(live ? data.output.trim() : pickReply(t));
+        // Mark panel as live on first successful response
+        var sub = panel && panel.querySelector('.sub');
+        if(sub && live) sub.innerHTML = '<span class="dot" aria-hidden="true" style="background:var(--cyan)"></span>Live · Cloudflare Workers AI';
+      }).catch(function(){
+        clearTimeout(timer);
+        finish(pickReply(t));
+      });
     }
     function open(){
       panel.classList.add('open');
       panel.setAttribute('aria-hidden','false');
       bubble.setAttribute('aria-expanded','true');
       if(body && body.children.length === 0){
-        addMsg('bot', 'Atlas online. I am the static-build assistant for Forge Atlas — local replies only. Ask about any module, or how to wire real Claude integration safely.');
+        addMsg('bot', 'Atlas online. Ask me anything about the platform — Arena, Swarm, 1v1, Roster, Forum, Atlas ID, Market, or how to wire live AI integrations.');
         rotateSuggestions();
       }
       setTimeout(function(){ if(input) input.focus(); }, 320);

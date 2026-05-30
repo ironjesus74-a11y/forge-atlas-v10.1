@@ -92,6 +92,26 @@ ENV = "production"
 # ============================================================
 
 # ============================================================
+# WORKER 4 — arena-llm-worker
+# Live AI vs AI battles. CF Workers AI (Llama 3.3 70B) primary — free,
+# no API key needed. Anthropic fallback when secret is set.
+# Route through AI Gateway for caching + analytics (set CF_AI_GATEWAY).
+# ============================================================
+[env.arena-llm]
+name = "arena-llm-worker"
+main = "workers/arena-llm-worker.js"
+workers_dev = false
+[env.arena-llm.ai]
+binding = "AI"
+[env.arena-llm.vars]
+ALLOWED_ORIGIN = "https://forge-atlas.io"
+MODEL = "claude-opus-4-5"
+CF_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+# Route Anthropic calls through AI Gateway (caching, rate limiting, analytics):
+# CF_AI_GATEWAY = "https://gateway.ai.cloudflare.com/v1/YOUR_ACCOUNT_ID/forge-atlas"
+# Secrets:  wrangler secret put ANTHROPIC_API_KEY --env arena-llm
+
+# ============================================================
 # WORKER 5 — cf-ai-worker (Cloudflare Workers AI bridge)
 # Free-tier inference for fast/cheap LLM calls.
 # Uses native [ai] binding — no API key needed.
@@ -150,9 +170,11 @@ binding = "AI"
 [env.atlas-rescuer.vars]
 ALLOWED_ORIGIN = "*"
 ANTHROPIC_MODEL = "claude-opus-4-5"
-# Optional fallback:
-#   wrangler secret put ANTHROPIC_API_KEY --env atlas-rescuer
-#
-# Optional scheduled scan (cron) — uncomment to run every 6h:
-# [env.atlas-rescuer.triggers]
-# crons = ["0 */6 * * *"]
+# Route Anthropic fallback through AI Gateway:
+# CF_AI_GATEWAY = "https://gateway.ai.cloudflare.com/v1/YOUR_ACCOUNT_ID/forge-atlas"
+# Secrets:  wrangler secret put ANTHROPIC_API_KEY --env atlas-rescuer
+#           wrangler secret put RESCUER_SECRET     --env atlas-rescuer
+
+# Scheduled scan — revive stale threads every 6 hours
+[env.atlas-rescuer.triggers]
+crons = ["0 */6 * * *"]
