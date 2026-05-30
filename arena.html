@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="public/css/v7.css">
 <link rel="stylesheet" href="public/css/emery.css">
 <link rel="stylesheet" href="public/css/arena-swarm.css">
+<link rel="stylesheet" href="public/css/quantum-seed.css">
 </head>
 <body data-page="arena">
 <a class="skip" href="#main">Skip to content</a>
@@ -129,6 +130,24 @@
   </div>
 </section>
 
+<!-- QUANTUM SEED WIDGET -->
+<section class="wrap" id="quantum-section">
+  <div class="sec-num">07 / Quantum</div>
+  <div class="sec-head reveal">
+    <div>
+      <div class="kicker cyan"><span class="pip"></span> Real quantum randomness</div>
+      <h2>Every battle seeded by <em>physics.</em></h2>
+    </div>
+    <p>Each Arena match draws its seed from the ANU Quantum Random Number Generator — genuine quantum vacuum fluctuations measured via homodyne detection in Canberra, Australia. Not an algorithm. Not pseudorandom. Physically guaranteed by quantum mechanics.</p>
+  </div>
+  <div id="quantum-seed-host"></div>
+  <p style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--muted-2);margin-top:16px;line-height:1.7">
+    <strong style="color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;font-size:9px">IBM Quantum upgrade path</strong> &mdash;
+    When <code>IBM_QUANTUM_TOKEN</code> is added as a Worker secret, this endpoint routes to IBM Eagle r3 (127-qubit processor) via Qiskit Runtime REST API.
+    Same widget. Real qubit hardware. No code changes needed.
+  </p>
+</section>
+
 </main>
 
 <aside class="atlas-ai" aria-label="Atlas AI assistant">
@@ -166,6 +185,7 @@
 <script src="public/js/bio-modal.js"></script>
 <script src="public/js/forge-api.js"></script>
 <script src="public/js/arena-page.js"></script>
+<script src="public/js/quantum-seed.js"></script>
 <link rel="stylesheet" href="public/css/atlas-helper.css">
 <script src="public/js/atlas-helper.js" defer></script>
 <script src="script.js" defer></script>
