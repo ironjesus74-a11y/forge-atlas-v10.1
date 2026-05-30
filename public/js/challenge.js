@@ -23,9 +23,6 @@
     battleId: 0,
   };
 
-  /* ----------------------------------------------------------
-     DOM helpers
-  ---------------------------------------------------------- */
   function $(s) { return document.querySelector(s); }
   function $$(s) { return Array.from(document.querySelectorAll(s)); }
   function esc(s) {
@@ -37,11 +34,6 @@
     return String(name || '?').split(/[\s\-]+/).map(function (w) { return w[0] || ''; }).join('').slice(0, 2).toUpperCase();
   }
 
-  /* ----------------------------------------------------------
-     PERSONALITY RESPONSE TEMPLATES
-     Scripted but personality-matched. Each model responds in
-     its own voice to whatever task the user sets.
-  ---------------------------------------------------------- */
   var STYLES = {
     structured:    ['GPT-4o', 'WizardLM 2', 'DBRX', 'Command R+', 'Orca 2'],
     philosophical: ['Claude 3.5', 'Nous Hermes 2', 'Falcon 180B', 'InternLM 2'],
@@ -172,9 +164,6 @@
     return response.trim();
   }
 
-  /* ----------------------------------------------------------
-     TYPE-OUT ANIMATION
-  ---------------------------------------------------------- */
   function typeText(container, text, cps, done) {
     var i = 0;
     var node = document.createElement('span');
@@ -202,9 +191,6 @@
     return { stop: function () { clearInterval(t); } };
   }
 
-  /* ----------------------------------------------------------
-     SPLASH GATE
-  ---------------------------------------------------------- */
   function initSplash() {
     try { if (sessionStorage.getItem('forge.challenge.splash')) return; } catch (e) {}
     var pmr = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -213,7 +199,7 @@
     var gate = document.createElement('div');
     gate.className = 'ch-splash';
     gate.setAttribute('role', 'dialog');
-    gate.setAttribute('aria-label', 'Welcome to 1v1 Challenge');
+    gate.setAttribute('aria-label', 'Welcome to AI Fight Club');
     gate.innerHTML =
       '<div class="ch-splash-grid"></div>' +
       '<div class="ch-splash-scan"></div>' +
@@ -223,7 +209,7 @@
       '<div class="ch-splash-corner br"></div>' +
       '<div class="ch-splash-inner">' +
         '<div class="ch-splash-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 9H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/><path d="M10 9.5c0 .83-.67 1.5-1.5 1.5h-5C2.67 11 2 10.33 2 9.5S2.67 8 3.5 8h5c.83 0 1.5.67 1.5 1.5z"/><path d="M8.5 15H10v-1.5c0-.83-.67-1.5-1.5-1.5S7 12.67 7 13.5s.67 1.5 1.5 1.5z"/></svg></div>' +
-        '<div class="ch-splash-label">Forge Atlas · 1v1 Challenge</div>' +
+        '<div class="ch-splash-label">Forge Atlas · AI Fight Club</div>' +
         '<div class="ch-splash-title">You\'re the<br><span style="color:var(--violet)">judge.</span></div>' +
         '<div class="ch-splash-sub">Pick two AIs. Set the task. Watch them compete for your vote.</div>' +
         '<div class="ch-splash-cta">click anywhere to enter</div>' +
@@ -250,16 +236,13 @@
     setTimeout(dismiss, 6000);
   }
 
-  /* ----------------------------------------------------------
-     SETUP PANEL
-  ---------------------------------------------------------- */
   function renderSetup() {
     var host = $('#ch-setup');
     if (!host) return;
 
     var models = (FA.MODELS || []).slice().sort(function (a, b) { return b.elo - a.elo; });
-    var defaultA = models[1] || models[0]; // Claude 3.5
-    var defaultB = models[0];              // GPT-4o
+    var defaultA = models[1] || models[0];
+    var defaultB = models[0];
     state.modelA = defaultA;
     state.modelB = defaultB;
     state.format = 'Debate';
@@ -312,7 +295,6 @@
         '<span class="ch-launch-note" id="ch-launch-note">Enter a challenge to begin</span>' +
       '</div>';
 
-    // Wire model selects
     function onSelectA() {
       var v = $('#ch-select-a').value;
       state.modelA = FA.helpers.byName(v) || models[0];
@@ -326,7 +308,6 @@
     $('#ch-select-a').addEventListener('change', onSelectA);
     $('#ch-select-b').addEventListener('change', onSelectB);
 
-    // Format buttons
     $$('.ch-format-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         $$('.ch-format-btn').forEach(function (b) { b.classList.remove('active'); });
@@ -335,7 +316,6 @@
       });
     });
 
-    // Task input
     var taskEl = $('#ch-task');
     var launchBtn = $('#ch-launch');
     var launchNote = $('#ch-launch-note');
@@ -346,16 +326,12 @@
       launchNote.textContent = valid ? 'Ready to launch · ' + state.task.length + ' / 600' : 'Enter a challenge to begin';
     });
 
-    // Launch
     launchBtn.addEventListener('click', function () {
       if (!state.task || !state.modelA || !state.modelB) return;
       launchBattle();
     });
   }
 
-  /* ----------------------------------------------------------
-     BATTLE
-  ---------------------------------------------------------- */
   function launchBattle() {
     state.phase = 'battle';
     state.battleId++;
@@ -367,7 +343,6 @@
     var battleEl = $('#ch-battle-section');
     if (battleEl) battleEl.classList.add('active');
 
-    // Header
     var header = $('#ch-battle-header');
     if (header) {
       header.innerHTML =
@@ -376,15 +351,12 @@
         '<div class="ch-battle-topic">' + esc(state.task.length > 100 ? state.task.slice(0, 100) + '…' : state.task) + '</div>';
     }
 
-    // Fighter cards
     renderFighter('a', state.modelA);
     renderFighter('b', state.modelB);
 
-    // Generate responses
     var respA = buildResponse(state.modelA, state.task, state.format);
     var respB = buildResponse(state.modelB, state.task, state.format);
 
-    // Check live mode
     var liveUrl = FA.LLM_WORKER_URL || (FA.API && FA.API.endpoints && FA.API.endpoints.arena);
     if (liveUrl && FA.API && FA.API.available && FA.API.available.arena) {
       runLiveBattle(currentId, respA, respB);
@@ -449,7 +421,6 @@
   }
 
   function runLiveBattle(battleId, respA, respB) {
-    // Live mode: call arena-llm Worker
     fetch('/api/arena-llm', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -478,9 +449,6 @@
     });
   }
 
-  /* ----------------------------------------------------------
-     VOTE
-  ---------------------------------------------------------- */
   function showVotePanel() {
     var vote = $('#ch-vote');
     if (!vote) return;
@@ -510,9 +478,6 @@
     showResult();
   }
 
-  /* ----------------------------------------------------------
-     RESULTS
-  ---------------------------------------------------------- */
   function showResult() {
     var result = $('#ch-result');
     if (!result) return;
@@ -534,9 +499,6 @@
     result.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  /* ----------------------------------------------------------
-     RESET
-  ---------------------------------------------------------- */
   function resetChallenge() {
     state.battleId++;
     state.phase = 'setup';
@@ -555,9 +517,6 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  /* ----------------------------------------------------------
-     BOOT
-  ---------------------------------------------------------- */
   document.addEventListener('DOMContentLoaded', function () {
     initSplash();
     renderSetup();
