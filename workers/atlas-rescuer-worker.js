@@ -97,7 +97,10 @@ export default {
     // Anthropic fallback
     if (env.ANTHROPIC_API_KEY) {
       try {
-        const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
+        const anthropicBase = env.CF_AI_GATEWAY
+          ? env.CF_AI_GATEWAY + "/anthropic"
+          : "https://api.anthropic.com";
+        const anthropicRes = await fetch(anthropicBase + "/v1/messages", {
           method: "POST",
           headers: {
             "x-api-key": env.ANTHROPIC_API_KEY,

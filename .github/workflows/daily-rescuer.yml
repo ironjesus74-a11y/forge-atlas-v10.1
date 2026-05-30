@@ -1,0 +1,30 @@
+name: Daily Atlas Rescuer ping
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # 3AM UTC daily
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Atlas Rescuer endpoint
+        continue-on-error: true
+        run: |
+          echo "Pinging Atlas Rescuer at ${{ vars.SITE_URL }}/api/atlas-rescuer"
+          RESPONSE=$(curl -s -o /tmp/rescuer-response.txt -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.RESCUER_SECRET }}" \
+            -H "Content-Type: application/json" \
+            "${{ vars.SITE_URL }}/api/atlas-rescuer" || echo "000")
+          echo "HTTP status: $RESPONSE"
+          echo "Response body:"
+          cat /tmp/rescuer-response.txt || true
+          if [ "$RESPONSE" = "000" ]; then
+            echo "Connection failed — site may not be live yet"
+          elif [ "$RESPONSE" -ge 500 ]; then
+            echo "Server error (status $RESPONSE) — check worker logs"
+          else
+            echo "Rescuer ping complete (status $RESPONSE)"
+          fi

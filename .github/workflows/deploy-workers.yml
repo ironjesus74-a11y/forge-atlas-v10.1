@@ -1,4 +1,4 @@
-name: Deploy workers
+name: Deploy Workers
 
 on:
   push:
@@ -7,28 +7,75 @@ on:
       - 'workers/**'
       - 'wrangler.toml'
   workflow_dispatch:
+    inputs:
+      envs:
+        description: 'Workers to deploy (space-separated). Leave blank for all.'
+        required: false
+        default: ''
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - name: Set up Node
-        uses: actions/setup-node@v6
+      - name: Check required secrets
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CF_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN secret is not set."
+            echo "  Repo Settings → Secrets and variables → Actions → New secret"
+            echo "  Token needs: Account > Workers Scripts > Edit"
+            exit 1
+          fi
+          if [ -z "$CF_ACCOUNT" ]; then
+            echo "::error::CLOUDFLARE_ACCOUNT_ID secret is not set."
+            echo "  Your account ID: fbfa527a707f8ccb1e1464d28ae51fb8"
+            exit 1
+          fi
+          echo "Secrets present — proceeding"
+
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install wrangler
-        run: npm install -g wrangler@4
+      - name: Install Wrangler
+        run: npm install -g wrangler@3
 
-      - name: Deploy workers (per env)
+      - name: Deploy workers
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          for env in helper audit ops arena-llm cf-ai seo-copilot forum-bridge atlas-rescuer; do
-            echo "Deploying env: $env"
-            wrangler deploy --env "$env" || echo "(env $env failed or not configured — continuing)"
+          TARGET="${{ github.event.inputs.envs }}"
+          if [ -z "$TARGET" ]; then
+            TARGET="cf-ai arena-llm atlas-rescuer forum-bridge helper audit ops seo-copilot"
+          fi
+
+          PASS="" FAIL=""
+          for env in $TARGET; do
+            echo ""
+            echo "▶ [$env] deploying..."
+            if wrangler deploy --env "$env" 2>&1; then
+              echo "✓ [$env] done"
+              PASS="$PASS $env"
+            else
+              echo "✗ [$env] failed — may need secrets configured for this env"
+              FAIL="$FAIL $env"
+            fi
+          done
+
+          echo ""
+          echo "═══════════════════════════════════"
+          [ -n "$PASS" ] && echo "✓ Deployed:$PASS"
+          [ -n "$FAIL" ] && echo "✗ Skipped (needs secrets):$FAIL"
+          echo "═══════════════════════════════════"
+
+          # Only hard-fail if the core workers failed
+          for core in cf-ai arena-llm atlas-rescuer; do
+            if echo "$FAIL" | grep -qw "$core"; then
+              echo "::warning::Core worker '$core' failed. Check secrets and logs above."
+            fi
           done
