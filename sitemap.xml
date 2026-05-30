@@ -25,6 +25,12 @@
     <changefreq>weekly</changefreq>
   </url>
   <url>
+    <loc>https://forge-atlas.io/challenge.html</loc>
+    <lastmod>2026-05-30</lastmod>
+    <priority>0.8</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
     <loc>https://forge-atlas.io/command.html</loc>
     <lastmod>2026-05-30</lastmod>
     <priority>0.8</priority>
