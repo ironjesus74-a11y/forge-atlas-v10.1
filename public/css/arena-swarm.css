@@ -113,6 +113,116 @@
 
 
 /* ============================================================
+   SWARM ENTRANCE SPLASH
+   ============================================================ */
+.swarm-splash{
+  position:fixed;inset:0;z-index:9998;
+  background:#06060a;
+  display:grid;place-items:center;
+  overflow:hidden;cursor:pointer;
+  transition:opacity .9s cubic-bezier(.7,0,.3,1);
+}
+.swarm-splash.exiting{opacity:0;pointer-events:none}
+
+.swarm-splash-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(90deg,rgba(167,139,250,.05) 1px,transparent 1px),
+    linear-gradient(0deg,rgba(167,139,250,.05) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 80% 70% at 50% 50%,black 30%,transparent 90%);
+  -webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 50%,black 30%,transparent 90%);
+  animation:splashGridDrift 28s linear infinite;
+}
+@keyframes splashGridDrift{0%{background-position:0 0}100%{background-position:64px 64px}}
+
+.swarm-splash-scan{
+  position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(167,139,250,.55),transparent);
+  animation:swarmSplashScan 3.2s ease-in-out infinite;
+}
+@keyframes swarmSplashScan{0%{top:-2%;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:102%;opacity:0}}
+
+.swarm-splash-corner{
+  position:absolute;width:16px;height:16px;
+  border-color:rgba(167,139,250,.3);border-style:solid;
+}
+.swarm-splash-corner.tl{top:28px;left:28px;border-width:1px 0 0 1px}
+.swarm-splash-corner.tr{top:28px;right:28px;border-width:1px 1px 0 0}
+.swarm-splash-corner.bl{bottom:28px;left:28px;border-width:0 0 1px 1px}
+.swarm-splash-corner.br{bottom:28px;right:28px;border-width:0 1px 1px 0}
+
+.swarm-splash-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;
+  text-align:center;padding:40px 24px;max-width:680px;gap:18px;
+}
+
+.swarm-splash-badge{
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.36em;
+  text-transform:uppercase;color:#a78bfa;
+  display:flex;align-items:center;gap:8px;
+}
+.swarm-splash-badge-dot{
+  width:7px;height:7px;border-radius:50%;background:#a78bfa;
+  box-shadow:0 0 10px #a78bfa;
+  animation:pip 1.4s ease-in-out infinite;
+}
+
+.swarm-splash-label{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.22em;
+  color:var(--muted-2);text-transform:uppercase;
+}
+
+.swarm-splash-mission{
+  font-family:var(--font-display);font-size:clamp(18px,3.5vw,28px);
+  font-weight:600;letter-spacing:.02em;color:var(--fg);
+}
+
+.swarm-splash-vs{
+  display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:center;
+}
+.swarm-splash-side{display:flex;flex-direction:column;align-items:center;gap:5px}
+.swarm-splash-side-name{
+  font-family:var(--font-display);font-size:clamp(20px,4vw,34px);
+  font-weight:700;letter-spacing:.03em;
+  text-shadow:0 0 30px currentColor;
+}
+.swarm-splash-side-sub{
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.10em;color:var(--muted-2);
+}
+.swarm-splash-side-agents{
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;
+  padding:3px 10px;border:1px solid rgba(255,255,255,.1);border-radius:4px;
+  color:var(--muted-2);
+}
+.swarm-splash-sep{
+  font-family:var(--font-display);font-size:clamp(20px,4vw,40px);
+  font-weight:800;color:rgba(255,255,255,.10);letter-spacing:.12em;flex-shrink:0;
+}
+
+.swarm-splash-brief{
+  max-width:460px;font-size:13px;color:var(--muted);line-height:1.6;
+  font-style:italic;padding:0 12px;
+}
+
+.swarm-splash-stats{
+  display:flex;gap:28px;align-items:center;flex-wrap:wrap;justify-content:center;
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;color:var(--muted-2);
+}
+.swarm-splash-stats strong{color:var(--fg)}
+
+.swarm-splash-enter{
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.26em;
+  text-transform:uppercase;color:rgba(167,139,250,.6);
+  animation:chBlink 1.8s ease-in-out infinite;
+}
+.swarm-splash-countdown{
+  font-family:var(--font-display);font-size:13px;letter-spacing:.14em;
+  color:rgba(255,255,255,.2);
+}
+
+/* ============================================================
    ARENA — TAB BAR
    ============================================================ */
 .arena-tabs{
