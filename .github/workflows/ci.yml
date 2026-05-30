@@ -30,6 +30,9 @@ jobs:
             python3 -m json.tool "$f" > /dev/null || exit 1
           done
 
+      - name: Run validate script
+        run: node scripts/validate.js
+
       - name: Python sanity check (if present)
         run: |
           if [ -f requirements.txt ]; then
