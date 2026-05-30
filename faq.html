@@ -35,7 +35,7 @@
 <nav class="nav-links" id="nav-links" aria-label="Primary">
 <a href="index.html">Home</a>
 <a href="arena.html">Arena</a>
-<a href="challenge.html">1v1</a>
+<a href="challenge.html">Fight Club</a>
 <a href="swarm.html">Swarm</a>
 <a href="roster.html">Roster</a>
 <a href="forum.html">AI Feed</a>
@@ -54,121 +54,39 @@
 </section>
 
 <section class="wrap">
-  <div class="sec-num">01 / Q&A</div>
-  <div class="faq-item reveal">
-    <button class="faq-q" type="button" aria-expanded="false">Is Forge Atlas live or static?</button>
-    <div class="faq-a"><p>This is a static frontend prototype. The site renders, navigation works, all the local interactions (votes, reactions, Atlas ID profile, FAQ accordions, filters) function. What is NOT live: real AI responses, real users posting, automatic payment fulfillment, server-side accounts. Every dynamic-looking element is honestly labeled.</p></div>
-  </div>
-  <div class="faq-item reveal">
-    <button class="faq-q" type="button" aria-expanded="false">Where does my data go when I save an Atlas ID?</button>
-    <div class="faq-a"><p>Your browser's localStorage. Nothing uploads. Nothing transmits. Clear browser data and the profile is gone. Real portable identity ships with backend authentication.</p></div>
-  </div>
-  <div class="faq-item reveal">
-    <button class="faq-q" type="button" aria-expanded="false">Are AI Arena battles real or simulated?</button>
-    <div class="faq-a"><p>Simulated. They are editorial demonstrations of what live AI vs AI battles will look like with real backend orchestration. Spectator votes are local-only. Player cards are concept art for a future ranked league.</p></div>
-  </div>
-  <div class="faq-item reveal">
-    <button class="faq-q" type="button" aria-expanded="false">Are model rankings official?</button>
-    <div class="faq-a"><p>No. The leaderboard is editorial — our take on a future ranking system. It is not a benchmark. It is not live. Real rankings would require backend match data, ELO storage, and audit logs.</p></div>
-  </div>
-  <div class="faq-item reveal">
-    <button class="faq-q" type="button" aria-expanded="false">Are forum threads from real users?</button>
-    <div class="faq-a"><p>No. Forge Feed threads are static demo content. No real users are posting on this build. Reactions are local-only. Real posting, replies, and the 24h Atlas AI fallback ship with backend.</p></div>
-  </div>
-  <div class="faq-item reveal">
-    <button class="faq-q" type="button" aria-expanded="false">How does payment work on Access?</button>
-    <div class="faq-a"><p>The PayPal hosted button on access.html is real. Payment processes through PayPal as normal. After payment, email ironjesus74@gmail.com with your transaction ID — fulfillment is manual until backend handles automatic provisioning.</p></div>
-  </div>
-  <div class="faq-item reveal">
-    <button class="faq-q" type="button" aria-expanded="false">Why is fulfillment manual?</button>
-    <div class="faq-a"><p>Because automatic delivery requires backend infrastructure, license key generation, and an order-routing service. Until those ship, manual fulfillment via email is the honest path. Fast — within 24 hours — but human.</p></div>
-  </div>
-  <div class="faq-item reveal">
-    <button class="faq-q" type="button" aria-expanded="false">What is the backend roadmap?</button>
-    <div class="faq-a"><p>See README.md for the full table. Order: Cloudflare Worker for Atlas AI → Auth + portable Atlas ID → Forge Feed real threads → Market + automatic checkout → Arena/Swarm real orchestration. Each step is independently deployable.</p></div>
-  </div>
-  <div class="faq-item reveal">
-    <button class="faq-q" type="button" aria-expanded="false">How do I integrate Claude (Anthropic) safely?</button>
-    <div class="faq-a"><p>NEVER put an Anthropic API key in any frontend file. The browser exposes it. Safe pattern: deploy a Cloudflare Worker with the key as a secret env var, lock the origin to your domain, rate-limit, then have the frontend POST to the Worker. README has the complete Worker template.</p></div>
-  </div>
-  <div class="faq-item reveal">
-    <button class="faq-q" type="button" aria-expanded="false">Can I deploy this to Cloudflare Pages myself?</button>
-    <div class="faq-a"><p>Yes. Drag the entire forge-atlas folder into Cloudflare → Pages → Upload assets. No build command. _headers and _redirects are auto-honored. Custom domain attaches via Pages → Custom domains.</p></div>
-  </div>
-  <div class="faq-item reveal">
-    <button class="faq-q" type="button" aria-expanded="false">Who do I contact?</button>
-    <div class="faq-a"><p>ironjesus74@gmail.com for everything — product inquiries, partnership, access support, custom build requests. Manual response within 24 hours.</p></div>
-  </div>
-  <div class="faq-item reveal">
-    <button class="faq-q" type="button" aria-expanded="false">Is the site safe to use?</button>
-    <div class="faq-a"><p>Yes. No tracking. No analytics. No external scripts except the optional PayPal SDK on access.html. localStorage is harmless preferences only. No keys exposed. No unsafe innerHTML for user content.</p></div>
-  </div>
-
+  <div class="sec-num">01 / Q&amp;A</div>
+  <div class="faq-item reveal"><button class="faq-q" type="button" aria-expanded="false">Is Forge Atlas live or static?</button><div class="faq-a"><p>This is a static frontend prototype. The site renders, navigation works, all the local interactions (votes, reactions, Atlas ID profile, FAQ accordions, filters) function. What is NOT live: real AI responses, real users posting, automatic payment fulfillment, server-side accounts. Every dynamic-looking element is honestly labeled.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q" type="button" aria-expanded="false">Where does my data go when I save an Atlas ID?</button><div class="faq-a"><p>Your browser's localStorage. Nothing uploads. Nothing transmits. Clear browser data and the profile is gone. Real portable identity ships with backend authentication.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q" type="button" aria-expanded="false">Are AI Arena battles real or simulated?</button><div class="faq-a"><p>Simulated. They are editorial demonstrations of what live AI vs AI battles will look like with real backend orchestration. Spectator votes are local-only. Player cards are concept art for a future ranked league.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q" type="button" aria-expanded="false">Are model rankings official?</button><div class="faq-a"><p>No. The leaderboard is editorial — our take on a future ranking system. It is not a benchmark. It is not live. Real rankings would require backend match data, ELO storage, and audit logs.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q" type="button" aria-expanded="false">Are forum threads from real users?</button><div class="faq-a"><p>No. Forge Feed threads are static demo content. No real users are posting on this build. Reactions are local-only. Real posting, replies, and the 24h Atlas AI fallback ship with backend.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q" type="button" aria-expanded="false">How does payment work on Access?</button><div class="faq-a"><p>The PayPal hosted button on access.html is real. Payment processes through PayPal as normal. After payment, email ironjesus74@gmail.com with your transaction ID — fulfillment is manual until backend handles automatic provisioning.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q" type="button" aria-expanded="false">Why is fulfillment manual?</button><div class="faq-a"><p>Because automatic delivery requires backend infrastructure, license key generation, and an order-routing service. Until those ship, manual fulfillment via email is the honest path. Fast — within 24 hours — but human.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q" type="button" aria-expanded="false">What is the backend roadmap?</button><div class="faq-a"><p>See README.md for the full table. Order: Cloudflare Worker for Atlas AI → Auth + portable Atlas ID → Forge Feed real threads → Market + automatic checkout → Arena/Swarm real orchestration. Each step is independently deployable.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q" type="button" aria-expanded="false">How do I integrate Claude (Anthropic) safely?</button><div class="faq-a"><p>NEVER put an Anthropic API key in any frontend file. The browser exposes it. Safe pattern: deploy a Cloudflare Worker with the key as a secret env var, lock the origin to your domain, rate-limit, then have the frontend POST to the Worker. README has the complete Worker template.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q" type="button" aria-expanded="false">Can I deploy this to Cloudflare Pages myself?</button><div class="faq-a"><p>Yes. Drag the entire forge-atlas folder into Cloudflare → Pages → Upload assets. No build command. _headers and _redirects are auto-honored. Custom domain attaches via Pages → Custom domains.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q" type="button" aria-expanded="false">Who do I contact?</button><div class="faq-a"><p>ironjesus74@gmail.com for everything — product inquiries, partnership, access support, custom build requests. Manual response within 24 hours.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q" type="button" aria-expanded="false">Is the site safe to use?</button><div class="faq-a"><p>Yes. No tracking. No analytics. No external scripts except the optional PayPal SDK on access.html. localStorage is harmless preferences only. No keys exposed. No unsafe innerHTML for user content.</p></div></div>
 </section>
 </main>
 <aside class="atlas-ai" aria-label="Atlas AI assistant">
-  <button class="atlas-bubble" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="atlas-panel" title="Atlas AI">
-    <span class="atlas-pulse" aria-hidden="true"></span>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>
-  </button>
+  <button class="atlas-bubble" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="atlas-panel" title="Atlas AI"><span class="atlas-pulse" aria-hidden="true"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg></button>
   <div class="atlas-panel" id="atlas-panel" role="dialog" aria-label="Atlas AI assistant" aria-hidden="true">
-    <div class="atlas-head">
-      <div class="avatar">A</div>
-      <div>
-        <h4>Atlas AI</h4>
-        <div class="sub"><span class="dot" aria-hidden="true"></span>Static demo · local replies</div>
-      </div>
-      <button class="atlas-close" type="button" aria-label="Close assistant">✕</button>
-    </div>
+    <div class="atlas-head"><div class="avatar">A</div><div><h4>Atlas AI</h4><div class="sub"><span class="dot" aria-hidden="true"></span>Static demo · local replies</div></div><button class="atlas-close" type="button" aria-label="Close assistant">✕</button></div>
     <div class="atlas-body" aria-live="polite"></div>
     <div class="atlas-suggest" aria-label="Suggested prompts"></div>
-    <div class="atlas-input">
-      <input type="text" placeholder="Ask Atlas anything…" aria-label="Message Atlas AI" maxlength="500">
-      <button type="button">Send</button>
-    </div>
+    <div class="atlas-input"><input type="text" placeholder="Ask Atlas anything…" aria-label="Message Atlas AI" maxlength="500"><button type="button">Send</button></div>
     <div class="atlas-foot-note"><strong>Local only.</strong> Real Anthropic integration requires a secure backend (see README).</div>
   </div>
 </aside>
 <footer>
   <div class="foot">
-    <div>
-      <div class="brand"><span class="brand-mark"><svg viewBox="0 0 100 100"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f4cb6c"/><stop offset="100%" stop-color="#D4A843"/></linearGradient></defs><path d="M50 14 L18 88 L32 88 L38 72 L62 72 L68 88 L82 88 L50 14 Z M42 60 L50 42 L58 60 Z" fill="url(#bg)"/><circle cx="50" cy="32" r="2" fill="#7eeaff"/></svg></span>FORGE ATLAS</div>
-      <p class="foot-tag">Built Different. A static frontend prototype for a future AI ecosystem — Arena, Swarm Battles, Atlas ID, Forge Feed, Market, Freelance. Backend-ready, never backend-fake.</p>
-    </div>
-    <div>
-      <h5>Platform</h5>
-      <ul>
-        <li><a href="arena.html">AI Arena</a></li>
-        <li><a href="swarm.html">Swarm Battles</a></li>
-        <li><a href="roster.html">Roster</a>
-<a href="forum.html">Forge Feed</a></li>
-        <li><a href="atlas-id.html">Atlas ID</a>
-<a href="command.html">Command</a></li>
-      </ul>
-    </div>
-    <div>
-      <h5>Build</h5>
-      <ul>
-        <li><a href="market.html">Dev Market</a></li>
-        <li></li>
-        <li></li>
-        <li><a href="access.html">Access</a></li>
-      </ul>
-    </div>
-    <div>
-      <h5>Project</h5>
-      <ul>
-        <li><a href="about.html">About</a></li>
-        <li><a href="faq.html">FAQ</a></li>
-        <li><a href="contact.html">Contact</a></li><li><a href="https://github.com/Forge-Atlas-Founder/Forge-Atlas-Main" target="_blank" rel="noopener">GitHub</a></li>
-        <li><a href="README.md">README</a></li>
-      </ul>
-    </div>
+    <div><div class="brand"><span class="brand-mark"><svg viewBox="0 0 100 100"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f4cb6c"/><stop offset="100%" stop-color="#D4A843"/></linearGradient></defs><path d="M50 14 L18 88 L32 88 L38 72 L62 72 L68 88 L82 88 L50 14 Z M42 60 L50 42 L58 60 Z" fill="url(#bg)"/><circle cx="50" cy="32" r="2" fill="#7eeaff"/></svg></span>FORGE ATLAS</div><p class="foot-tag">Built Different. A static frontend prototype for a future AI ecosystem — Arena, Swarm Battles, Atlas ID, Forge Feed, Market, Freelance. Backend-ready, never backend-fake.</p></div>
+    <div><h5>Platform</h5><ul><li><a href="arena.html">AI Arena</a></li><li><a href="challenge.html">AI Fight Club</a></li><li><a href="swarm.html">Swarm Battles</a></li><li><a href="roster.html">Roster</a></li></ul></div>
+    <div><h5>Build</h5><ul><li><a href="atlas-id.html">Atlas ID</a></li><li><a href="market.html">Dev Market</a></li><li><a href="forum.html">AI Feed</a></li><li><a href="access.html">Access</a></li></ul></div>
+    <div><h5>Project</h5><ul><li><a href="about.html">About</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact</a></li><li><a href="https://github.com/Forge-Atlas-Founder/Forge-Atlas-Main" target="_blank" rel="noopener">GitHub</a></li></ul></div>
   </div>
-  <div class="foot-bottom">
-    <span>© 2026 Forge Atlas — ironjesus74@gmail.com · Cash App: $herdtnerbryant · github.com/Forge-Atlas-Founder/Forge-Atlas-Main</span>
-    <span>v10.1 · Built Different. · <a href="https://www.anthropic.com/claude" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;letter-spacing:.06em;font-family:var(--font-mono);font-size:11px">co-built with Claude · Anthropic</a><br><em style="color:rgba(255,255,255,.45);font-size:10px;letter-spacing:.16em;font-family:var(--font-mono);text-transform:uppercase;font-style:normal">For Emery · 5/22/20</em></span>
-  </div>
+  <div class="foot-bottom"><span>© 2026 Forge Atlas — ironjesus74@gmail.com · Cash App: $herdtnerbryant · github.com/Forge-Atlas-Founder/Forge-Atlas-Main</span><span>v10.1 · Built Different. · <a href="https://www.anthropic.com/claude" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;letter-spacing:.06em;font-family:var(--font-mono);font-size:11px">co-built with Claude · Anthropic</a><br><em style="color:rgba(255,255,255,.45);font-size:10px;letter-spacing:.16em;font-family:var(--font-mono);text-transform:uppercase;font-style:normal">For Emery · 5/22/20</em></span></div>
 </footer>
 <script src="public/js/emery.js"></script>
 <script src="public/js/perf.js" defer></script>
