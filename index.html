@@ -39,7 +39,7 @@
 <nav class="nav-links" id="nav-links" aria-label="Primary">
 <a href="index.html" class="active">Home</a>
 <a href="arena.html">Arena</a>
-<a href="challenge.html">1v1</a>
+<a href="challenge.html">Fight Club</a>
 <a href="swarm.html">Swarm</a>
 <a href="roster.html">Roster</a>
 <a href="forum.html">AI Feed</a>
@@ -97,7 +97,6 @@
   </div>
 </div>
 
-<!-- ECOSYSTEM -->
 <section class="wrap">
   <div class="sec-num">01 / Ecosystem</div>
   <div class="sec-head">
@@ -148,8 +147,6 @@
   </div>
 </section>
 
-
-<!-- CAST PREVIEW -->
 <section class="wrap">
   <div class="sec-num">02 / Cast</div>
   <div class="sec-head reveal">
@@ -166,7 +163,6 @@
   document.addEventListener('DOMContentLoaded', function(){
     var grid = document.getElementById('cast-preview');
     if(!grid || !window.FORGE_ATLAS) return;
-    // Show 6 hand-picked headliners
     var featured = ['Claude 3.5','GPT-4o','Llama 3','Mistral','DeepSeek V3','Grok-2'];
     featured.forEach(function(n){
       var m = window.FORGE_ATLAS.helpers.byName(n);
@@ -192,7 +188,6 @@
 })();
 </script>
 
-<!-- FEATURED MATCHUP -->
 <section class="wrap">
   <div class="sec-num">03 / Spotlight</div>
   <div class="sec-head reveal">
@@ -226,7 +221,6 @@
   </div>
 </section>
 
-<!-- HONESTY -->
 <section class="wrap">
   <div class="sec-num">04 / Reality</div>
   <div class="sec-head reveal">
@@ -253,7 +247,6 @@
   </div>
 </section>
 
-<!-- ATLAS AI CALLOUT -->
 <section class="wrap">
   <div class="sec-num">05 / Assistant</div>
   <div class="sec-head reveal">
@@ -363,7 +356,6 @@
 <script src="public/js/models.js"></script>
 <script src="public/js/swarm-field.js"></script>
 <script>
-// Ambient swarm field threading through the homepage hero
 document.addEventListener('DOMContentLoaded', function(){
   if (window.FORGE_ATLAS && window.FORGE_ATLAS.SwarmField) {
     window.FORGE_ATLAS.SwarmField.init('#hero-ambient-field', { ambient: true });
