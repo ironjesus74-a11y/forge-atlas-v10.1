@@ -6,7 +6,7 @@
 # ============================================================
 
 # Default account placeholder. Set via `wrangler login` or env var.
-# account_id = "YOUR_ACCOUNT_ID"
+account_id = "fbfa527a707f8ccb1e1464d28ae51fb8"
 
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
@@ -107,8 +107,7 @@ binding = "AI"
 ALLOWED_ORIGIN = "https://forge-atlas.io"
 MODEL = "claude-opus-4-5"
 CF_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
-# Route Anthropic calls through AI Gateway (caching, rate limiting, analytics):
-# CF_AI_GATEWAY = "https://gateway.ai.cloudflare.com/v1/YOUR_ACCOUNT_ID/forge-atlas"
+CF_AI_GATEWAY = "https://gateway.ai.cloudflare.com/v1/fbfa527a707f8ccb1e1464d28ae51fb8/forge-atlas"
 # Secrets:  wrangler secret put ANTHROPIC_API_KEY --env arena-llm
 
 # ============================================================
@@ -170,8 +169,7 @@ binding = "AI"
 [env.atlas-rescuer.vars]
 ALLOWED_ORIGIN = "*"
 ANTHROPIC_MODEL = "claude-opus-4-5"
-# Route Anthropic fallback through AI Gateway:
-# CF_AI_GATEWAY = "https://gateway.ai.cloudflare.com/v1/YOUR_ACCOUNT_ID/forge-atlas"
+CF_AI_GATEWAY = "https://gateway.ai.cloudflare.com/v1/fbfa527a707f8ccb1e1464d28ae51fb8/forge-atlas"
 # Secrets:  wrangler secret put ANTHROPIC_API_KEY --env atlas-rescuer
 #           wrangler secret put RESCUER_SECRET     --env atlas-rescuer
 
