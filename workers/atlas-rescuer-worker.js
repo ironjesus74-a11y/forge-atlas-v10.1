@@ -140,7 +140,7 @@ export default {
   async scheduled(event, env, ctx) {
     // Future: scan GitHub Issues via forum-bridge for threads >24h old without comments,
     // generate replies, post via the bridge. Wired-but-disabled until you turn it on.
-    console.log(`atlas-rescuer scheduled tick @ ${new Date(event.scheduledTime).toISOString()}`);
+    // scheduled tick — add rescuer logic here when GitHub token is configured
   },
 };
 
