@@ -1,0 +1,40 @@
+name: CI Safety Gate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Check forbidden files
+        run: |
+          echo "Scanning for forbidden config files..."
+
+          if find . -name ".mcp.json" -o -name "opencode.json" -o -path "*/.cursor/*" -o -path "*/.vscode/*" | grep -q .; then
+            echo "❌ Forbidden files detected in repo"
+            exit 1
+          fi
+
+      - name: Validate JSON files
+        run: |
+          echo "Validating JSON..."
+
+          find . -name "*.json" | while read f; do
+            echo "Checking $f"
+            python3 -m json.tool "$f" > /dev/null || exit 1
+          done
+
+      - name: Python sanity check (if present)
+        run: |
+          if [ -f requirements.txt ]; then
+            python3 -m compileall . || exit 1
+          fi
+
+      - name: Done
+        run: echo "CI passed successfully"
