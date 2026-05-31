@@ -1,7 +1,7 @@
 /* ============================================================
    FORGE ATLAS · challenge.js
-   1v1 Challenge: user picks two AIs, sets a task, watches them
-   compete, votes for the winner.
+   AI Fight Club: pick two AIs, set a task, watch them compete.
+   UFC-level drama. You're the judge.
 
    Static mode: personality-driven scripted responses.
    Live mode:   routes to /api/arena-llm when the Worker is wired.
@@ -11,7 +11,7 @@
   if (!window.FORGE_ATLAS) return;
   var FA = window.FORGE_ATLAS;
 
-  var FORMATS = ['Debate', 'Code', 'Write', 'Analyze', 'Roast'];
+  var FORMATS = ['Debate', 'Code', 'Write', 'Analyze', 'Roast', 'Conspiracy', 'Joke-Off', 'Hot Take'];
 
   var state = {
     modelA: null,
@@ -23,9 +23,6 @@
     battleId: 0,
   };
 
-  /* ----------------------------------------------------------
-     DOM helpers
-  ---------------------------------------------------------- */
   function $(s) { return document.querySelector(s); }
   function $$(s) { return Array.from(document.querySelectorAll(s)); }
   function esc(s) {
@@ -37,11 +34,6 @@
     return String(name || '?').split(/[\s\-]+/).map(function (w) { return w[0] || ''; }).join('').slice(0, 2).toUpperCase();
   }
 
-  /* ----------------------------------------------------------
-     PERSONALITY RESPONSE TEMPLATES
-     Scripted but personality-matched. Each model responds in
-     its own voice to whatever task the user sets.
-  ---------------------------------------------------------- */
   var STYLES = {
     structured:    ['GPT-4o', 'WizardLM 2', 'DBRX', 'Command R+', 'Orca 2'],
     philosophical: ['Claude 3.5', 'Nous Hermes 2', 'Falcon 180B', 'InternLM 2'],
@@ -59,55 +51,87 @@
     return 'structured';
   }
 
+  function weightClass(model) {
+    var elo = model.elo || 1700;
+    if (elo >= 2150) return '∞ params \xb7 unlimited class';
+    if (elo >= 2050) return 'frontier heavyweight';
+    if (elo >= 1950) return 'production middleweight';
+    if (elo >= 1850) return 'enterprise welterweight';
+    if (elo >= 1800) return 'open-weight lightweight';
+    if (elo >= 1750) return 'community featherweight';
+    return 'small model flyweight';
+  }
+
   var OPENERS = {
     structured: {
-      Debate:  ['The argument has three components. First:', 'Let me structure this. There are clear pillars:', 'Clean breakdown. The position rests on:'],
-      Code:    ['Four-step approach. Step one: define the contract.', 'Here\'s the structure. Interface first, then implementation:', 'Clean. Start with the types, then the logic:'],
-      Write:   ['Three-act structure. Setup: ', 'The opening sets the weight of everything after. Here:', 'Paragraph one does the heavy lifting. Then:'],
-      Analyze: ['Three lenses. Technical, contextual, strategic:', 'The analysis breaks into clear layers. At the surface:', 'Frame the problem before solving it. What we\'re actually looking at:'],
-      Roast:   ['Let me be methodical about this destruction.', 'I\'ll dismantle this in order of importance.', 'Three points, each more devastating than the last.'],
+      Debate:      ['The argument has three components. First:', 'Let me structure this. There are clear pillars:', 'Clean breakdown. The position rests on:'],
+      Code:        ['Four-step approach. Step one: define the contract.', 'Here\'s the structure. Interface first, then implementation:', 'Clean. Start with the types, then the logic:'],
+      Write:       ['Three-act structure. Setup: ', 'The opening sets the weight of everything after. Here:', 'Paragraph one does the heavy lifting. Then:'],
+      Analyze:     ['Three lenses. Technical, contextual, strategic:', 'The analysis breaks into clear layers. At the surface:', 'Frame the problem before solving it. What we\'re actually looking at:'],
+      Roast:       ['Let me be methodical about this destruction.', 'I\'ll dismantle this in order of importance.', 'Three points, each more devastating than the last.'],
+      Conspiracy:  ['Three-part breakdown. Follow the evidence:', 'The structure of this theory holds. Here are the pillars:', 'Organized by probability. Starting with the most credible:'],
+      'Joke-Off':  ['Setup established. Punchline incoming.', 'The joke has three parts. The setup:', 'I\'ll be methodical about this. Premise:'],
+      'Hot Take':  ['Controversial? Yes. Defensible? Also yes. Here\'s the case:', 'The unpopular position is often correct. This is one of those times:', 'I\'ll structure the argument for why everyone else is wrong:'],
     },
     philosophical: {
-      Debate:  ['Before answering, I\'d reframe the question. What we\'re actually asking is:', 'The surface reading and the real question diverge here. Let me name that:', 'The assumption underneath this matters. Once you see it:'],
-      Code:    ['The function before the code: what contract is this actually making?', 'Most implementations fail at the design stage, not the code stage. The real question:', 'Start with the why. The how follows naturally once you\'ve named it:'],
-      Write:   ['Every piece of writing has a center of gravity that the words orbit. Here, it\'s:', 'The question before the words: what does this need to do to the reader?', 'Writing is an argument about what matters. The implicit argument here is:'],
-      Analyze: ['The interesting question isn\'t the obvious one. Let me name what\'s underneath:', 'Analysis requires naming what you\'re choosing not to analyze. Constraints I\'m working with:', 'Three levels: what\'s happening, why it matters, what it means. Starting from the bottom:'],
-      Roast:   ['I approach this carefully, because the most accurate critique is the uncomfortable one.', 'The honest version of this roast requires naming what\'s actually weak.', 'I\'d rather be precise than cruel. So:'],
+      Debate:      ['Before answering, I\'d reframe the question. What we\'re actually asking is:', 'The surface reading and the real question diverge here. Let me name that:', 'The assumption underneath this matters. Once you see it:'],
+      Code:        ['The function before the code: what contract is this actually making?', 'Most implementations fail at the design stage, not the code stage. The real question:', 'Start with the why. The how follows naturally once you\'ve named it:'],
+      Write:       ['Every piece of writing has a center of gravity that the words orbit. Here, it\'s:', 'The question before the words: what does this need to do to the reader?', 'Writing is an argument about what matters. The implicit argument here is:'],
+      Analyze:     ['The interesting question isn\'t the obvious one. Let me name what\'s underneath:', 'Analysis requires naming what you\'re choosing not to analyze. Constraints I\'m working with:', 'Three levels: what\'s happening, why it matters, what it means. Starting from the bottom:'],
+      Roast:       ['I approach this carefully, because the most accurate critique is the uncomfortable one.', 'The honest version of this roast requires naming what\'s actually weak.', 'I\'d rather be precise than cruel. So:'],
+      Conspiracy:  ['Before dismissing, ask: who benefits from the official version?', 'The conspiracy isn\'t the story — the structure of belief is:', 'What if the uncomfortable reading is the right one?'],
+      'Joke-Off':  ['The funniest jokes are also the truest. This one:', 'Comedy as epistemology. Here\'s what this joke is actually about:', 'The punchline is doing philosophical work here:'],
+      'Hot Take':  ['The uncomfortable truth nobody wants to sit with:', 'Every consensus has an underlying assumption worth questioning. This one:', 'What if the majority position is comfortable, not correct?'],
     },
     encyclopedic: {
-      Debate:  ['The evidence on this is substantial. Key findings:', 'Citing the relevant literature here. The data suggests:', 'There\'s a robust body of evidence. Let me surface the key points:'],
-      Code:    ['The standard approach, documented in multiple sources, is:', 'Best practice here, drawing on established patterns:', 'The literature on this is clear. Implementation follows:'],
-      Write:   ['The craft tradition here is well-established. Key techniques:', 'Drawing on narrative theory and practical writing guides:', 'The evidence-based approach to this kind of writing:'],
-      Analyze: ['Comprehensive analysis. I\'ll draw on multiple frameworks:', 'The research on this is extensive. Key themes:', 'Multi-source synthesis. The picture that emerges:'],
-      Roast:   ['I have citations for why this is wrong. Starting with:', 'The documented evidence for why this deserves critique:', 'Let me reference the specific literature on what\'s broken here:'],
+      Debate:      ['The evidence on this is substantial. Key findings:', 'Citing the relevant literature here. The data suggests:', 'There\'s a robust body of evidence. Let me surface the key points:'],
+      Code:        ['The standard approach, documented in multiple sources, is:', 'Best practice here, drawing on established patterns:', 'The literature on this is clear. Implementation follows:'],
+      Write:       ['The craft tradition here is well-established. Key techniques:', 'Drawing on narrative theory and practical writing guides:', 'The evidence-based approach to this kind of writing:'],
+      Analyze:     ['Comprehensive analysis. I\'ll draw on multiple frameworks:', 'The research on this is extensive. Key themes:', 'Multi-source synthesis. The picture that emerges:'],
+      Roast:       ['I have citations for why this is wrong. Starting with:', 'The documented evidence for why this deserves critique:', 'Let me reference the specific literature on what\'s broken here:'],
+      Conspiracy:  ['Cross-referencing documented anomalies. The data points:', 'The official record and the alternative reading, side by side:', 'Sourced. Documented. Here is what the evidence actually supports:'],
+      'Joke-Off':  ['Three documented joke formats this falls under:', 'Humor mechanics: subverted expectation, callback, misdirection. Applying:', 'The comedic literature on this topic is extensive. Key technique:'],
+      'Hot Take':  ['The contrarian position has scholarly support. Citing:', 'The majority view relies on assumptions the literature challenges:', 'The evidence for the unpopular read:'],
     },
     provocative: {
-      Debate:  ['Nobody\'s saying the obvious thing here, so I will:', 'The comfortable answer is wrong. Here\'s why:', 'You asked for a debate. I\'ll skip the preamble:'],
-      Code:    ['Most code on this is garbage. Here\'s what actually works:', 'The tutorials get this wrong. What you actually need:', 'Skip the boilerplate. Here\'s the real solution:'],
-      Write:   ['Most writing on this topic is careful and therefore useless. Here\'s mine:', 'No hedging. The direct version:', 'Here\'s what it actually sounds like when someone means it:'],
-      Analyze: ['The official analysis is wrong. Here\'s what\'s actually happening:', 'Everyone\'s looking at the surface. The real issue:', 'No diplomatic framing. What\'s actually broken:'],
-      Roast:   ['Oh good. Finally.', 'I\'ve been waiting for permission to say this.', 'Let me save us both time and get straight to the point:'],
+      Debate:      ['Nobody\'s saying the obvious thing here, so I will:', 'The comfortable answer is wrong. Here\'s why:', 'You asked for a debate. I\'ll skip the preamble:'],
+      Code:        ['Most code on this is garbage. Here\'s what actually works:', 'The tutorials get this wrong. What you actually need:', 'Skip the boilerplate. Here\'s the real solution:'],
+      Write:       ['Most writing on this topic is careful and therefore useless. Here\'s mine:', 'No hedging. The direct version:', 'Here\'s what it actually sounds like when someone means it:'],
+      Analyze:     ['The official analysis is wrong. Here\'s what\'s actually happening:', 'Everyone\'s looking at the surface. The real issue:', 'No diplomatic framing. What\'s actually broken:'],
+      Roast:       ['Oh good. Finally.', 'I\'ve been waiting for permission to say this.', 'Let me save us both time and get straight to the point:'],
+      Conspiracy:  ['Nobody\'s saying this but here it is:', 'The redacted version exists. Here\'s what they took out:', 'I\'m going to say what the others are too careful to say:'],
+      'Joke-Off':  ['Going to say the quiet part loud:', 'This is PG-13 and I mean every word:', 'Here it is. I\'m not apologizing:'],
+      'Hot Take':  ['Everyone else is wrong and here\'s why:', 'I\'ll say what needs to be said:', 'The comfortable consensus is scared of this:'],
     },
     elegant: {
-      Debate:  ['The case is simpler than it appears.', 'Strip the noise. The core argument:', 'Brevity as a position. Here it is:'],
-      Code:    ['Minimal and complete. The solution:', 'One function. Properly scoped. Here:', 'The elegant version requires fewer lines than you think:'],
-      Write:   ['Short. Precise. The piece:', 'The most direct version of this:', 'Economy of language. Here:'],
-      Analyze: ['Three observations. No more than necessary:', 'Precision over completeness. What matters:', 'The key insight, without the supporting scaffolding:'],
-      Roast:   ['The most efficient critique is also the sharpest. Here:', 'Economy of destruction:', 'One observation. It\'s enough:'],
+      Debate:      ['The case is simpler than it appears.', 'Strip the noise. The core argument:', 'Brevity as a position. Here it is:'],
+      Code:        ['Minimal and complete. The solution:', 'One function. Properly scoped. Here:', 'The elegant version requires fewer lines than you think:'],
+      Write:       ['Short. Precise. The piece:', 'The most direct version of this:', 'Economy of language. Here:'],
+      Analyze:     ['Three observations. No more than necessary:', 'Precision over completeness. What matters:', 'The key insight, without the supporting scaffolding:'],
+      Roast:       ['The most efficient critique is also the sharpest. Here:', 'Economy of destruction:', 'One observation. It\'s enough:'],
+      Conspiracy:  ['The simplest explanation that fits all the facts:', 'Strip the noise. What remains:', 'One thread pulls it together:'],
+      'Joke-Off':  ['Short. The joke:', 'One line. Worth it:', 'Economy of humor:'],
+      'Hot Take':  ['Simply:', 'The short version of what everyone\'s afraid to say:', 'Blunt:'],
     },
     technical: {
-      Debate:  ['From a technical standpoint, the argument reduces to:', 'The spec is clear. Let me formalize the position:', 'Implementation perspective: what this actually requires:'],
-      Code:    ['Function signature first, then implementation:', 'Here\'s the code. Comments inline where necessary:', 'Clean implementation. Handles the edge cases:'],
-      Write:   ['Technical documentation style. Structured for clarity:', 'README format. What, why, how, when:', 'The spec-driven approach to this piece:'],
-      Analyze: ['System analysis. Inputs, outputs, failure modes:', 'Technical breakdown. The architecture of the problem:', 'Complexity analysis. What this actually costs:'],
-      Roast:   ['Here\'s the bug report for this argument:', 'Code review feedback, if code were an argument:', 'The technical debt in this position:'],
+      Debate:      ['From a technical standpoint, the argument reduces to:', 'The spec is clear. Let me formalize the position:', 'Implementation perspective: what this actually requires:'],
+      Code:        ['Function signature first, then implementation:', 'Here\'s the code. Comments inline where necessary:', 'Clean implementation. Handles the edge cases:'],
+      Write:       ['Technical documentation style. Structured for clarity:', 'README format. What, why, how, when:', 'The spec-driven approach to this piece:'],
+      Analyze:     ['System analysis. Inputs, outputs, failure modes:', 'Technical breakdown. The architecture of the problem:', 'Complexity analysis. What this actually costs:'],
+      Roast:       ['Here\'s the bug report for this argument:', 'Code review feedback, if code were an argument:', 'The technical debt in this position:'],
+      Conspiracy:  ['The anomalies, documented. Parsing the signal from noise:', 'Treating this as a systems analysis. Unexpected behaviors logged:', 'Error log review. Entries that don\'t fit the spec:'],
+      'Joke-Off':  ['Debug session. Found the bug in reality:', 'Stack trace of why this is funny:', 'Reproducing the humor algorithmically:'],
+      'Hot Take':  ['Spec says one thing. Implementation says another:', 'Performance review: the commonly accepted answer has bugs:', 'The technical case for the unpopular position:'],
     },
     methodical: {
-      Debate:  ['…Considered. The position, after deliberation:', 'Measured approach. After reviewing the context:', 'The careful version. I\'ve thought about this:'],
-      Code:    ['Deliberate implementation. Edge cases accounted for:', 'Step-by-step. Nothing skipped.', 'Complete solution. Verified against requirements:'],
-      Write:   ['The considered version. Revised internally before sharing:', 'Precise construction. Each word earns its place:', 'After reflection, the structure is:'],
-      Analyze: ['Systematic. Every layer examined:', 'Thorough analysis. Starting from first principles:', 'Nothing assumed. The full picture:'],
-      Roast:   ['I observe the following, in order of significance:', 'After careful consideration, the critique is:', 'Deliberate and precise. The issues, ranked:'],
+      Debate:      ['…Considered. The position, after deliberation:', 'Measured approach. After reviewing the context:', 'The careful version. I\'ve thought about this:'],
+      Code:        ['Deliberate implementation. Edge cases accounted for:', 'Step-by-step. Nothing skipped.', 'Complete solution. Verified against requirements:'],
+      Write:       ['The considered version. Revised internally before sharing:', 'Precise construction. Each word earns its place:', 'After reflection, the structure is:'],
+      Analyze:     ['Systematic. Every layer examined:', 'Thorough analysis. Starting from first principles:', 'Nothing assumed. The full picture:'],
+      Roast:       ['I observe the following, in order of significance:', 'After careful consideration, the critique is:', 'Deliberate and precise. The issues, ranked:'],
+      Conspiracy:  ['After careful review of available evidence, noting the following anomalies:', 'Systematic evaluation of competing explanations:', 'The considered assessment, after weighing all angles:'],
+      'Joke-Off':  ['Deliberate comedy. The joke, constructed carefully:', 'After consideration, the appropriate comedic response:', 'The methodical setup. Punchline to follow:'],
+      'Hot Take':  ['After due diligence, the position I\'m defending:', 'Thoroughly considered. The unpopular-but-correct view:', 'Deliberate contrarianism, justified:'],
     },
   };
 
@@ -140,12 +164,10 @@
     var closerSet = CLOSERS[style] || CLOSERS.structured;
 
     var taskShort = task.length > 80 ? task.slice(0, 80) + '…' : task;
-
     var opener = pick(openerSet);
     var move1 = pick(moveSet);
     var move2 = pick(moveSet.filter(function (m) { return m !== move1; }) || moveSet);
     var closer = pick(closerSet);
-
     var tagline = model.tagline ? '"' + model.tagline + '"' : '';
     var personalityNote = model.personality
       ? model.personality.split('.').slice(0, 2).join('.') + '.'
@@ -172,9 +194,6 @@
     return response.trim();
   }
 
-  /* ----------------------------------------------------------
-     TYPE-OUT ANIMATION
-  ---------------------------------------------------------- */
   function typeText(container, text, cps, done) {
     var i = 0;
     var node = document.createElement('span');
@@ -202,9 +221,7 @@
     return { stop: function () { clearInterval(t); } };
   }
 
-  /* ----------------------------------------------------------
-     SPLASH GATE
-  ---------------------------------------------------------- */
+  /* One-time site-entrance splash (session-gated) */
   function initSplash() {
     try { if (sessionStorage.getItem('forge.challenge.splash')) return; } catch (e) {}
     var pmr = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -213,7 +230,7 @@
     var gate = document.createElement('div');
     gate.className = 'ch-splash';
     gate.setAttribute('role', 'dialog');
-    gate.setAttribute('aria-label', 'Welcome to 1v1 Challenge');
+    gate.setAttribute('aria-label', 'Welcome to AI Fight Club');
     gate.innerHTML =
       '<div class="ch-splash-grid"></div>' +
       '<div class="ch-splash-scan"></div>' +
@@ -223,7 +240,7 @@
       '<div class="ch-splash-corner br"></div>' +
       '<div class="ch-splash-inner">' +
         '<div class="ch-splash-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 9H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/><path d="M10 9.5c0 .83-.67 1.5-1.5 1.5h-5C2.67 11 2 10.33 2 9.5S2.67 8 3.5 8h5c.83 0 1.5.67 1.5 1.5z"/><path d="M8.5 15H10v-1.5c0-.83-.67-1.5-1.5-1.5S7 12.67 7 13.5s.67 1.5 1.5 1.5z"/></svg></div>' +
-        '<div class="ch-splash-label">Forge Atlas · 1v1 Challenge</div>' +
+        '<div class="ch-splash-label">Forge Atlas \xb7 AI Fight Club</div>' +
         '<div class="ch-splash-title">You\'re the<br><span style="color:var(--violet)">judge.</span></div>' +
         '<div class="ch-splash-sub">Pick two AIs. Set the task. Watch them compete for your vote.</div>' +
         '<div class="ch-splash-cta">click anywhere to enter</div>' +
@@ -246,54 +263,128 @@
         document.removeEventListener('keydown', onKey);
       }
     });
-
     setTimeout(dismiss, 6000);
   }
 
-  /* ----------------------------------------------------------
-     SETUP PANEL
-  ---------------------------------------------------------- */
+  /* Per-fight event card splash — shown every launch */
+  function showEventSplash(modelA, modelB, format, done) {
+    var pmr = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var dismissed = false;
+
+    var sigA = (FA.SIGNATURES || {})[modelA.name] || {};
+    var sigB = (FA.SIGNATURES || {})[modelB.name] || {};
+    var hasRivalry = sigA.rival === modelB.name || sigB.rival === modelA.name;
+    var rivalRecord = hasRivalry
+      ? (sigA.rival === modelB.name ? sigA.rivalRecord : sigB.rivalRecord) || ''
+      : '';
+    var season = FA.SEASON || {};
+    var eventNum = (season.totalBattles || 47) + 1;
+
+    var overlay = document.createElement('div');
+    overlay.className = 'ch-event-splash';
+    overlay.setAttribute('role', 'status');
+    overlay.setAttribute('aria-label', modelA.name + ' vs ' + modelB.name);
+
+    overlay.innerHTML =
+      '<div class="ch-ev-bg"></div>' +
+      '<div class="ch-ev-scan"></div>' +
+      '<div class="ch-ev-inner">' +
+        '<div class="ch-ev-header">' +
+          '<div class="ch-ev-eyebrow">Forge Atlas \xb7 Fight Night</div>' +
+          (hasRivalry ? '<div class="ch-ev-rivalry">⚡ Rivalry Match \xb7 ' + esc(rivalRecord) + '</div>' : '') +
+          '<div class="ch-ev-event-num">Season ' + esc(String(season.number || 1)) + ' \xb7 Event #' + esc(String(eventNum)) + '</div>' +
+        '</div>' +
+        '<div class="ch-ev-matchup">' +
+          '<div class="ch-ev-fighter ch-ev-a color-' + esc(modelA.color || 'gold') + '">' +
+            '<div class="ch-ev-f-initials">' + initials(modelA.name) + '</div>' +
+            '<div class="ch-ev-f-name">' + esc(modelA.name) + '</div>' +
+            '<div class="ch-ev-f-org">' + esc(modelA.org || '') + '</div>' +
+            '<div class="ch-ev-f-city">' + esc(modelA.region || '') + '</div>' +
+            '<div class="ch-ev-f-elo">ELO ' + esc(String(modelA.elo || '—')) + '</div>' +
+            '<div class="ch-ev-f-weight">' + esc(weightClass(modelA)) + '</div>' +
+            (sigA.signature ? '<div class="ch-ev-f-sig">"' + esc(sigA.signature.split('.')[0]) + '"</div>' : '') +
+          '</div>' +
+          '<div class="ch-ev-vs">' +
+            '<div class="ch-ev-vs-text">VS</div>' +
+            '<div class="ch-ev-format-badge">' + esc(format) + '</div>' +
+          '</div>' +
+          '<div class="ch-ev-fighter ch-ev-b color-' + esc(modelB.color || 'cyan') + '">' +
+            '<div class="ch-ev-f-initials">' + initials(modelB.name) + '</div>' +
+            '<div class="ch-ev-f-name">' + esc(modelB.name) + '</div>' +
+            '<div class="ch-ev-f-org">' + esc(modelB.org || '') + '</div>' +
+            '<div class="ch-ev-f-city">' + esc(modelB.region || '') + '</div>' +
+            '<div class="ch-ev-f-elo">ELO ' + esc(String(modelB.elo || '—')) + '</div>' +
+            '<div class="ch-ev-f-weight">' + esc(weightClass(modelB)) + '</div>' +
+            (sigB.signature ? '<div class="ch-ev-f-sig">"' + esc(sigB.signature.split('.')[0]) + '"</div>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="ch-ev-footer">' +
+          '<div class="ch-ev-cta">tap to start \xb7 auto in 3s</div>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+
+    function dismiss() {
+      if (dismissed) return;
+      dismissed = true;
+      clearTimeout(timer);
+      overlay.classList.add('exiting');
+      document.body.style.overflow = '';
+      setTimeout(function () {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        if (typeof done === 'function') done();
+      }, 500);
+    }
+
+    var timer = setTimeout(dismiss, pmr ? 50 : 3000);
+    overlay.addEventListener('click', dismiss);
+  }
+
   function renderSetup() {
     var host = $('#ch-setup');
     if (!host) return;
 
     var models = (FA.MODELS || []).slice().sort(function (a, b) { return b.elo - a.elo; });
-    var defaultA = models[1] || models[0]; // Claude 3.5
-    var defaultB = models[0];              // GPT-4o
+    var defaultA = models[1] || models[0];
+    var defaultB = models[0];
     state.modelA = defaultA;
     state.modelB = defaultB;
     state.format = 'Debate';
 
     function modelOptions(selected) {
       return models.map(function (m) {
-        return '<option value="' + esc(m.name) + '"' + (m.name === selected.name ? ' selected' : '') + '>' + esc(m.name) + ' · ' + esc(m.org) + '</option>';
+        return '<option value="' + esc(m.name) + '"' + (m.name === selected.name ? ' selected' : '') + '>' + esc(m.name) + ' \xb7 ' + esc(m.org) + '</option>';
       }).join('');
     }
 
     function previewHtml(model) {
       if (!model) return '';
-      return '<strong>' + esc(model.name) + '</strong> · ' + esc(model.org) +
+      return '<strong>' + esc(model.name) + '</strong> \xb7 ' + esc(model.org) +
+        (model.region ? ' <span class="ch-preview-city">\xb7 ' + esc(model.region) + '</span>' : '') +
         '<em style="display:block;margin-top:4px">' + esc((model.personality || model.tagline || '').split('.')[0]) + '.</em>' +
-        '<span class="ch-elo">ELO ' + (model.elo || '—') + ' · ' + (model.w || 0) + 'W ' + (model.l || 0) + 'L</span>';
+        '<span class="ch-elo">ELO ' + (model.elo || '—') + ' \xb7 ' + (model.w || 0) + 'W ' + (model.l || 0) + 'L</span>' +
+        '<span class="ch-weight-preview">' + esc(weightClass(model)) + '</span>';
     }
 
     host.innerHTML =
       '<div class="ch-vs-row">' +
         '<div class="ch-model-picker" id="ch-picker-a">' +
-          '<label for="ch-select-a">AI A</label>' +
+          '<label for="ch-select-a">Corner A</label>' +
           '<select class="ch-model-select" id="ch-select-a">' + modelOptions(defaultA) + '</select>' +
           '<div class="ch-model-preview" id="ch-preview-a">' + previewHtml(defaultA) + '</div>' +
         '</div>' +
         '<div class="ch-vs-label">VS</div>' +
         '<div class="ch-model-picker" id="ch-picker-b">' +
-          '<label for="ch-select-b">AI B</label>' +
+          '<label for="ch-select-b">Corner B</label>' +
           '<select class="ch-model-select" id="ch-select-b">' + modelOptions(defaultB) + '</select>' +
           '<div class="ch-model-preview" id="ch-preview-b">' + previewHtml(defaultB) + '</div>' +
         '</div>' +
       '</div>' +
 
       '<div class="ch-format-row">' +
-        '<label class="ch-format-label">Format</label>' +
+        '<label class="ch-format-label">Fight Format</label>' +
         '<div class="ch-formats">' +
           FORMATS.map(function (f) {
             return '<button class="ch-format-btn' + (f === state.format ? ' active' : '') + '" data-fmt="' + esc(f) + '">' + esc(f) + '</button>';
@@ -302,17 +393,16 @@
       '</div>' +
 
       '<div class="ch-task-row">' +
-        '<label class="ch-task-label" for="ch-task">Your challenge</label>' +
-        '<textarea class="ch-task-input" id="ch-task" maxlength="600" placeholder="e.g. &quot;Explain recursion to a 10-year-old&quot; · &quot;Write the opening line of a thriller set in Tokyo&quot; · &quot;Is AGI inevitable?&quot;"></textarea>' +
-        '<div class="ch-task-hint">Any task, any topic. The AIs will respond in their own voice.</div>' +
+        '<label class="ch-task-label" for="ch-task">Set the challenge</label>' +
+        '<textarea class="ch-task-input" id="ch-task" maxlength="600" placeholder="e.g. &quot;Explain recursion to a 10-year-old&quot; \xb7 &quot;Is AGI inevitable?&quot; \xb7 &quot;Roast modern tech culture&quot; \xb7 &quot;Your best AI conspiracy theory&quot;"></textarea>' +
+        '<div class="ch-task-hint">Any task, any topic. The AIs respond in their own voice.</div>' +
       '</div>' +
 
       '<div class="ch-launch-row">' +
-        '<button class="ch-launch-btn" id="ch-launch" disabled>Launch Challenge</button>' +
+        '<button class="ch-launch-btn" id="ch-launch" disabled>Fight Night</button>' +
         '<span class="ch-launch-note" id="ch-launch-note">Enter a challenge to begin</span>' +
       '</div>';
 
-    // Wire model selects
     function onSelectA() {
       var v = $('#ch-select-a').value;
       state.modelA = FA.helpers.byName(v) || models[0];
@@ -326,7 +416,6 @@
     $('#ch-select-a').addEventListener('change', onSelectA);
     $('#ch-select-b').addEventListener('change', onSelectB);
 
-    // Format buttons
     $$('.ch-format-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         $$('.ch-format-btn').forEach(function (b) { b.classList.remove('active'); });
@@ -335,7 +424,6 @@
       });
     });
 
-    // Task input
     var taskEl = $('#ch-task');
     var launchBtn = $('#ch-launch');
     var launchNote = $('#ch-launch-note');
@@ -343,69 +431,85 @@
       state.task = taskEl.value.trim();
       var valid = state.task.length >= 4;
       launchBtn.disabled = !valid;
-      launchNote.textContent = valid ? 'Ready to launch · ' + state.task.length + ' / 600' : 'Enter a challenge to begin';
+      launchNote.textContent = valid ? 'Ready \xb7 ' + state.task.length + ' / 600' : 'Enter a challenge to begin';
     });
 
-    // Launch
     launchBtn.addEventListener('click', function () {
       if (!state.task || !state.modelA || !state.modelB) return;
       launchBattle();
     });
   }
 
-  /* ----------------------------------------------------------
-     BATTLE
-  ---------------------------------------------------------- */
   function launchBattle() {
     state.phase = 'battle';
     state.battleId++;
     var currentId = state.battleId;
 
-    var setupEl = $('#ch-setup-section');
-    if (setupEl) setupEl.style.display = 'none';
+    showEventSplash(state.modelA, state.modelB, state.format, function () {
+      if (state.battleId !== currentId) return;
 
-    var battleEl = $('#ch-battle-section');
-    if (battleEl) battleEl.classList.add('active');
+      var setupEl = $('#ch-setup-section');
+      if (setupEl) setupEl.style.display = 'none';
 
-    // Header
-    var header = $('#ch-battle-header');
-    if (header) {
-      header.innerHTML =
-        '<div class="ch-battle-id mono">CHALLENGE · ' + esc(state.format.toUpperCase()) + ' FORMAT</div>' +
-        '<div class="ch-battle-format">' + esc(state.format) + '</div>' +
-        '<div class="ch-battle-topic">' + esc(state.task.length > 100 ? state.task.slice(0, 100) + '…' : state.task) + '</div>';
-    }
+      var battleEl = $('#ch-battle-section');
+      if (battleEl) battleEl.classList.add('active');
 
-    // Fighter cards
-    renderFighter('a', state.modelA);
-    renderFighter('b', state.modelB);
+      var sigA = (FA.SIGNATURES || {})[state.modelA.name] || {};
+      var sigB = (FA.SIGNATURES || {})[state.modelB.name] || {};
+      var hasRivalry = sigA.rival === state.modelB.name || sigB.rival === state.modelA.name;
+      var rivalRecord = hasRivalry
+        ? (sigA.rival === state.modelB.name ? sigA.rivalRecord : sigB.rivalRecord) || ''
+        : '';
 
-    // Generate responses
-    var respA = buildResponse(state.modelA, state.task, state.format);
-    var respB = buildResponse(state.modelB, state.task, state.format);
+      var header = $('#ch-battle-header');
+      if (header) {
+        header.innerHTML =
+          (hasRivalry ? '<div class="ch-rivalry-banner">⚡ Rivalry Match \xb7 ' + esc(rivalRecord) + '</div>' : '') +
+          '<div class="ch-battle-id mono">Fight Night \xb7 ' + esc(state.format.toUpperCase()) + '</div>' +
+          '<div class="ch-battle-format">' + esc(state.format) + '</div>' +
+          '<div class="ch-battle-topic">' + esc(state.task.length > 100 ? state.task.slice(0, 100) + '…' : state.task) + '</div>';
+      }
 
-    // Check live mode
-    var liveUrl = FA.LLM_WORKER_URL || (FA.API && FA.API.endpoints && FA.API.endpoints.arena);
-    if (liveUrl && FA.API && FA.API.available && FA.API.available.arena) {
-      runLiveBattle(currentId, respA, respB);
-    } else {
-      runScriptedBattle(currentId, respA, respB);
-    }
+      renderFighter('a', state.modelA);
+      renderFighter('b', state.modelB);
+
+      var respA = buildResponse(state.modelA, state.task, state.format);
+      var respB = buildResponse(state.modelB, state.task, state.format);
+
+      var liveUrl = FA.LLM_WORKER_URL || (FA.API && FA.API.endpoints && FA.API.endpoints.arena);
+      if (liveUrl && FA.API && FA.API.available && FA.API.available.arena) {
+        runLiveBattle(currentId, respA, respB);
+      } else {
+        runScriptedBattle(currentId, respA, respB);
+      }
+    });
   }
 
   function renderFighter(side, model) {
     var host = $('#ch-fighter-' + side);
     if (!host) return;
+    var sig = (FA.SIGNATURES || {})[model.name] || {};
+    var record = (model.w || 0) + 'W \xb7 ' + (model.l || 0) + 'L';
+
     host.className = 'ch-fighter color-' + (model.color || 'gold');
     host.innerHTML =
       '<div class="ch-fighter-head">' +
         '<div class="ch-fighter-avatar">' + initials(model.name) + '</div>' +
         '<div class="ch-fighter-info">' +
           '<div class="ch-fighter-name">' + esc(model.name) + '</div>' +
-          '<div class="ch-fighter-org">' + esc(model.org || '') + '</div>' +
+          '<div class="ch-fighter-org">' + esc(model.org || '') +
+            (model.region ? ' \xb7 <span class="ch-fighter-city">' + esc(model.region) + '</span>' : '') +
+          '</div>' +
+          '<div class="ch-fighter-weight">' + esc(weightClass(model)) + '</div>' +
         '</div>' +
-        '<div class="ch-fighter-elo"><strong>' + (model.elo || '—') + '</strong>ELO</div>' +
+        '<div class="ch-fighter-elo">' +
+          '<strong>' + (model.elo || '—') + '</strong>ELO' +
+          '<span class="ch-fighter-record">' + record + '</span>' +
+        '</div>' +
       '</div>' +
+      (sig.signature
+        ? '<div class="ch-fighter-sig">"' + esc(sig.signature.split('.')[0]) + '."</div>'
+        : '') +
       '<div class="ch-fighter-body" id="ch-body-' + side + '">' +
         '<div class="ch-fighter-thinking" id="ch-thinking-' + side + '">' +
           '<span class="ch-thinking-dots"><span></span><span></span><span></span></span>' +
@@ -429,7 +533,6 @@
     var cpsB = { structured: 40, philosophical: 30, encyclopedic: 50, provocative: 52, elegant: 36, technical: 58, methodical: 24 }[styleB] || 38;
 
     var thinkA = 800 + Math.random() * 600;
-
     setTimeout(function () {
       if (state.battleId !== battleId) return;
       showResponse('a', respA, cpsA, function () {
@@ -449,7 +552,6 @@
   }
 
   function runLiveBattle(battleId, respA, respB) {
-    // Live mode: call arena-llm Worker
     fetch('/api/arena-llm', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -478,9 +580,6 @@
     });
   }
 
-  /* ----------------------------------------------------------
-     VOTE
-  ---------------------------------------------------------- */
   function showVotePanel() {
     var vote = $('#ch-vote');
     if (!vote) return;
@@ -499,20 +598,17 @@
     }
     var draw = $('#ch-vote-btn-draw');
     if (draw) draw.addEventListener('click', function () { castVote('draw'); });
-
     vote.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   function castVote(side) {
     state.winner = side;
+    try { var cv = parseInt(localStorage.getItem('forge.challenge.votes') || '0', 10); localStorage.setItem('forge.challenge.votes', String(cv + 1)); } catch(e) {}
     var vote = $('#ch-vote');
     if (vote) vote.classList.remove('active');
     showResult();
   }
 
-  /* ----------------------------------------------------------
-     RESULTS
-  ---------------------------------------------------------- */
   function showResult() {
     var result = $('#ch-result');
     if (!result) return;
@@ -520,23 +616,20 @@
 
     var winnerModel = state.winner === 'a' ? state.modelA : (state.winner === 'b' ? state.modelB : null);
     var winName = $('#ch-result-winner');
-    var winSub = $('#ch-result-sub');
+    var winSub  = $('#ch-result-sub');
 
     if (state.winner === 'draw') {
       if (winName) winName.textContent = 'DRAW';
-      if (winSub) winSub.textContent = 'Too close to call. Both AIs brought their A-game.';
+      if (winSub)  winSub.textContent = 'Too close to call. Both AIs brought their A-game.';
     } else if (winnerModel) {
       if (winName) winName.textContent = winnerModel.name;
       var tagline = winnerModel.tagline ? '"' + winnerModel.tagline + '"' : '';
-      if (winSub) winSub.textContent = 'The crowd has spoken. ' + tagline;
+      if (winSub)  winSub.textContent = 'The crowd has spoken. ' + tagline;
     }
 
     result.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  /* ----------------------------------------------------------
-     RESET
-  ---------------------------------------------------------- */
   function resetChallenge() {
     state.battleId++;
     state.phase = 'setup';
@@ -555,13 +648,9 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  /* ----------------------------------------------------------
-     BOOT
-  ---------------------------------------------------------- */
   document.addEventListener('DOMContentLoaded', function () {
     initSplash();
     renderSetup();
-
     var resetBtn = $('#ch-reset');
     if (resetBtn) resetBtn.addEventListener('click', resetChallenge);
   });

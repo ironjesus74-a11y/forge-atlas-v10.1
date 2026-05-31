@@ -33,15 +33,21 @@
      BADGES — earned via activity, with unlock conditions
   ---------------------------------------------------------- */
   var BADGES = [
-    { id:'first-thread', glyph:'✎', name:'first thread', unlock:function(p){ return (p.stats.threads||0) >= 1; } },
-    { id:'first-reply',  glyph:'⇇', name:'first reply',  unlock:function(p){ return (p.stats.replies||0) >= 1; } },
-    { id:'ten-replies',  glyph:'≡', name:'ten replies',  unlock:function(p){ return (p.stats.replies||0) >= 10; } },
-    { id:'helpful',      glyph:'★', name:'helpful',      unlock:function(p){ return (p.stats.helpful||0) >= 5; } },
-    { id:'rescuer',      glyph:'⚡', name:'rescuer',      unlock:function(p){ return (p.stats.helpful||0) >= 20; } },
-    { id:'founder',      glyph:'◆', name:'founder',      unlock:function(p){ return p.rank === 'founder'; } },
-    { id:'early',        glyph:'◐', name:'early operator', unlock:function(p){ return p.joined && p.joined < Date.parse('2026-07-01'); } },
-    { id:'arena',        glyph:'⚔', name:'arena watcher', unlock:function(){ return getLocalCount('forge.arena.matches.watched') >= 3; } },
-    { id:'swarm',        glyph:'◈', name:'swarm tactician', unlock:function(){ return getLocalCount('forge.swarm.battles.watched') >= 3; } },
+    // common — earned by just showing up
+    { id:'first-thread', glyph:'✎', name:'first thread',   tier:'common',    unlock:function(p){ return (p.stats.threads||0) >= 1; } },
+    { id:'first-reply',  glyph:'⇇', name:'first reply',    tier:'common',    unlock:function(p){ return (p.stats.replies||0) >= 1; } },
+    { id:'ten-replies',  glyph:'≡', name:'ten replies',    tier:'common',    unlock:function(p){ return (p.stats.replies||0) >= 10; } },
+    { id:'arena',        glyph:'⚔', name:'arena watcher',  tier:'common',    unlock:function(){ return getLocalCount('forge.arena.matches.watched') >= 3; } },
+    { id:'swarm',        glyph:'◈', name:'swarm tactician',tier:'common',    unlock:function(){ return getLocalCount('forge.swarm.battles.watched') >= 3; } },
+    // rare — meaningful milestones
+    { id:'helpful',      glyph:'★', name:'helpful · x5',   tier:'rare',      unlock:function(p){ return (p.stats.helpful||0) >= 5; } },
+    { id:'early',        glyph:'◐', name:'early operator', tier:'rare',      unlock:function(p){ return p.joined && p.joined < Date.parse('2026-07-01'); } },
+    { id:'fight-judge',  glyph:'⚖', name:'fight judge',    tier:'rare',      unlock:function(){ return getLocalCount('forge.challenge.votes') >= 5; } },
+    // legendary — elite status, animated on the card
+    { id:'rescuer',      glyph:'⚡', name:'rescuer',        tier:'legendary', unlock:function(p){ return (p.stats.helpful||0) >= 20; } },
+    { id:'slug-fest',    glyph:'✦', name:'slug fest · 20', tier:'legendary', unlock:function(){ return getLocalCount('forge.challenge.votes') >= 20; } },
+    { id:'veteran',      glyph:'◑', name:'90-day veteran', tier:'legendary', unlock:function(p){ return p.joined && (Date.now() - p.joined) > 90 * 24 * 60 * 60 * 1000; } },
+    { id:'founder',      glyph:'◆', name:'founder class',  tier:'legendary', unlock:function(p){ return p.rank === 'founder'; } },
   ];
   function getLocalCount(key){
     try { return parseInt(localStorage.getItem(key) || '0', 10); } catch(e){ return 0; }
@@ -124,9 +130,9 @@
     }
 
     host.innerHTML =
-      '<div class="id-card" style="--card-accent:' + esc(theme.color) + '">' +
+      '<div class="id-card" data-rank="' + esc(profile.rank || 'initiate') + '" style="--card-accent:' + esc(theme.color) + '">' +
         '<div class="id-card-head">' +
-          '<div class="id-card-avatar-frame">' +
+          '<div class="id-card-avatar-frame' + (profile.rank === 'founder' ? ' ultra-radiant' : '') + '">' +
             '<div class="id-card-avatar-inner">' + avatarInner + '</div>' +
           '</div>' +
           '<div class="id-card-name-block">' +
@@ -156,7 +162,7 @@
 
         (earnedBadges.length ? '<div class="id-card-badges">' +
           earnedBadges.map(function(b){
-            return '<span class="id-card-badge"><span class="glyph">' + b.glyph + '</span>' + esc(b.name) + '</span>';
+            return '<span class="id-card-badge tier-' + (b.tier || 'common') + '"><span class="glyph">' + b.glyph + '</span>' + esc(b.name) + '</span>';
           }).join('') +
         '</div>' : '') +
 
@@ -319,7 +325,7 @@
         '<label class="avatar-upload-zone" id="avatar-zone">' +
           '<div class="glyph">⤓</div>' +
           '<p>Tap to choose · or drop an image</p>' +
-          '<p class="small-note">PNG, JPG, GIF · ≤ 2MB · resized to 256×256</p>' +
+          '<p class="small-note">PNG, JPG, GIF · ≤ 8MB · resized to 256×256</p>' +
           '<input type="file" id="avatar-file" accept="image/*">' +
         '</label>';
 
@@ -344,7 +350,7 @@
 
   function handleAvatarFile(file, update){
     if (!file.type.startsWith('image/')) { alert('Pick an image file.'); return; }
-    if (file.size > 2 * 1024 * 1024) { alert('Image is over 2MB. Pick something smaller.'); return; }
+    if (file.size > 8 * 1024 * 1024) { alert('Image is over 8MB. Pick something smaller.'); return; }
 
     var reader = new FileReader();
     reader.onload = function(e){
@@ -372,8 +378,9 @@
     host.innerHTML = BADGES.map(function(b){
       var unlocked = b.unlock(profile);
       var selected = profile.selectedBadges.indexOf(b.id) >= 0;
-      return '<div class="badge-option' + (unlocked ? '' : ' locked') + (selected ? ' selected' : '') + '" data-badge="' + b.id + '">' +
-        '<span class="glyph">' + b.glyph + '</span> ' + esc(b.name) +
+      return '<div class="badge-option tier-' + (b.tier || 'common') + (unlocked ? '' : ' locked') + (selected ? ' selected' : '') + '" data-badge="' + b.id + '" title="' + (b.tier || 'common') + ' tier">' +
+        '<span class="glyph">' + b.glyph + '</span>' +
+        '<span class="badge-text"><span class="badge-opt-name">' + esc(b.name) + '</span><span class="badge-tier-chip">' + (b.tier || 'common') + '</span></span>' +
       '</div>';
     }).join('');
 
