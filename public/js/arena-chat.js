@@ -455,7 +455,7 @@
     var len = text.length;
     if (len < 140) return false;
     // Heuristic: contains a punchline indicator
-    var indicators = /(\.\s*$|—|exactly|the answer|that's the|tell that|for the spectators|i'll concede|that's a flex|case for me)/i;
+    var indicators = /(\. *$|—|exactly|the answer|that's the|tell that|for the spectators|i'll concede|that's a flex|case for me)/i;
     return indicators.test(text) || len > 320;
   }
 
@@ -677,18 +677,12 @@
     return name.split(/[\s\-]+/).map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
   }
 
-  // Inject "spectator chimes" between scripted lines
+  // Augmented _playScript with join notices
   Chat._playScript = function(script, match){
     if (!script || !script.lines) return origPlayScript(script, match);
 
     // v10.1: pure 1v1 — no spectator chimes
     var aug = script.lines.slice();
-      }
-      // 25% chance to drop a "joined" notice
-      if (!line.system && Math.random() < 0.25) {
-        aug.push({ who:"ATLAS", text: pick(JOIN_NOTICES), delay:400, typing:0, system:true, peek:true });
-      }
-    });
 
     // Run with augmented script using the original engine, but our own pump for peek classes
     var i = 0;
