@@ -66,13 +66,33 @@ $WR --version 2>/dev/null | head -1 | sed 's/^/  wrangler /'
 # ============================================================
 banner "Checking Cloudflare login"
 
-if ! $WR whoami 2>/dev/null | grep -q "You are logged in"; then
-  warn "Not logged in. Launching browser login…"
-  $WR login
-  echo
+# Termux / headless: prefer API token over browser OAuth
+if [[ -n "$CLOUDFLARE_API_TOKEN" ]]; then
+  ok "Using CLOUDFLARE_API_TOKEN (no browser needed)"
+elif $WR whoami 2>/dev/null | grep -q "You are logged in"; then
+  ok "Already logged in via wrangler OAuth"
+else
+  # Termux can't open a browser — show the no-browser URL flow
+  if command -v pkg &>/dev/null || [[ -n "$TERMUX_VERSION" ]]; then
+    err "Termux detected — browser login won't work here."
+    echo
+    echo "  Get a Cloudflare API token in Chrome:"
+    echo "  dash.cloudflare.com → My Profile → API Tokens"
+    echo "  → Create Token → Edit Cloudflare Workers → Create Token → Copy"
+    echo
+    echo "  Then re-run with your token:"
+    echo "    CLOUDFLARE_API_TOKEN=your-token ./setup-workers.sh"
+    echo
+    echo "  Or set it permanently:"
+    echo "    echo 'export CLOUDFLARE_API_TOKEN=your-token' >> ~/.bashrc"
+    echo "    source ~/.bashrc && ./setup-workers.sh"
+    exit 1
+  else
+    warn "Not logged in. Launching browser login…"
+    $WR login
+    echo
+  fi
 fi
-
-ok "Cloudflare auth OK"
 
 # ============================================================
 # 3. SECRETS SETUP
