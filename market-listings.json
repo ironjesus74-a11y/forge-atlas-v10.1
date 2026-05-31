@@ -1,0 +1,166 @@
+{
+  "version": "1.0",
+  "updated": "2026-05-31",
+  "listings": [
+    {
+      "id": "operator-prompt-pack-v3",
+      "name": "Operator Prompt Pack v3",
+      "price": 29,
+      "category": "prompts",
+      "level": "Beginner",
+      "color": "gold",
+      "description": "60 production-grade prompts across writing, code, automation, research. Tested across Claude, GPT, Gemini families.",
+      "status": "active"
+    },
+    {
+      "id": "termux-ops-kit",
+      "name": "Termux Ops Kit",
+      "price": 39,
+      "category": "tools",
+      "level": "Intermediate",
+      "color": "cyan",
+      "description": "Install scripts, aliases, ssh hardening, tmux config, Claude CLI proxy setup. Tested on Android 12+.",
+      "status": "active"
+    },
+    {
+      "id": "cf-worker-ai-proxy-kit",
+      "name": "Cloudflare Worker AI Proxy Kit",
+      "price": 49,
+      "category": "automation",
+      "level": "Intermediate",
+      "color": "gold",
+      "description": "Drop-in Worker for safe Claude/OpenAI integration. Origin allow-list, rate limit, secret env, full README.",
+      "status": "active"
+    },
+    {
+      "id": "static-site-launch-kit",
+      "name": "Static Site Launch Kit",
+      "price": 59,
+      "category": "launch",
+      "level": "Beginner",
+      "color": "violet",
+      "description": "Drop-in HTML/CSS/JS template with Forge Atlas-grade theming. Cloudflare Pages config included.",
+      "status": "active"
+    },
+    {
+      "id": "landing-page-forge",
+      "name": "Landing Page Forge",
+      "price": 79,
+      "category": "landing",
+      "level": "Intermediate",
+      "color": "cyan",
+      "description": "Five proven hero formats, three CTA stacks, social proof patterns, FAQ accordions, all editable.",
+      "status": "active"
+    },
+    {
+      "id": "agent-kit-single-operator",
+      "name": "Agent Kit · Single-Operator",
+      "price": 99,
+      "category": "agent",
+      "level": "Advanced",
+      "color": "gold",
+      "description": "Solo-operator agent loop: Strategist + Builder + Critic. Cloudflare Worker template, prompt scaffolds.",
+      "status": "active"
+    },
+    {
+      "id": "operator-dashboard-template",
+      "name": "Operator Dashboard Template",
+      "price": 129,
+      "category": "dashboard",
+      "level": "Advanced",
+      "color": "cyan",
+      "description": "Project-tracking dashboard for solo operators. Static-first, backend-ready data layer.",
+      "status": "active"
+    },
+    {
+      "id": "ai-business-playbook",
+      "name": "AI Business Playbook",
+      "price": 45,
+      "category": "playbook",
+      "level": "Beginner",
+      "color": "gold",
+      "description": "48-page playbook: niche selection, offer design, pricing, fulfillment, scaling. Operator-tested.",
+      "status": "active"
+    },
+    {
+      "id": "brand-identity-forge",
+      "name": "Brand Identity Forge",
+      "price": 89,
+      "category": "brand",
+      "level": "Intermediate",
+      "color": "violet",
+      "description": "Logo, palette, typography, voice guide template. Includes Forge Atlas-style aesthetic kit.",
+      "status": "active"
+    },
+    {
+      "id": "operator-ui-components",
+      "name": "Operator UI Components",
+      "price": 69,
+      "category": "ui",
+      "level": "Intermediate",
+      "color": "cyan",
+      "description": "Cards, hero patterns, navigation systems, glassmorphism kit. Plain HTML/CSS — no framework.",
+      "status": "active"
+    },
+    {
+      "id": "freelance-starter-pack",
+      "name": "Freelance Starter Pack",
+      "price": 35,
+      "category": "launch",
+      "level": "Beginner",
+      "color": "gold",
+      "description": "Pricing calculator, intake form, scope template, contract starter. PDF + editable docs.",
+      "status": "active"
+    },
+    {
+      "id": "automation-blueprint-library",
+      "name": "Automation Blueprint Library",
+      "price": 119,
+      "category": "automation",
+      "level": "Advanced",
+      "color": "violet",
+      "description": "30 ready-to-deploy automation patterns: lead capture, content distribution, customer support, data cleanup.",
+      "status": "active"
+    },
+    {
+      "id": "claude-ops-starter-kit",
+      "name": "Claude Ops Starter Kit",
+      "price": 19,
+      "category": "prompts",
+      "level": "Beginner",
+      "color": "cyan",
+      "description": "Get Claude working for your business in a weekend. Pre-built system prompts, task templates, and workflow patterns for operators just getting started.",
+      "status": "active"
+    },
+    {
+      "id": "multi-agent-blueprint",
+      "name": "Multi-Agent Blueprint",
+      "price": 69,
+      "category": "agent",
+      "level": "Advanced",
+      "color": "gold",
+      "description": "Architect and deploy multi-agent pipelines using Cloudflare Workers. Includes Swarm, Strategist-Builder-Critic loop, and handoff patterns.",
+      "status": "active"
+    },
+    {
+      "id": "ai-site-in-a-weekend",
+      "name": "AI Site in a Weekend",
+      "price": 49,
+      "category": "launch",
+      "level": "Beginner",
+      "color": "violet",
+      "description": "Complete blueprint for launching an AI-powered static site on Cloudflare Pages in 48 hours. Includes Workers setup, Pages Functions, and deploy automation.",
+      "status": "active"
+    },
+    {
+      "id": "prompt-audit-pack",
+      "name": "Prompt Audit Pack",
+      "price": 15,
+      "category": "prompts",
+      "level": "Beginner",
+      "color": "gold",
+      "description": "Diagnose and fix weak prompts fast. 20 audit frameworks, before/after rewrites, and a scoring rubric for any LLM.",
+      "status": "active"
+    }
+  ]
+}
