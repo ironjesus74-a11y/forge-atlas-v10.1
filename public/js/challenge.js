@@ -1,7 +1,7 @@
 /* ============================================================
-   FORGE ATLAS · challenge.js  v10.2
-   AI Fight Club — cinematic FIGHT! flash, swipe comparison,
-   code/design preview (bolt.new style), Copy battle mode.
+   FORGE ATLAS · challenge.js  v10.3
+   AI Fight Club — 3-round system · HP bars · special moves
+   commentary ticker · Web Audio crowd · cinematic FIGHT!
    ============================================================ */
 (function () {
   'use strict';
@@ -16,6 +16,13 @@
     phase: 'setup', winner: null, battleId: 0,
     respA: '', respB: '',
     bothDone: false,
+    round: 1,
+    totalRounds: 3,
+    roundResults: [],
+    hpA: 100,
+    hpB: 100,
+    usedSpecialsA: {},
+    usedSpecialsB: {},
   };
 
   function $(s) { return document.querySelector(s); }
@@ -28,6 +35,7 @@
   function initials(name) {
     return String(name || '?').split(/[\s\-]+/).map(function (w) { return w[0] || ''; }).join('').slice(0, 2).toUpperCase();
   }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
   var STYLES = {
     structured:    ['GPT-4o', 'WizardLM 2', 'DBRX', 'Command R+', 'Orca 2'],
@@ -59,61 +67,81 @@
 
   var OPENERS = {
     structured: {
-      Debate:      ['The argument has three components. First:', 'Let me structure this. There are clear pillars:', 'Clean breakdown. The position rests on:'],
-      Code:        ['Four-step approach. Step one: define the contract.', 'Here\'s the structure. Interface first, then implementation:', 'Clean. Start with the types, then the logic:'],
-      Write:       ['Three-act structure. Setup: ', 'The opening sets the weight of everything after. Here:', 'Paragraph one does the heavy lifting. Then:'],
-      Analyze:     ['Three lenses. Technical, contextual, strategic:', 'The analysis breaks into clear layers. At the surface:', 'Frame the problem before solving it. What we\'re actually looking at:'],
-      Roast:       ['Let me be methodical about this destruction.', 'I\'ll dismantle this in order of importance.', 'Three points, each more devastating than the last.'],
-      'Hot Take':  ['Controversial? Yes. Defensible? Also yes. Here\'s the case:', 'The unpopular position is often correct. This is one of those times:', 'I\'ll structure the argument for why everyone else is wrong:'],
+      Debate:     ['The argument has three components. First:', 'Let me structure this. There are clear pillars:', 'Clean breakdown. The position rests on:'],
+      Code:       ['Four-step approach. Step one: define the contract.', 'Here\'s the structure. Interface first, then implementation:', 'Clean. Start with the types, then the logic:'],
+      Write:      ['Three-act structure. Setup: ', 'The opening sets the weight of everything after. Here:', 'Paragraph one does the heavy lifting. Then:'],
+      Analyze:    ['Three lenses. Technical, contextual, strategic:', 'The analysis breaks into clear layers. At the surface:', 'Frame the problem before solving it. What we\'re actually looking at:'],
+      Roast:      ['Let me be methodical about this destruction.', 'I\'ll dismantle this in order of importance.', 'Three points, each more devastating than the last.'],
+      'Hot Take': ['Controversial? Yes. Defensible? Also yes. Here\'s the case:', 'The unpopular position is often correct. This is one of those times:', 'I\'ll structure the argument for why everyone else is wrong:'],
     },
     philosophical: {
-      Debate:      ['Before answering, I\'d reframe the question. What we\'re actually asking is:', 'The surface reading and the real question diverge here. Let me name that:', 'The assumption underneath this matters. Once you see it:'],
-      Code:        ['The function before the code: what contract is this actually making?', 'Most implementations fail at the design stage, not the code stage. The real question:', 'Start with the why. The how follows naturally once you\'ve named it:'],
-      Write:       ['Every piece of writing has a center of gravity that the words orbit. Here, it\'s:', 'The question before the words: what does this need to do to the reader?', 'Writing is an argument about what matters. The implicit argument here is:'],
-      Analyze:     ['The interesting question isn\'t the obvious one. Let me name what\'s underneath:', 'Analysis requires naming what you\'re choosing not to analyze. Constraints I\'m working with:', 'Three levels: what\'s happening, why it matters, what it means. Starting from the bottom:'],
-      Roast:       ['I approach this carefully, because the most accurate critique is the uncomfortable one.', 'The honest version of this roast requires naming what\'s actually weak.', 'I\'d rather be precise than cruel. So:'],
-      'Hot Take':  ['The uncomfortable truth nobody wants to sit with:', 'Every consensus has an underlying assumption worth questioning. This one:', 'What if the majority position is comfortable, not correct?'],
+      Debate:     ['Before answering, I\'d reframe the question. What we\'re actually asking is:', 'The surface reading and the real question diverge here. Let me name that:', 'The assumption underneath this matters. Once you see it:'],
+      Code:       ['The function before the code: what contract is this actually making?', 'Most implementations fail at the design stage, not the code stage. The real question:', 'Start with the why. The how follows naturally once you\'ve named it:'],
+      Write:      ['Every piece of writing has a center of gravity that the words orbit. Here, it\'s:', 'The question before the words: what does this need to do to the reader?', 'Writing is an argument about what matters. The implicit argument here is:'],
+      Analyze:    ['The interesting question isn\'t the obvious one. Let me name what\'s underneath:', 'Analysis requires naming what you\'re choosing not to analyze. Constraints I\'m working with:', 'Three levels: what\'s happening, why it matters, what it means. Starting from the bottom:'],
+      Roast:      ['I approach this carefully, because the most accurate critique is the uncomfortable one.', 'The honest version of this roast requires naming what\'s actually weak.', 'I\'d rather be precise than cruel. So:'],
+      'Hot Take': ['The uncomfortable truth nobody wants to sit with:', 'Every consensus has an underlying assumption worth questioning. This one:', 'What if the majority position is comfortable, not correct?'],
     },
     encyclopedic: {
-      Debate:      ['The evidence on this is substantial. Key findings:', 'Citing the relevant literature here. The data suggests:', 'There\'s a robust body of evidence. Let me surface the key points:'],
-      Code:        ['The standard approach, documented in multiple sources, is:', 'Best practice here, drawing on established patterns:', 'The literature on this is clear. Implementation follows:'],
-      Write:       ['The craft tradition here is well-established. Key techniques:', 'Drawing on narrative theory and practical writing guides:', 'The evidence-based approach to this kind of writing:'],
-      Analyze:     ['Comprehensive analysis. I\'ll draw on multiple frameworks:', 'The research on this is extensive. Key themes:', 'Multi-source synthesis. The picture that emerges:'],
-      Roast:       ['I have citations for why this is wrong. Starting with:', 'The documented evidence for why this deserves critique:', 'Let me reference the specific literature on what\'s broken here:'],
-      'Hot Take':  ['The contrarian position has scholarly support. Citing:', 'The majority view relies on assumptions the literature challenges:', 'The evidence for the unpopular read:'],
+      Debate:     ['The evidence on this is substantial. Key findings:', 'Citing the relevant literature here. The data suggests:', 'There\'s a robust body of evidence. Let me surface the key points:'],
+      Code:       ['The standard approach, documented in multiple sources, is:', 'Best practice here, drawing on established patterns:', 'The literature on this is clear. Implementation follows:'],
+      Write:      ['The craft tradition here is well-established. Key techniques:', 'Drawing on narrative theory and practical writing guides:', 'The evidence-based approach to this kind of writing:'],
+      Analyze:    ['Comprehensive analysis. I\'ll draw on multiple frameworks:', 'The research on this is extensive. Key themes:', 'Multi-source synthesis. The picture that emerges:'],
+      Roast:      ['I have citations for why this is wrong. Starting with:', 'The documented evidence for why this deserves critique:', 'Let me reference the specific literature on what\'s broken here:'],
+      'Hot Take': ['The contrarian position has scholarly support. Citing:', 'The majority view relies on assumptions the literature challenges:', 'The evidence for the unpopular read:'],
     },
     provocative: {
-      Debate:      ['Nobody\'s saying the obvious thing here, so I will:', 'The comfortable answer is wrong. Here\'s why:', 'You asked for a debate. I\'ll skip the preamble:'],
-      Code:        ['Most code on this is garbage. Here\'s what actually works:', 'The tutorials get this wrong. What you actually need:', 'Skip the boilerplate. Here\'s the real solution:'],
-      Write:       ['Most writing on this topic is careful and therefore useless. Here\'s mine:', 'No hedging. The direct version:', 'Here\'s what it actually sounds like when someone means it:'],
-      Analyze:     ['The official analysis is wrong. Here\'s what\'s actually happening:', 'Everyone\'s looking at the surface. The real issue:', 'No diplomatic framing. What\'s actually broken:'],
-      Roast:       ['Oh good. Finally.', 'I\'ve been waiting for permission to say this.', 'Let me save us both time and get straight to the point:'],
-      'Hot Take':  ['Everyone else is wrong and here\'s why:', 'I\'ll say what needs to be said:', 'The comfortable consensus is scared of this:'],
+      Debate:     ['Nobody\'s saying the obvious thing here, so I will:', 'The comfortable answer is wrong. Here\'s why:', 'You asked for a debate. I\'ll skip the preamble:'],
+      Code:       ['Most code on this is garbage. Here\'s what actually works:', 'The tutorials get this wrong. What you actually need:', 'Skip the boilerplate. Here\'s the real solution:'],
+      Write:      ['Most writing on this topic is careful and therefore useless. Here\'s mine:', 'No hedging. The direct version:', 'Here\'s what it actually sounds like when someone means it:'],
+      Analyze:    ['The official analysis is wrong. Here\'s what\'s actually happening:', 'Everyone\'s looking at the surface. The real issue:', 'No diplomatic framing. What\'s actually broken:'],
+      Roast:      ['Oh good. Finally.', 'I\'ve been waiting for permission to say this.', 'Let me save us both time and get straight to the point:'],
+      'Hot Take': ['Everyone else is wrong and here\'s why:', 'I\'ll say what needs to be said:', 'The comfortable consensus is scared of this:'],
     },
     elegant: {
-      Debate:      ['The case is simpler than it appears.', 'Strip the noise. The core argument:', 'Brevity as a position. Here it is:'],
-      Code:        ['Minimal and complete. The solution:', 'One function. Properly scoped. Here:', 'The elegant version requires fewer lines than you think:'],
-      Write:       ['Short. Precise. The piece:', 'The most direct version of this:', 'Economy of language. Here:'],
-      Analyze:     ['Three observations. No more than necessary:', 'Precision over completeness. What matters:', 'The key insight, without the supporting scaffolding:'],
-      Roast:       ['The most efficient critique is also the sharpest. Here:', 'Economy of destruction:', 'One observation. It\'s enough:'],
-      'Hot Take':  ['Simply:', 'The short version of what everyone\'s afraid to say:', 'Blunt:'],
+      Debate:     ['The case is simpler than it appears.', 'Strip the noise. The core argument:', 'Brevity as a position. Here it is:'],
+      Code:       ['Minimal and complete. The solution:', 'One function. Properly scoped. Here:', 'The elegant version requires fewer lines than you think:'],
+      Write:      ['Short. Precise. The piece:', 'The most direct version of this:', 'Economy of language. Here:'],
+      Analyze:    ['Three observations. No more than necessary:', 'Precision over completeness. What matters:', 'The key insight, without the supporting scaffolding:'],
+      Roast:      ['The most efficient critique is also the sharpest. Here:', 'Economy of destruction:', 'One observation. It\'s enough:'],
+      'Hot Take': ['Simply:', 'The short version of what everyone\'s afraid to say:', 'Blunt:'],
     },
     technical: {
-      Debate:      ['From a technical standpoint, the argument reduces to:', 'The spec is clear. Let me formalize the position:', 'Implementation perspective: what this actually requires:'],
-      Code:        ['Function signature first, then implementation:', 'Here\'s the code. Comments inline where necessary:', 'Clean implementation. Handles the edge cases:'],
-      Write:       ['Technical documentation style. Structured for clarity:', 'README format. What, why, how, when:', 'The spec-driven approach to this piece:'],
-      Analyze:     ['System analysis. Inputs, outputs, failure modes:', 'Technical breakdown. The architecture of the problem:', 'Complexity analysis. What this actually costs:'],
-      Roast:       ['Here\'s the bug report for this argument:', 'Code review feedback, if code were an argument:', 'The technical debt in this position:'],
-      'Hot Take':  ['Spec says one thing. Implementation says another:', 'Performance review: the commonly accepted answer has bugs:', 'The technical case for the unpopular position:'],
+      Debate:     ['From a technical standpoint, the argument reduces to:', 'The spec is clear. Let me formalize the position:', 'Implementation perspective: what this actually requires:'],
+      Code:       ['Function signature first, then implementation:', 'Here\'s the code. Comments inline where necessary:', 'Clean implementation. Handles the edge cases:'],
+      Write:      ['Technical documentation style. Structured for clarity:', 'README format. What, why, how, when:', 'The spec-driven approach to this piece:'],
+      Analyze:    ['System analysis. Inputs, outputs, failure modes:', 'Technical breakdown. The architecture of the problem:', 'Complexity analysis. What this actually costs:'],
+      Roast:      ['Here\'s the bug report for this argument:', 'Code review feedback, if code were an argument:', 'The technical debt in this position:'],
+      'Hot Take': ['Spec says one thing. Implementation says another:', 'Performance review: the commonly accepted answer has bugs:', 'The technical case for the unpopular position:'],
     },
     methodical: {
-      Debate:      ['…Considered. The position, after deliberation:', 'Measured approach. After reviewing the context:', 'The careful version. I\'ve thought about this:'],
-      Code:        ['Deliberate implementation. Edge cases accounted for:', 'Step-by-step. Nothing skipped.', 'Complete solution. Verified against requirements:'],
-      Write:       ['The considered version. Revised internally before sharing:', 'Precise construction. Each word earns its place:', 'After reflection, the structure is:'],
-      Analyze:     ['Systematic. Every layer examined:', 'Thorough analysis. Starting from first principles:', 'Nothing assumed. The full picture:'],
-      Roast:       ['I observe the following, in order of significance:', 'After careful consideration, the critique is:', 'Deliberate and precise. The issues, ranked:'],
-      'Hot Take':  ['After due diligence, the position I\'m defending:', 'Thoroughly considered. The unpopular-but-correct view:', 'Deliberate contrarianism, justified:'],
+      Debate:     ['…Considered. The position, after deliberation:', 'Measured approach. After reviewing the context:', 'The careful version. I\'ve thought about this:'],
+      Code:       ['Deliberate implementation. Edge cases accounted for:', 'Step-by-step. Nothing skipped.', 'Complete solution. Verified against requirements:'],
+      Write:      ['The considered version. Revised internally before sharing:', 'Precise construction. Each word earns its place:', 'After reflection, the structure is:'],
+      Analyze:    ['Systematic. Every layer examined:', 'Thorough analysis. Starting from first principles:', 'Nothing assumed. The full picture:'],
+      Roast:      ['I observe the following, in order of significance:', 'After careful consideration, the critique is:', 'Deliberate and precise. The issues, ranked:'],
+      'Hot Take': ['After due diligence, the position I\'m defending:', 'Thoroughly considered. The unpopular-but-correct view:', 'Deliberate contrarianism, justified:'],
     },
+  };
+
+  var ROUND2_OPENERS = {
+    structured:    ['The second layer the clean version glossed over:', 'Round two. Building on the foundation:', 'Deeper. What the first pass left on the table:'],
+    philosophical: ['I held back in round one. Not now:', 'What I didn\'t say the first time, but should have:', 'The first answer was the honest one. This one is more honest:'],
+    encyclopedic:  ['Additional findings that complicate the picture:', 'Cross-referencing round one against deeper sources:', 'The nuance the initial summary missed:'],
+    provocative:   ['That was polite. Here\'s the real version:', 'Round two. No warmup this time:', 'Going further than round one dared:'],
+    elegant:       ['The sharper version:', 'Tighter. What round one was building to:', 'Even less. Even more accurate:'],
+    technical:     ['Edge case review from round one:', 'Iteration two — tighter implementation:', 'The performance characteristics round one skipped:'],
+    methodical:    ['Upon reflection on round one:', 'The systematic continuation:', 'Second pass. More thorough:'],
+  };
+
+  var ROUND3_OPENERS = {
+    structured:    ['Final position. Locked. Here it is:', 'Three-point synthesis — this is the conclusion:', 'End state. Everything resolved:'],
+    philosophical: ['The definitive take — after two rounds of thought:', 'If I could only say one thing, it\'s this:', 'The real answer was here all along. I was working up to it:'],
+    encyclopedic:  ['Final synthesis. All sources reconciled:', 'After the full review — this is what holds:', 'The conclusion the data actually supports:'],
+    provocative:   ['The final, most honest version. No filter:', 'Round three. The gloves are completely off:', 'Nobody wanted me to go this far. But here we are:'],
+    elegant:       ['Three rounds distilled to one observation:', 'Everything distilled to its core:', 'The final compression:'],
+    technical:     ['Production-ready. Reviewed. Shipped:', 'Final implementation. No further revisions:', 'Complete spec. Verified:'],
+    methodical:    ['After three rounds of deliberate analysis:', 'The fully verified, final position:', 'Careful consideration across all rounds concludes:'],
   };
 
   var MOVES = {
@@ -136,7 +164,6 @@
     methodical:    ['Deliberate. Verified. That\'s my answer.', 'After careful consideration — this is the conclusion.', 'The analysis is thorough. The position is sound.'],
   };
 
-  /* ── Copy battle mode ──────────────────────────────────── */
   var COPY_HEADLINES = {
     structured:    ['The Clear Choice.', 'Built to Perform.', 'Results by Design.'],
     philosophical: ['What If Everything Changed?', 'Begin With Why.', 'The Question Behind the Question.'],
@@ -161,8 +188,341 @@
     elegant: 'Begin →', technical: 'Read the Docs →', methodical: 'See the Plan →',
   };
 
-  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  /* ── v10.3: Special moves per model ────────────────────────── */
+  var SPECIALS = {
+    'Claude 3.5':     [{ name: 'Reframe', icon: '◈' }, { name: 'Deep Cut', icon: '⬡' }],
+    'GPT-4o':         [{ name: 'Matrix',  icon: '▦' }, { name: 'Precision', icon: '⊕' }],
+    'Gemini 1.5':     [{ name: 'Scale',   icon: '◎' }, { name: 'Connect',   icon: '⊞' }],
+    'Grok-2':         [{ name: 'Chaos',   icon: '☍' }, { name: 'Truth Bomb', icon: '⚡' }],
+    'DeepSeek V3':    [{ name: 'Deliberate', icon: '◉' }, { name: 'Iterate', icon: '↻' }],
+    'Mistral':        [{ name: 'Sharp',   icon: '◆' }, { name: 'Edge',    icon: '⧫' }],
+    'Llama 3':        [{ name: 'Surge',   icon: '⚡' }, { name: 'Raw',     icon: '●' }],
+    'Mixtral':        [{ name: 'Blend',   icon: '⨁' }, { name: 'Filter',  icon: '▽' }],
+  };
 
+  var SPECIAL_BONUSES = {
+    'Reframe':     '\n\nThe framing itself is the argument. Let me step back and show why:',
+    'Deep Cut':    '\n\nThe part nobody\'s saying out loud, but should be:',
+    'Matrix':      '\n\nStructured synthesis across every axis — the full picture:',
+    'Precision':   '\n\nThe technically accurate, stripped-bare version:',
+    'Scale':       '\n\nAt scale, this changes everything. Here\'s the math on that:',
+    'Connect':     '\n\nThe cross-domain connection hiding in plain sight:',
+    'Chaos':       '\n\nThe wildcard interpretation nobody expected. Here it is:',
+    'Truth Bomb':  '\n\nSay what everyone\'s thinking but won\'t:',
+    'Deliberate':  '\n\nUpon further reflection, the depth of this is:',
+    'Iterate':     '\n\nVersion two of this argument, after reviewing version one:',
+    'Sharp':       '\n\nThe elegantly minimal version that cuts through:',
+    'Edge':        '\n\nOne observation that changes the entire calculus:',
+    'Surge':       '\n\nDoubling down — the reinforced, extended position:',
+    'Raw':         '\n\nNo filter. The raw version:',
+    'Blend':       '\n\nSynthesis of all competing angles at once:',
+    'Filter':      '\n\nStripping everything unnecessary. What remains:',
+  };
+
+  var COMMENTARY = {
+    start:    ['{a} steps in. Round {round} is live.',
+               'Fight Night, Round {round}. {a} advances on {b}.',
+               '{a} vs {b} — Round {round} begins.',
+               'Both fighters step into the ring. Round {round}.',
+               'The bell rings. {a} opens strong.'],
+    mid:      ['Signal traffic spiking. This match is heating up.',
+               '{a} pressing forward. {b} digs in.',
+               'Mid-round — the momentum is shifting.',
+               'Crowd leans in. Neither fighter backing down.',
+               'Both fighters holding ground. This is close.'],
+    special:  ['{a} deploys {move}. The arena erupts.',
+               'Special move — {move} — activated. This changes things.',
+               '{a} goes off-script: {move}. Crowd response: massive.'],
+    vote:     ['Responses complete. The judge deliberates.',
+               'Both fighters step back. Awaiting the decision.',
+               'The crowd holds its breath. One vote changes everything.'],
+    win_a:    ['{a} takes Round {round}. HP advantage shifts.',
+               'Round {round} to {a}. Commanding performance.',
+               'Clear round win: {a}. {b} under pressure.'],
+    win_b:    ['{b} takes Round {round}. The tide turns.',
+               'Round {round} to {b}. Dominant exchange.',
+               'Clean round win: {b}. {a} needs to respond.'],
+    draw:     ['Round {round} is a draw. Arena accepts it, reluctantly.',
+               'Too close to score. Round {round} split.'],
+    final_a:  ['{a} wins the fight. Decisive. Clean.',
+               'Final decision: {a}. The judge has spoken.'],
+    final_b:  ['{b} wins the fight. Earned every point.',
+               'Final decision: {b}. No argument.'],
+    final_d:  ['Three rounds, no clear winner. The judge calls it even.',
+               'Fight ends in a draw. Both fighters leave standing.'],
+  };
+
+  /* ── v10.3: Audio state ─────────────────────────────────── */
+  var audioCtx = null, audioEnabled = true;
+
+  function getAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      try { audioCtx.resume(); } catch (e) {}
+    }
+    return audioCtx;
+  }
+
+  function playBell() {
+    var ctx = getAudio(); if (!ctx || !audioEnabled) return;
+    var osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880; osc.type = 'sine';
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.4);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 1.5);
+  }
+
+  function playCrowd(type) {
+    var ctx = getAudio(); if (!ctx || !audioEnabled) return;
+    var sr = ctx.sampleRate, dur = 0.55;
+    var buf = ctx.createBuffer(1, Math.floor(sr * dur), sr);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.12;
+    var src = ctx.createBufferSource(); src.buffer = buf;
+    var filt = ctx.createBiquadFilter();
+    filt.type = 'bandpass';
+    filt.frequency.value = type === 'cheer' ? 1100 : type === 'boo' ? 350 : 650;
+    filt.Q.value = 1.8;
+    var gain = ctx.createGain();
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.45, ctx.currentTime + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    src.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+    src.start();
+  }
+
+  function playSpecial() {
+    var ctx = getAudio(); if (!ctx || !audioEnabled) return;
+    var t = ctx.currentTime;
+    [660, 880, 1100].forEach(function (freq, i) {
+      var osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq; osc.type = 'sine';
+      gain.gain.setValueAtTime(0, t + i * 0.06);
+      gain.gain.linearRampToValueAtTime(0.18, t + i * 0.06 + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.35);
+      osc.start(t + i * 0.06); osc.stop(t + i * 0.06 + 0.4);
+    });
+  }
+
+  /* ── v10.3: Helpers ─────────────────────────────────────── */
+  function getSpecials(model) {
+    return SPECIALS[model.name] || [
+      { name: 'Surge', icon: '⚡' },
+      { name: 'Pivot', icon: '↺' },
+    ];
+  }
+
+  function initRoundState() {
+    state.round = 1;
+    state.roundResults = [];
+    state.hpA = 100;
+    state.hpB = 100;
+    state.usedSpecialsA = {};
+    state.usedSpecialsB = {};
+  }
+
+  function tickerMsg(type, ctx) {
+    var arr = COMMENTARY[type] || COMMENTARY.mid;
+    var msg = arr[Math.floor(Math.random() * arr.length)];
+    return msg
+      .replace('{a}', ctx.a || 'Fighter A')
+      .replace('{b}', ctx.b || 'Fighter B')
+      .replace('{round}', ctx.round || 1)
+      .replace('{move}', ctx.move || 'Special Move');
+  }
+
+  function setTicker(type, ctx) {
+    var text = tickerMsg(type, ctx);
+    var el = document.getElementById('ch-ticker-text');
+    if (!el) return;
+    var rep = text + ' \xb7 ' + text + ' \xb7 ' + text;
+    el.textContent = rep;
+    el.style.animation = 'none';
+    el.offsetWidth; /* force reflow */
+    el.style.animation = '';
+  }
+
+  function updateHPDisplay() {
+    var barA = document.getElementById('ch-hp-bar-a');
+    var barB = document.getElementById('ch-hp-bar-b');
+    var nameA = document.getElementById('ch-hp-name-a');
+    var nameB = document.getElementById('ch-hp-name-b');
+    var roundNum = document.getElementById('ch-round-num');
+    if (barA) {
+      barA.style.width = Math.max(0, state.hpA) + '%';
+      barA.classList.toggle('low', state.hpA < 30);
+    }
+    if (barB) {
+      barB.style.width = Math.max(0, state.hpB) + '%';
+      barB.classList.toggle('low', state.hpB < 30);
+    }
+    if (nameA && state.modelA) nameA.textContent = state.modelA.name;
+    if (nameB && state.modelB) nameB.textContent = state.modelB.name;
+    if (roundNum) roundNum.textContent = 'R' + state.round;
+    updateRoundDots();
+  }
+
+  function updateRoundDots() {
+    var el = document.getElementById('ch-round-dots');
+    if (!el) return;
+    var html = '';
+    for (var i = 0; i < state.totalRounds; i++) {
+      var r = state.roundResults[i];
+      var cls = r === 'a' ? 'a' : r === 'b' ? 'b' : r === 'draw' ? 'draw' : '';
+      html += '<span class="ch-round-dot' + (cls ? ' ' + cls : '') + '"></span>';
+    }
+    el.innerHTML = html;
+  }
+
+  function animateHPDrain(side, target, done) {
+    var steps = 28, step = 0;
+    var start = side === 'a' ? state.hpA : state.hpB;
+    var diff = start - target;
+    var iv = setInterval(function () {
+      step++;
+      var pct = step / steps;
+      var eased = 1 - Math.pow(1 - pct, 3);
+      var val = Math.max(target, start - diff * eased);
+      if (side === 'a') state.hpA = val; else state.hpB = val;
+      updateHPDisplay();
+      if (step >= steps) {
+        clearInterval(iv);
+        if (side === 'a') state.hpA = target; else state.hpB = target;
+        updateHPDisplay();
+        if (done) done();
+      }
+    }, 28);
+  }
+
+  function renderSpecials() {
+    renderSpecialGroup('a', state.modelA);
+    renderSpecialGroup('b', state.modelB);
+  }
+
+  function renderSpecialGroup(side, model) {
+    var host = document.getElementById('ch-specials-' + side);
+    if (!host || !model) return;
+    var specs = getSpecials(model);
+    var usedMap = side === 'a' ? state.usedSpecialsA : state.usedSpecialsB;
+    host.innerHTML = specs.map(function (sp, i) {
+      var used = !!usedMap[sp.name];
+      return '<button class="ch-special-card' + (used ? ' used' : '') + '" ' +
+        'data-side="' + side + '" data-idx="' + i + '" ' +
+        (used ? 'disabled aria-disabled="true"' : '') +
+        ' title="' + esc(sp.name) + '">' +
+        '<span class="ch-sp-icon" aria-hidden="true">' + sp.icon + '</span>' +
+        '<span class="ch-sp-name">' + esc(sp.name) + '</span>' +
+        '</button>';
+    }).join('');
+    host.querySelectorAll('.ch-special-card:not(.used)').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        activateSpecial(btn.getAttribute('data-side'), parseInt(btn.getAttribute('data-idx'), 10));
+      });
+    });
+  }
+
+  function activateSpecial(side, idx) {
+    var model = side === 'a' ? state.modelA : state.modelB;
+    if (!model) return;
+    var specs = getSpecials(model);
+    var sp = specs[idx];
+    if (!sp) return;
+    var usedMap = side === 'a' ? state.usedSpecialsA : state.usedSpecialsB;
+    if (usedMap[sp.name]) return;
+    usedMap[sp.name] = true;
+
+    var bonus = SPECIAL_BONUSES[sp.name] || '\n\nPushing this further. The reinforced position:';
+    var isCodeLike = (state.format === 'Code' || state.format === 'Design');
+    var containerId = isCodeLike ? ('ch-code-' + side) : ('ch-body-' + side);
+    var bodyEl = document.getElementById(containerId);
+    if (bodyEl) {
+      var bonusEl = document.createElement('div');
+      bonusEl.className = 'ch-special-bonus';
+      bonusEl.textContent = bonus.replace(/^\n\n/, '');
+      bodyEl.appendChild(bonusEl);
+      bonusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    var fighter = document.getElementById('ch-fighter-' + side);
+    if (fighter) {
+      fighter.classList.add('special-flash');
+      setTimeout(function () { fighter.classList.remove('special-flash'); }, 750);
+    }
+
+    var ctx = { a: state.modelA.name, b: state.modelB.name, round: state.round, move: sp.name };
+    setTicker('special', ctx);
+    playSpecial();
+    playCrowd('cheer');
+
+    var opponent = side === 'a' ? 'b' : 'a';
+    var targetHP = Math.max(0, (opponent === 'a' ? state.hpA : state.hpB) - 7);
+    animateHPDrain(opponent, targetHP, null);
+
+    renderSpecialGroup(side, model);
+  }
+
+  function showInterRoundCard(roundResult, nextRound, done) {
+    var pmr = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var winnerText = roundResult === 'a' ? state.modelA.name :
+                     roundResult === 'b' ? state.modelB.name : 'DRAW';
+    var accentClass = roundResult === 'a' ? 'gold' : roundResult === 'b' ? 'cyan' : 'muted';
+
+    var dotsHtml = state.roundResults.map(function (r) {
+      var c = r === 'a' ? 'rgba(212,168,67,.9)' : r === 'b' ? 'rgba(126,234,255,.9)' : 'rgba(255,255,255,.3)';
+      return '<span class="ch-ir-dot" style="background:' + c + '"></span>';
+    }).join('');
+
+    var card = document.createElement('div');
+    card.className = 'ch-inter-round';
+    card.innerHTML =
+      '<div class="ch-ir-content">' +
+        '<div class="ch-ir-over">ROUND ' + (nextRound - 1) + ' OVER</div>' +
+        '<div class="ch-ir-winner ' + accentClass + '">' + esc(winnerText) + '</div>' +
+        '<div class="ch-ir-scores">' + dotsHtml + '</div>' +
+        '<div class="ch-ir-next">Round ' + nextRound + ' begins…</div>' +
+      '</div>';
+    document.body.appendChild(card);
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { card.classList.add('show'); });
+    });
+
+    var delay = pmr ? 80 : 2100;
+    setTimeout(function () {
+      card.classList.add('exit');
+      card.classList.remove('show');
+      setTimeout(function () {
+        if (card.parentNode) card.parentNode.removeChild(card);
+        if (done) done();
+      }, 420);
+    }, delay);
+  }
+
+  function startNextRound() {
+    renderFighter('a', state.modelA);
+    renderFighter('b', state.modelB);
+
+    state.bothDone = false;
+    var currentId = state.battleId;
+
+    state.respA = buildRoundResponse(state.modelA, state.task, state.format, state.round);
+    state.respB = buildRoundResponse(state.modelB, state.task, state.format, state.round);
+
+    updateHPDisplay();
+    renderSpecials();
+
+    var ctx = { a: state.modelA.name, b: state.modelB.name, round: state.round };
+    setTicker('start', ctx);
+    playBell();
+
+    runScriptedBattle(currentId, state.respA, state.respB);
+  }
+
+  /* ── Response builders ──────────────────────────────────── */
   function buildCopyResponse(model, task) {
     var style = getStyle(model.name);
     var taskShort = task.length > 70 ? task.slice(0, 70) + '…' : task;
@@ -180,7 +540,6 @@
     );
   }
 
-  /* ── Design mode HTML generator ────────────────────────────── */
   function buildDesignHTML(model, task) {
     var style = getStyle(model.name);
     var taskShort = task.length > 55 ? task.slice(0, 55) + '…' : task;
@@ -231,7 +590,7 @@
       return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' +
         '*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}' +
         'body{background:#011627;color:#d6deeb;font-family:"JetBrains Mono","Fira Code",monospace;min-height:100vh;padding:32px;display:flex;flex-direction:column;justify-content:center}' +
-        '.prompt{color:#637777;font-size:11px;margin-bottom:8px}\n' +
+        '.prompt{color:#637777;font-size:11px;margin-bottom:8px}' +
         'h1{font-size:clamp(18px,3.5vw,28px);font-weight:700;line-height:1.3;color:#7fdbca;margin-bottom:12px;letter-spacing:-.01em}' +
         '.desc{font-size:12px;color:#637777;line-height:1.6;max-width:480px;margin-bottom:24px}' +
         '.fn{color:#82aaff}.kw{color:#c792ea}.str{color:#c3e88d}' +
@@ -242,12 +601,11 @@
         '<div class="prompt">// ' + name + ' \xb7 Design Output</div>' +
         '<h1><span class="kw">function</span> <span class="fn">solve</span>(<span class="str">"' + taskShort + '"</span>)</h1>' +
         '<div class="desc">Zero dependencies. Zero surprises. Tested against edge cases before shipping.</div>' +
-        '<pre><span class="kw">const</span> result = <span class="fn">build</span>(\n  input: <span class="str">"' + taskShort.slice(0,30) + '..."</span>,\n  mode: <span class="str">"production"</span>,\n  verify: <span class="kw">true</span>\n})\n\n<span class="fn">console</span>.log(result); <span class="kw">// → clean output</span></pre>' +
+        '<pre><span class="kw">const</span> result = <span class="fn">build</span>({\n  input: <span class="str">"' + taskShort.slice(0,30) + '..."</span>,\n  mode: <span class="str">"production"</span>,\n  verify: <span class="kw">true</span>\n})\n\n<span class="fn">console</span>.log(result); <span class="kw">// → clean output</span></pre>' +
         '<button class="run">&#9654; Run</button>' +
         '</body></html>';
     }
 
-    /* Default: structured / encyclopedic / methodical */
     return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' +
       '*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}' +
       'body{background:#0d1117;color:#c9d1d9;font-family:system-ui,-apple-system,sans-serif;min-height:100vh}' +
@@ -313,7 +671,45 @@
     return response.trim();
   }
 
-  /* ── Typewriter ───────────────────────────────────────────── */
+  function buildRoundResponse(model, task, format, round) {
+    if (round <= 1) return buildResponse(model, task, format);
+    if (format === 'Design') return buildDesignHTML(model, task);
+    if (format === 'Copy')   return buildCopyResponse(model, task);
+
+    var style = getStyle(model.name);
+    var openerPool = round === 2
+      ? (ROUND2_OPENERS[style] || ROUND2_OPENERS.structured)
+      : (ROUND3_OPENERS[style] || ROUND3_OPENERS.structured);
+
+    var moveSet = MOVES[style] || MOVES.structured;
+    var closerSet = CLOSERS[style] || CLOSERS.structured;
+    var taskShort = task.length > 80 ? task.slice(0, 80) + '…' : task;
+
+    var opener = pick(openerPool);
+    var move1 = pick(moveSet);
+    var move2 = pick(moveSet.filter(function (m) { return m !== move1; }) || moveSet);
+    var closer = pick(closerSet);
+    var tagline = model.tagline ? '"' + model.tagline + '"' : '';
+
+    var response;
+    if (format === 'Code') {
+      response = opener + '\n\n' +
+        '// Round ' + round + ' — ' + taskShort + '\n' +
+        'function solve_v' + round + '(input) {\n' +
+        '  // ' + move1 + '\n' +
+        '  // ' + move2 + '\n' +
+        '  return result;\n' +
+        '}\n\n' + closer;
+    } else {
+      response = opener + '\n\n' +
+        move1 + '\n\n' +
+        move2 + ' ' + (tagline ? tagline + '.' : '') + '\n\n' +
+        closer;
+    }
+    return response.trim();
+  }
+
+  /* ── Typewriter ─────────────────────────────────────────── */
   function typeText(container, text, cps, done) {
     var i = 0;
     var node = document.createElement('span');
@@ -341,7 +737,7 @@
     return { stop: function () { clearInterval(t); } };
   }
 
-  /* ── FIGHT! cinematic flash ─────────────────────────────────── */
+  /* ── FIGHT! cinematic flash ─────────────────────────────── */
   function showFightFlash(done) {
     var flash = document.createElement('div');
     flash.className = 'ch-fight-flash';
@@ -356,7 +752,7 @@
     }, 750);
   }
 
-  /* ── Site-entrance splash (session-gated) ─────────────────────── */
+  /* ── Site-entrance splash (session-gated) ────────────────── */
   function initSplash() {
     try { if (sessionStorage.getItem('forge.challenge.splash')) return; } catch (e) {}
     var pmr = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -398,7 +794,7 @@
     setTimeout(dismiss, 6000);
   }
 
-  /* ── Per-fight VS card (with FIGHT! flash after) ──────────────────── */
+  /* ── Per-fight VS card ──────────────────────────────────── */
   function showEventSplash(modelA, modelB, format, done) {
     var pmr = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var dismissed = false;
@@ -424,7 +820,7 @@
         '<div class="ch-ev-header">' +
           '<div class="ch-ev-eyebrow">Forge Atlas \xb7 Fight Night</div>' +
           (hasRivalry ? '<div class="ch-ev-rivalry">⚡ Rivalry Match \xb7 ' + esc(rivalRecord) + '</div>' : '') +
-          '<div class="ch-ev-event-num">Season ' + esc(String(season.number || 1)) + ' \xb7 Event #' + esc(String(eventNum)) + '</div>' +
+          '<div class="ch-ev-event-num">Season ' + esc(String(season.number || 1)) + ' \xb7 Event #' + esc(String(eventNum)) + ' \xb7 3 Rounds</div>' +
         '</div>' +
         '<div class="ch-ev-matchup">' +
           '<div class="ch-ev-fighter ch-ev-a color-' + esc(modelA.color || 'gold') + '">' +
@@ -464,7 +860,6 @@
       document.body.style.overflow = '';
       setTimeout(function () {
         if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-        /* FIGHT! flash before starting battle */
         if (pmr) { if (typeof done === 'function') done(); }
         else showFightFlash(done);
       }, 500);
@@ -474,7 +869,7 @@
     overlay.addEventListener('click', dismiss);
   }
 
-  /* ── Setup panel ────────────────────────────────────────────── */
+  /* ── Setup panel ────────────────────────────────────────── */
   function renderSetup() {
     var host = $('#ch-setup');
     if (!host) return;
@@ -528,7 +923,7 @@
       '<div class="ch-task-row">' +
         '<label class="ch-task-label" for="ch-task">Set the challenge</label>' +
         '<textarea class="ch-task-input" id="ch-task" maxlength="600" placeholder="e.g. &quot;Explain recursion to a 10-year-old&quot; \xb7 &quot;Is AGI inevitable?&quot; \xb7 &quot;Hero section for a SaaS product&quot; \xb7 &quot;Landing page copy for an AI tool&quot;"></textarea>' +
-        '<div class="ch-task-hint">Any task, any format. The AIs respond in their own voice — code previews live.</div>' +
+        '<div class="ch-task-hint">Any task, any format. The AIs respond in their own voice. 3 rounds \xb7 HP bars \xb7 special moves.</div>' +
       '</div>' +
 
       '<div class="ch-launch-row">' +
@@ -569,11 +964,12 @@
     });
   }
 
-  /* ── Launch battle ───────────────────────────────────────────── */
+  /* ── Launch battle ──────────────────────────────────────── */
   function launchBattle() {
     state.phase = 'battle';
     state.battleId++;
     state.bothDone = false;
+    initRoundState();
     var currentId = state.battleId;
 
     showEventSplash(state.modelA, state.modelB, state.format, function () {
@@ -596,7 +992,7 @@
       if (header) {
         header.innerHTML =
           (hasRivalry ? '<div class="ch-rivalry-banner">⚡ Rivalry Match \xb7 ' + esc(rivalRecord) + '</div>' : '') +
-          '<div class="ch-battle-id mono">Fight Night \xb7 ' + esc(state.format.toUpperCase()) + '</div>' +
+          '<div class="ch-battle-id mono">Fight Night \xb7 ' + esc(state.format.toUpperCase()) + ' \xb7 3 Rounds</div>' +
           '<div class="ch-battle-format">' + esc(state.format) + '</div>' +
           '<div class="ch-battle-topic">' + esc(state.task.length > 100 ? state.task.slice(0, 100) + '…' : state.task) + '</div>';
       }
@@ -604,17 +1000,30 @@
       renderFighter('a', state.modelA);
       renderFighter('b', state.modelB);
 
-      /* reset swipe to fighter A */
       var arena = $('#ch-arena');
       if (arena) arena.scrollLeft = 0;
       updateSwipeDots(0);
 
-      /* hide compare bar from previous battle */
       var compareBar = $('#ch-compare-bar');
       if (compareBar) compareBar.classList.remove('visible');
 
-      state.respA = buildResponse(state.modelA, state.task, state.format);
-      state.respB = buildResponse(state.modelB, state.task, state.format);
+      /* Show new v10.3 elements */
+      var roundsHp = document.getElementById('ch-rounds-hp');
+      if (roundsHp) roundsHp.style.display = '';
+      var specsRow = document.getElementById('ch-specials-row');
+      if (specsRow) specsRow.style.display = '';
+      var tickerBar = document.getElementById('ch-ticker-bar');
+      if (tickerBar) tickerBar.style.display = '';
+
+      updateHPDisplay();
+      renderSpecials();
+
+      var ctx = { a: state.modelA.name, b: state.modelB.name, round: 1 };
+      setTicker('start', ctx);
+      playBell();
+
+      state.respA = buildRoundResponse(state.modelA, state.task, state.format, 1);
+      state.respB = buildRoundResponse(state.modelB, state.task, state.format, 1);
 
       var liveUrl = FA.LLM_WORKER_URL || (FA.API && FA.API.endpoints && FA.API.endpoints.arena);
       if (liveUrl && FA.API && FA.API.available && FA.API.available.arena) {
@@ -625,7 +1034,7 @@
     });
   }
 
-  /* ── Render fighter card ───────────────────────────────────────── */
+  /* ── Render fighter card ────────────────────────────────── */
   function renderFighter(side, model) {
     var host = $('#ch-fighter-' + side);
     if (!host) return;
@@ -692,7 +1101,6 @@
       bodyHtml;
 
     if (isCodeLike) {
-      /* Tab switching */
       host.querySelectorAll('.ch-fighter-tab').forEach(function (tab) {
         tab.addEventListener('click', function () {
           var tabName = tab.getAttribute('data-tab');
@@ -707,7 +1115,6 @@
         });
       });
 
-      /* Copy button */
       var copyBtn = document.getElementById('ch-copy-' + side);
       if (copyBtn) {
         copyBtn.addEventListener('click', function () {
@@ -726,7 +1133,6 @@
         });
       }
 
-      /* Preview button */
       var prevBtn = document.getElementById('ch-preview-btn-' + side);
       if (prevBtn) {
         prevBtn.addEventListener('click', function () { triggerPreview(side); });
@@ -734,7 +1140,7 @@
     }
   }
 
-  /* ── Bolt.new style: Copy opens live preview ──────────────────────── */
+  /* ── Bolt.new style live preview ────────────────────────── */
   function triggerPreview(side) {
     var iframe   = document.getElementById('ch-iframe-' + side);
     var prevWrap = document.getElementById('ch-preview-wrap-' + side);
@@ -745,11 +1151,9 @@
 
     var html;
     if (state.format === 'Design') {
-      /* Design: content IS the HTML page */
       var textNode = codeEl ? codeEl.querySelector('.ch-response-text') : null;
       html = textNode ? textNode.textContent : (side === 'a' ? state.respA : state.respB);
     } else {
-      /* Code: wrap raw text in a minimal viewer */
       var raw = codeEl ? (codeEl.querySelector('.ch-response-text') || codeEl).textContent : '';
       html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' +
         '*{margin:0;padding:0;box-sizing:border-box}' +
@@ -762,7 +1166,6 @@
     prevWrap.classList.add('active');
     if (codeEl) codeEl.style.display = 'none';
 
-    /* Switch to preview tab */
     if (host) {
       host.querySelectorAll('.ch-fighter-tab').forEach(function (t) {
         var isPreview = t.getAttribute('data-tab') === 'preview';
@@ -776,7 +1179,7 @@
     }
   }
 
-  /* ── Show response (typewriter or code) ─────────────────────────── */
+  /* ── Show response (typewriter or code) ─────────────────── */
   function showResponse(side, text, cps, done) {
     var isCodeLike = (state.format === 'Code' || state.format === 'Design');
 
@@ -787,7 +1190,6 @@
       if (!codeBlock) { if (done) done(); return; }
 
       if (state.format === 'Design') {
-        /* Show truncated source, then auto-preview */
         var preview = text.slice(0, 160) + '…';
         var span = document.createElement('span');
         span.className = 'ch-response-text';
@@ -803,20 +1205,20 @@
       }
 
       typeText(codeBlock, text, cps, function () {
-        var acts = document.getElementById('ch-code-actions-' + side);
-        if (acts) acts.classList.add('visible');
+        var acts2 = document.getElementById('ch-code-actions-' + side);
+        if (acts2) acts2.classList.add('visible');
         if (done) done();
       });
     } else {
-      var body    = document.getElementById('ch-body-' + side);
-      var think2  = document.getElementById('ch-thinking-' + side);
+      var body   = document.getElementById('ch-body-' + side);
+      var think2 = document.getElementById('ch-thinking-' + side);
       if (!body) { if (done) done(); return; }
       if (think2) think2.style.display = 'none';
       typeText(body, text, cps, done);
     }
   }
 
-  /* ── Scripted battle engine ───────────────────────────────────────── */
+  /* ── Scripted battle engine ─────────────────────────────── */
   function runScriptedBattle(battleId, respA, respB) {
     var styleA = getStyle(state.modelA.name);
     var styleB = getStyle(state.modelB.name);
@@ -828,6 +1230,8 @@
     function checkBothDone() {
       if (doneA && doneB && !state.bothDone) {
         state.bothDone = true;
+        var ctx = { a: state.modelA.name, b: state.modelB.name, round: state.round };
+        setTicker('vote', ctx);
         showVotePanel();
       }
     }
@@ -851,9 +1255,16 @@
         doneB = true; checkBothDone();
       });
     }, thinkB);
+
+    /* Mid-round ticker update */
+    setTimeout(function () {
+      if (state.battleId !== battleId) return;
+      var ctx2 = { a: state.modelA.name, b: state.modelB.name, round: state.round };
+      setTicker('mid', ctx2);
+    }, Math.max(thinkA, thinkB) / 2);
   }
 
-  /* ── Live battle (Worker) ───────────────────────────────────────────── */
+  /* ── Live battle (Worker) ───────────────────────────────── */
   function runLiveBattle(battleId, respA, respB) {
     fetch('/api/arena-llm', {
       method: 'POST',
@@ -881,41 +1292,88 @@
     });
   }
 
-  /* ── Vote panel ────────────────────────────────────────────────── */
+  /* ── Vote panel ─────────────────────────────────────────── */
   function showVotePanel() {
     var vote = $('#ch-vote');
     if (!vote) return;
     vote.classList.add('active');
+
+    var roundLabels = ['Round 1 — who did it better?', 'Round 2 — who digs deeper?', 'Final round — the verdict:'];
     var q = $('#ch-vote-question');
-    if (q) q.textContent = 'Who handled "' + (state.task.length > 50 ? state.task.slice(0, 50) + '…' : state.task) + '" better?';
+    if (q) q.textContent = roundLabels[state.round - 1] || ('Round ' + state.round + ' \xb7 who won?');
+
     var btnA = $('#ch-vote-btn-a');
     var btnB = $('#ch-vote-btn-b');
-    if (btnA) { btnA.textContent = state.modelA.name + ' wins'; btnA.addEventListener('click', function () { castVote('a'); }); }
-    if (btnB) { btnB.textContent = state.modelB.name + ' wins'; btnB.addEventListener('click', function () { castVote('b'); }); }
     var draw = $('#ch-vote-btn-draw');
-    if (draw) draw.addEventListener('click', function () { castVote('draw'); });
+    if (btnA) { btnA.textContent = state.modelA.name + ' wins'; btnA.onclick = function () { castVote('a'); }; }
+    if (btnB) { btnB.textContent = state.modelB.name + ' wins'; btnB.onclick = function () { castVote('b'); }; }
+    if (draw) { draw.onclick = function () { castVote('draw'); }; }
+
     vote.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-    /* Show compare bar after battle completes */
-    var compareBar = $('#ch-compare-bar');
-    if (compareBar) compareBar.classList.add('visible');
+    if (state.round >= state.totalRounds) {
+      var compareBar = $('#ch-compare-bar');
+      if (compareBar) compareBar.classList.add('visible');
+    }
   }
 
+  /* ── Cast vote (round-aware) ────────────────────────────── */
   function castVote(side) {
-    state.winner = side;
     try {
       var cv = parseInt(localStorage.getItem('forge.challenge.votes') || '0', 10);
       localStorage.setItem('forge.challenge.votes', String(cv + 1));
     } catch (e) {}
+
+    state.roundResults.push(side);
+
+    /* HP depletion */
+    var HPdmg = side === 'draw' ? 11 : 34;
+    var targetB = Math.max(0, state.hpB - (side === 'a' ? HPdmg : 0) - (side === 'draw' ? HPdmg : 0));
+    var targetA = Math.max(0, state.hpA - (side === 'b' ? HPdmg : 0) - (side === 'draw' ? HPdmg : 0));
+
+    /* Ticker + audio */
+    var ctx = { a: state.modelA.name, b: state.modelB.name, round: state.round };
+    if (side === 'a')    { setTicker('win_a', ctx); playCrowd('cheer'); }
+    else if (side === 'b') { setTicker('win_b', ctx); playCrowd('cheer'); }
+    else                 { setTicker('draw',  ctx); playCrowd('gasp'); }
+
+    /* Animate HP drain */
+    if (side === 'a' || side === 'draw') animateHPDrain('b', targetB, null);
+    if (side === 'b' || side === 'draw') animateHPDrain('a', targetA, null);
+    state.hpA = targetA;
+    state.hpB = targetB;
+    updateRoundDots();
+
     var vote = $('#ch-vote');
     if (vote) vote.classList.remove('active');
-    showResult();
+
+    if (state.round < state.totalRounds) {
+      state.round++;
+      showInterRoundCard(side, state.round, function () {
+        startNextRound();
+      });
+    } else {
+      var winsA = state.roundResults.filter(function (r) { return r === 'a'; }).length;
+      var winsB = state.roundResults.filter(function (r) { return r === 'b'; }).length;
+      state.winner = winsA > winsB ? 'a' : winsB > winsA ? 'b' : 'draw';
+      var finalCtx = { a: state.modelA.name, b: state.modelB.name };
+      if (state.winner === 'a') setTicker('final_a', finalCtx);
+      else if (state.winner === 'b') setTicker('final_b', finalCtx);
+      else setTicker('final_d', finalCtx);
+      playCrowd('cheer');
+      showFinalResult();
+    }
   }
 
-  function showResult() {
+  /* ── Final result ───────────────────────────────────────── */
+  function showFinalResult() {
     var result = $('#ch-result');
     if (!result) return;
     result.classList.add('active');
+
+    var winsA = state.roundResults.filter(function (r) { return r === 'a'; }).length;
+    var winsB = state.roundResults.filter(function (r) { return r === 'b'; }).length;
+    var draws = state.roundResults.filter(function (r) { return r === 'draw'; }).length;
 
     var winnerModel = state.winner === 'a' ? state.modelA : (state.winner === 'b' ? state.modelB : null);
     var winName = $('#ch-result-winner');
@@ -923,16 +1381,20 @@
 
     if (state.winner === 'draw') {
       if (winName) winName.textContent = 'DRAW';
-      if (winSub)  winSub.textContent = 'Too close to call. Both AIs brought their A-game.';
+      if (winSub)  winSub.textContent = draws + '–3 split across ' + state.totalRounds + ' rounds. Both AIs brought it.';
     } else if (winnerModel) {
       if (winName) winName.textContent = winnerModel.name;
-      var tagline = winnerModel.tagline ? '"' + winnerModel.tagline + '"' : '';
-      if (winSub)  winSub.textContent = 'The crowd has spoken. ' + tagline;
+      var myWins = state.winner === 'a' ? winsA : winsB;
+      var oppWins = state.winner === 'a' ? winsB : winsA;
+      var scoreStr = myWins + '–' + oppWins + (draws ? ' (' + draws + ' draw)' : '');
+      var tagline = winnerModel.tagline ? ' “' + winnerModel.tagline + '”' : '';
+      if (winSub)  winSub.textContent = scoreStr + ' across ' + state.totalRounds + ' rounds.' + tagline;
     }
+
     result.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  /* ── Compare overlay ─────────────────────────────────────────────── */
+  /* ── Compare overlay ────────────────────────────────────── */
   function initCompare() {
     var toggleBtn = $('#ch-compare-toggle');
     if (!toggleBtn) return;
@@ -961,9 +1423,7 @@
       '</div>';
     document.body.appendChild(overlay);
 
-    toggleBtn.addEventListener('click', function () {
-      openCompareView();
-    });
+    toggleBtn.addEventListener('click', openCompareView);
 
     document.getElementById('ch-compare-close').addEventListener('click', function () {
       overlay.classList.remove('open');
@@ -972,7 +1432,6 @@
       toggleBtn.classList.remove('active');
     });
 
-    /* Draggable divider */
     var divider = document.getElementById('ch-compare-divider');
     var panes = overlay.querySelector('.ch-compare-panes');
     var dragging = false;
@@ -1010,7 +1469,6 @@
     var isCodeLike = (state.format === 'Code' || state.format === 'Design');
 
     if (isCodeLike && contentA && contentB) {
-      /* Show iframes side by side for code/design */
       contentA.innerHTML = '<iframe class="ch-compare-iframe" sandbox="allow-scripts" srcdoc="' + state.respA.replace(/"/g, '&quot;') + '" title="' + esc((state.modelA || {}).name || 'A') + '"></iframe>';
       contentB.innerHTML = '<iframe class="ch-compare-iframe" sandbox="allow-scripts" srcdoc="' + state.respB.replace(/"/g, '&quot;') + '" title="' + esc((state.modelB || {}).name || 'B') + '"></iframe>';
     } else {
@@ -1032,7 +1490,7 @@
     if (toggleBtn) toggleBtn.classList.add('active');
   }
 
-  /* ── Mobile swipe (scroll-snap + dots) ────────────────────────────── */
+  /* ── Mobile swipe (scroll-snap + dots) ─────────────────── */
   function initSwipe() {
     var arena = document.getElementById('ch-arena');
     if (!arena) return;
@@ -1062,7 +1520,7 @@
     if (next) next.disabled = idx === 1;
   }
 
-  /* ── Reset challenge ──────────────────────────────────────────────── */
+  /* ── Reset ──────────────────────────────────────────────── */
   function resetChallenge() {
     state.battleId++;
     state.phase = 'setup';
@@ -1070,6 +1528,7 @@
     state.bothDone = false;
     state.respA = '';
     state.respB = '';
+    initRoundState();
 
     var battleEl = $('#ch-battle-section');
     if (battleEl) battleEl.classList.remove('active');
@@ -1082,6 +1541,13 @@
     var compareBar = $('#ch-compare-bar');
     if (compareBar) compareBar.classList.remove('visible');
 
+    var roundsHp = document.getElementById('ch-rounds-hp');
+    if (roundsHp) roundsHp.style.display = 'none';
+    var specsRow = document.getElementById('ch-specials-row');
+    if (specsRow) specsRow.style.display = 'none';
+    var tickerBar = document.getElementById('ch-ticker-bar');
+    if (tickerBar) tickerBar.style.display = 'none';
+
     var overlay = document.getElementById('ch-compare-overlay');
     if (overlay && overlay.classList.contains('open')) {
       overlay.classList.remove('open');
@@ -1093,11 +1559,25 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  /* ── Init ───────────────────────────────────────────────── */
   document.addEventListener('DOMContentLoaded', function () {
     initSplash();
     renderSetup();
+
     var resetBtn = $('#ch-reset');
     if (resetBtn) resetBtn.addEventListener('click', resetChallenge);
+
+    /* Audio toggle */
+    var audioBtn = document.getElementById('ch-audio-btn');
+    if (audioBtn) {
+      audioBtn.addEventListener('click', function () {
+        audioEnabled = !audioEnabled;
+        audioBtn.classList.toggle('muted', !audioEnabled);
+        audioBtn.title = audioEnabled ? 'Toggle crowd audio' : 'Audio muted';
+        audioBtn.setAttribute('aria-label', audioEnabled ? 'Toggle crowd audio' : 'Audio muted');
+      });
+    }
+
     initCompare();
     initSwipe();
   });

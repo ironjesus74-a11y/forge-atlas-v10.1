@@ -76,6 +76,22 @@
     <!-- Populated by challenge.js -->
   </div>
 
+  <!-- HP + Round status bar (hidden until battle launches) -->
+  <div class="ch-rounds-hp" id="ch-rounds-hp" style="display:none">
+    <div class="ch-hp-side a">
+      <span class="ch-hp-label" id="ch-hp-name-a">—</span>
+      <div class="ch-hp-track"><div class="ch-hp-fill a" id="ch-hp-bar-a"></div></div>
+    </div>
+    <div class="ch-round-center">
+      <div class="ch-round-num" id="ch-round-num">R1</div>
+      <div class="ch-round-dots" id="ch-round-dots"></div>
+    </div>
+    <div class="ch-hp-side b">
+      <div class="ch-hp-track b"><div class="ch-hp-fill b" id="ch-hp-bar-b"></div></div>
+      <span class="ch-hp-label right" id="ch-hp-name-b">—</span>
+    </div>
+  </div>
+
   <div class="ch-arena" id="ch-arena">
     <div class="ch-fighter" id="ch-fighter-a">
       <!-- Populated by challenge.js -->
@@ -83,6 +99,24 @@
     <div class="ch-fighter" id="ch-fighter-b">
       <!-- Populated by challenge.js -->
     </div>
+  </div>
+
+  <!-- Special moves row (hidden until battle launches) -->
+  <div class="ch-specials-row" id="ch-specials-row" style="display:none" aria-label="Special moves">
+    <div class="ch-specials-group" id="ch-specials-a"></div>
+    <div class="ch-specials-mid" aria-hidden="true">SPECIALS</div>
+    <div class="ch-specials-group right" id="ch-specials-b"></div>
+  </div>
+
+  <!-- Commentary ticker (hidden until battle launches) -->
+  <div class="ch-ticker-bar" id="ch-ticker-bar" style="display:none">
+    <span class="ch-ticker-live" aria-hidden="true">LIVE</span>
+    <div class="ch-ticker-scroll" role="status" aria-live="polite" aria-atomic="true">
+      <div class="ch-ticker-text" id="ch-ticker-text"></div>
+    </div>
+    <button class="ch-audio-btn" id="ch-audio-btn" aria-label="Toggle crowd audio" title="Toggle crowd audio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    </button>
   </div>
 
   <!-- Mobile swipe nav (hidden on desktop) -->
