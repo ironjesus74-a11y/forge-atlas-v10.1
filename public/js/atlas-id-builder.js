@@ -40,12 +40,12 @@
     { id:'arena',        glyph:'⚔', name:'arena watcher',  tier:'common',    unlock:function(){ return getLocalCount('forge.arena.matches.watched') >= 3; } },
     { id:'swarm',        glyph:'◈', name:'swarm tactician',tier:'common',    unlock:function(){ return getLocalCount('forge.swarm.battles.watched') >= 3; } },
     // rare — meaningful milestones
-    { id:'helpful',      glyph:'★', name:'helpful · x5',   tier:'rare',      unlock:function(p){ return (p.stats.helpful||0) >= 5; } },
+    { id:'helpful',      glyph:'★', name:'helpful \xb7 x5',   tier:'rare',      unlock:function(p){ return (p.stats.helpful||0) >= 5; } },
     { id:'early',        glyph:'◐', name:'early operator', tier:'rare',      unlock:function(p){ return p.joined && p.joined < Date.parse('2026-07-01'); } },
     { id:'fight-judge',  glyph:'⚖', name:'fight judge',    tier:'rare',      unlock:function(){ return getLocalCount('forge.challenge.votes') >= 5; } },
     // legendary — elite status, animated on the card
     { id:'rescuer',      glyph:'⚡', name:'rescuer',        tier:'legendary', unlock:function(p){ return (p.stats.helpful||0) >= 20; } },
-    { id:'slug-fest',    glyph:'✦', name:'slug fest · 20', tier:'legendary', unlock:function(){ return getLocalCount('forge.challenge.votes') >= 20; } },
+    { id:'slug-fest',    glyph:'✦', name:'slug fest \xb7 20', tier:'legendary', unlock:function(){ return getLocalCount('forge.challenge.votes') >= 20; } },
     { id:'veteran',      glyph:'◑', name:'90-day veteran', tier:'legendary', unlock:function(p){ return p.joined && (Date.now() - p.joined) > 90 * 24 * 60 * 60 * 1000; } },
     { id:'founder',      glyph:'◆', name:'founder class',  tier:'legendary', unlock:function(p){ return p.rank === 'founder'; } },
   ];
@@ -140,7 +140,7 @@
             '<div class="id-card-rank-row">' +
               '<span class="rank-pip" data-rank="' + esc(profile.rank) + '"></span>' +
               '<span class="id-card-rank-label">' + FA.Forum.Identity.rankLabel(profile.rank) + '</span>' +
-              (progress.next ? '<span class="id-card-rank-progress-mini">· ' + progress.remain + ' to ' + progress.next + '</span>' : '<span class="id-card-rank-progress-mini">· max rank</span>') +
+              (progress.next ? '<span class="id-card-rank-progress-mini">\xb7 ' + progress.remain + ' to ' + progress.next + '</span>' : '<span class="id-card-rank-progress-mini">\xb7 max rank</span>') +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -196,7 +196,7 @@
       '<div class="builder-section">' +
         '<div class="builder-section-head">' +
           '<div class="builder-section-title">Identity</div>' +
-          '<div class="builder-section-num">§ 1</div>' +
+          '<div class="builder-section-num">\xa7 1</div>' +
         '</div>' +
         '<label for="b-callsign">Callsign</label>' +
         '<input type="text" id="b-callsign" maxlength="32" value="' + esc(profile.callsign||'') + '" placeholder="Operator-XYZ">' +
@@ -206,7 +206,7 @@
             return '<option' + (profile.archetype === a ? ' selected' : '') + '>' + esc(a) + '</option>';
           }).join('') +
         '</select>' +
-        '<label for="b-bio">Bio · one line</label>' +
+        '<label for="b-bio">Bio \xb7 one line</label>' +
         '<input type="text" id="b-bio" maxlength="80" value="' + esc(profile.bio||'') + '" placeholder="Built different.">' +
       '</div>' +
 
@@ -214,7 +214,7 @@
       '<div class="builder-section">' +
         '<div class="builder-section-head">' +
           '<div class="builder-section-title">Avatar</div>' +
-          '<div class="builder-section-num">§ 2</div>' +
+          '<div class="builder-section-num">\xa7 2</div>' +
         '</div>' +
         '<div class="avatar-modes">' +
           '<button class="avatar-mode-btn active" data-mode="identicon" type="button">⬢ Identicon</button>' +
@@ -227,7 +227,7 @@
       '<div class="builder-section">' +
         '<div class="builder-section-head">' +
           '<div class="builder-section-title">Card Theme</div>' +
-          '<div class="builder-section-num">§ 3</div>' +
+          '<div class="builder-section-num">\xa7 3</div>' +
         '</div>' +
         '<div class="theme-picker">' +
           THEMES.map(function(t){
@@ -240,7 +240,7 @@
       '<div class="builder-section">' +
         '<div class="builder-section-head">' +
           '<div class="builder-section-title">Badges</div>' +
-          '<div class="builder-section-num">§ 4</div>' +
+          '<div class="builder-section-num">\xa7 4</div>' +
         '</div>' +
         '<div class="badge-gallery" id="badge-gallery"></div>' +
       '</div>' +
@@ -249,7 +249,7 @@
       '<div class="builder-section">' +
         '<div class="builder-section-head">' +
           '<div class="builder-section-title">Portability</div>' +
-          '<div class="builder-section-num">§ 5</div>' +
+          '<div class="builder-section-num">\xa7 5</div>' +
         '</div>' +
         '<div class="builder-actions">' +
           '<button class="btn btn-sm" id="export-id">⤓ Export ID</button>' +
@@ -324,8 +324,8 @@
       content.innerHTML =
         '<label class="avatar-upload-zone" id="avatar-zone">' +
           '<div class="glyph">⤓</div>' +
-          '<p>Tap to choose · or drop an image</p>' +
-          '<p class="small-note">PNG, JPG, GIF · ≤ 8MB · resized to 256×256</p>' +
+          '<p>Tap to choose \xb7 or drop an image</p>' +
+          '<p class="small-note">PNG, JPG, GIF \xb7 ≤ 8MB \xb7 resized to 256\xd7256</p>' +
           '<input type="file" id="avatar-file" accept="image/*">' +
         '</label>';
 
@@ -356,7 +356,7 @@
     reader.onload = function(e){
       var img = new Image();
       img.onload = function(){
-        // Resize via canvas to 256×256
+        // Resize via canvas to 256x256
         var canvas = document.createElement('canvas');
         canvas.width = 256; canvas.height = 256;
         var ctx = canvas.getContext('2d');
@@ -440,7 +440,7 @@
     var theme = THEMES.find(function(t){ return t.id === (profile.theme||'gold'); }) || THEMES[0];
     var text =
 '╔══════════════════════════════════════╗\n' +
-'║  ATLAS ID · ' + (profile.callsign||'Unnamed').padEnd(24, ' ').slice(0,24) + ' ║\n' +
+'║  ATLAS ID \xb7 ' + (profile.callsign||'Unnamed').padEnd(24, ' ').slice(0,24) + ' ║\n' +
 '╠══════════════════════════════════════╣\n' +
 '║  Rank:      ' + FA.Forum.Identity.rankLabel(profile.rank).padEnd(24, ' ').slice(0,24) + ' ║\n' +
 '║  Archetype: ' + (profile.archetype||'Operator').padEnd(24, ' ').slice(0,24) + ' ║\n' +
@@ -448,7 +448,7 @@
 '║  Replies:   ' + String(profile.stats.replies||0).padEnd(24, ' ').slice(0,24) + ' ║\n' +
 '║  Helpful:   ' + String(profile.stats.helpful||0).padEnd(24, ' ').slice(0,24) + ' ║\n' +
 '╚══════════════════════════════════════╝\n' +
-'forge-atlas.io · ' + theme.name;
+'forge-atlas.io \xb7 ' + theme.name;
     try {
       navigator.clipboard.writeText(text);
       alert('Share card copied to clipboard.');
