@@ -76,13 +76,31 @@
     <!-- Populated by challenge.js -->
   </div>
 
-  <div class="ch-arena">
+  <div class="ch-arena" id="ch-arena">
     <div class="ch-fighter" id="ch-fighter-a">
       <!-- Populated by challenge.js -->
     </div>
     <div class="ch-fighter" id="ch-fighter-b">
       <!-- Populated by challenge.js -->
     </div>
+  </div>
+
+  <!-- Mobile swipe nav (hidden on desktop) -->
+  <div class="ch-swipe-nav" id="ch-swipe-nav" aria-hidden="true">
+    <button class="ch-swipe-nav-btn" id="ch-swipe-prev" aria-label="View Fighter A" disabled>‹</button>
+    <div class="ch-swipe-dots" role="tablist" aria-label="Fighter view">
+      <span class="ch-swipe-dot active" role="tab" aria-label="Fighter A"></span>
+      <span class="ch-swipe-dot" role="tab" aria-label="Fighter B"></span>
+    </div>
+    <button class="ch-swipe-nav-btn" id="ch-swipe-next" aria-label="View Fighter B">›</button>
+  </div>
+
+  <!-- Compare bar (visible after battle completes) -->
+  <div class="ch-compare-bar" id="ch-compare-bar">
+    <button class="ch-compare-toggle-btn" id="ch-compare-toggle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14" aria-hidden="true"><rect x="2" y="3" width="9" height="18" rx="1"/><rect x="13" y="3" width="9" height="18" rx="1"/></svg>
+      Compare Side by Side
+    </button>
   </div>
 
   <!-- Vote panel -->
