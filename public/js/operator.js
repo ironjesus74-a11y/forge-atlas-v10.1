@@ -429,7 +429,7 @@
         bench.innerHTML =
           '<div style="margin-bottom:8px"><strong style="color:var(--gold);font-family:var(--font-display);font-size:15px;letter-spacing:.04em">' + esc(a.name) + '</strong> <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted-2);letter-spacing:.10em;margin-left:6px">DEEP · CLAUDE</span></div>' +
           '<p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">' + esc(a.desc) + '</p>' +
-          '<button class="op-action-btn primary" onclick="window.location.href=\'' + (a.dispatch === 'arena-llm' ? 'arena.html' : a.dispatch === 'atlas-helper' ? 'index.html' : 'command.html#seo') + '\'">DISPATCH ▸</button>' +
+          '<button class="op-action-btn primary" onclick="window.location.href=\'' + (a.dispatch === 'arena-llm' ? 'arena.html' : a.dispatch === 'atlas-helper' ? 'index.html' : 'command.html#seo') + '\'"}>DISPATCH ▸</button>' +
           '<div class="op-modal-honest" style="margin-top:14px"><strong>Deep agent.</strong> Routes to its dedicated surface (Arena, Atlas Helper widget, or SEO Copilot module). Requires ANTHROPIC_API_KEY secret to be set on the relevant Worker.</div>';
       }
     },
@@ -648,6 +648,168 @@
           resEl.innerHTML = '<div class="op-ai-result-meta">⚡ <strong>' + esc(data.model || '?') + '</strong></div>' + esc(data.output || '(empty)');
         }).catch(function(err){
           resEl.innerHTML = '<div class="op-ai-result-meta" style="color:var(--rose)">✗ FAILED</div>' + esc(String(err.message || err));
+        });
+      });
+    },
+  };
+
+  /* ---------- MARKET ---------- */
+  Modules.market = {
+    label: 'Market',
+    icon: '◈',
+    title: 'Market Manager',
+    _staged: lsGet('atlas.market.staged', null),
+
+    render: function(host){
+      var self = Modules.market;
+      host.innerHTML =
+        '<div class="op-grid cols-2">' +
+          '<div class="op-tile col-span-12">' +
+            '<div class="op-tile-head"><span class="op-tile-label">ADD / EDIT LISTING</span></div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px" id="mkt-form-grid">' +
+              '<div><label class="op-field-label">Name</label><input class="op-input" id="mkt-name" placeholder="Product name" maxlength="80"></div>' +
+              '<div><label class="op-field-label">Price ($)</label><input class="op-input" id="mkt-price" type="number" min="1" max="9999" placeholder="49"></div>' +
+              '<div><label class="op-field-label">Category</label><select class="op-input" id="mkt-cat"><option value="prompts">prompts</option><option value="tools">tools</option><option value="automation">automation</option><option value="landing">landing</option><option value="agent">agent</option><option value="dashboard">dashboard</option><option value="playbook">playbook</option><option value="brand">brand</option><option value="launch">launch</option><option value="ui">ui</option></select></div>' +
+              '<div><label class="op-field-label">Level</label><select class="op-input" id="mkt-level"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>' +
+              '<div><label class="op-field-label">Color tag</label><select class="op-input" id="mkt-color"><option value="gold">gold</option><option value="cyan">cyan</option><option value="violet">violet</option></select></div>' +
+              '<div><label class="op-field-label">Status</label><select class="op-input" id="mkt-status"><option value="active">active</option><option value="hidden">hidden</option></select></div>' +
+              '<div style="grid-column:1/-1"><label class="op-field-label">Description</label><textarea class="op-input" id="mkt-desc" rows="3" maxlength="300" placeholder="One or two sentences…" style="resize:vertical"></textarea></div>' +
+            '</div>' +
+            '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">' +
+              '<button class="op-action-btn primary" id="mkt-add">＋ Add to staged list</button>' +
+              '<button class="op-action-btn" id="mkt-clear-form">Clear form</button>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="op-tile col-span-12">' +
+            '<div class="op-tile-head"><span class="op-tile-label">STAGED LISTINGS</span><span class="op-tile-label muted" id="mkt-staged-count" style="margin-left:auto">0 staged</span></div>' +
+            '<div id="mkt-staged-list" style="margin-top:8px"></div>' +
+            '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">' +
+              '<button class="op-action-btn primary" id="mkt-copy-json">⎘ Copy market-listings.json</button>' +
+              '<button class="op-action-btn" id="mkt-load-live">↓ Load live listings into staging</button>' +
+              '<button class="op-action-btn" style="border-color:rgba(248,113,113,.3);color:var(--rose)" id="mkt-clear-staged">⚠ Clear staged</button>' +
+            '</div>' +
+            '<div class="op-console-line muted" style="margin-top:10px;font-size:11px">After copying — paste the JSON to me in chat and say "update market". I commit it and it deploys automatically.</div>' +
+          '</div>' +
+        '</div>';
+
+      self._paintStaged();
+
+      $('#mkt-add').addEventListener('click', function(){
+        var name = ($('#mkt-name').value || '').trim();
+        var price = parseInt($('#mkt-price').value, 10);
+        var desc = ($('#mkt-desc').value || '').trim();
+        if (!name || !price || !desc) { Console.warn('market: name, price, and description required'); return; }
+        var id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        var item = {
+          id: id,
+          name: name,
+          price: price,
+          category: $('#mkt-cat').value,
+          level: $('#mkt-level').value,
+          color: $('#mkt-color').value,
+          description: desc,
+          status: $('#mkt-status').value,
+        };
+        var staged = lsGet('atlas.market.staged', []);
+        var existing = staged.findIndex(function(s){ return s.id === id; });
+        if (existing >= 0) staged[existing] = item; else staged.push(item);
+        lsSet('atlas.market.staged', staged);
+        self._paintStaged();
+        Console.ok('market: "' + name + '" staged');
+        $('#mkt-name').value = ''; $('#mkt-price').value = ''; $('#mkt-desc').value = '';
+      });
+
+      $('#mkt-clear-form').addEventListener('click', function(){
+        $('#mkt-name').value = ''; $('#mkt-price').value = ''; $('#mkt-desc').value = '';
+      });
+
+      $('#mkt-copy-json').addEventListener('click', function(){
+        var staged = lsGet('atlas.market.staged', []);
+        if (!staged.length) { Console.warn('market: nothing staged to copy'); return; }
+        var out = JSON.stringify({ version: '1.0', updated: new Date().toISOString().slice(0,10), listings: staged }, null, 2);
+        navigator.clipboard.writeText(out).then(function(){
+          Console.ok('market: JSON copied to clipboard (' + staged.length + ' listings)');
+        }).catch(function(){
+          var ta = document.createElement('textarea');
+          ta.value = out; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+          document.body.removeChild(ta);
+          Console.ok('market: JSON copied (' + staged.length + ' listings)');
+        });
+      });
+
+      $('#mkt-load-live').addEventListener('click', function(){
+        fetch('/market-listings.json?v=' + Date.now())
+          .then(function(r){ return r.json(); })
+          .then(function(data){
+            lsSet('atlas.market.staged', data.listings || []);
+            self._paintStaged();
+            Console.ok('market: loaded ' + (data.listings||[]).length + ' live listings into staging');
+          })
+          .catch(function(){ Console.err('market: could not fetch market-listings.json'); });
+      });
+
+      $('#mkt-clear-staged').addEventListener('click', function(){
+        if (!confirm('Clear all staged listings?')) return;
+        lsSet('atlas.market.staged', []);
+        self._paintStaged();
+        Console.ok('market: staging cleared');
+      });
+    },
+
+    _paintStaged: function(){
+      var staged = lsGet('atlas.market.staged', []);
+      var list = $('#mkt-staged-list');
+      var count = $('#mkt-staged-count');
+      if (count) count.textContent = staged.length + ' staged';
+      if (!list) return;
+      if (!staged.length) {
+        list.innerHTML = '<div class="op-console-line muted" style="font-size:12px">No listings staged. Add one above or load live listings.</div>';
+        return;
+      }
+      list.innerHTML = staged.map(function(item, idx){
+        return '<div class="op-status-row" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)">' +
+          '<div>' +
+            '<span style="color:var(--'+esc(item.color)+');font-family:var(--font-mono);font-size:11px;letter-spacing:.08em">'+esc(item.category)+'</span>' +
+            ' <strong style="font-size:13px">'+esc(item.name)+'</strong>' +
+            ' <span style="color:var(--muted-2);font-size:12px">$'+esc(String(item.price))+'</span>' +
+            (item.status === 'hidden' ? ' <span style="color:var(--rose);font-size:10px;font-family:var(--font-mono)">HIDDEN</span>' : '') +
+          '</div>' +
+          '<div style="display:flex;gap:6px">' +
+            '<button class="op-action-btn" data-mkt-edit="'+idx+'" style="padding:3px 8px;font-size:11px">Edit</button>' +
+            '<button class="op-action-btn" data-mkt-del="'+idx+'" style="padding:3px 8px;font-size:11px;border-color:rgba(248,113,113,.3);color:var(--rose)">✕</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      list.querySelectorAll('[data-mkt-del]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var i = parseInt(btn.getAttribute('data-mkt-del'), 10);
+          var s = lsGet('atlas.market.staged', []);
+          s.splice(i, 1);
+          lsSet('atlas.market.staged', s);
+          Modules.market._paintStaged();
+          Console.ok('market: listing removed');
+        });
+      });
+
+      list.querySelectorAll('[data-mkt-edit]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var i = parseInt(btn.getAttribute('data-mkt-edit'), 10);
+          var s = lsGet('atlas.market.staged', []);
+          var item = s[i];
+          if (!item) return;
+          var n = $('#mkt-name'), p = $('#mkt-price'), d = $('#mkt-desc');
+          var c = $('#mkt-cat'), l = $('#mkt-level'), cl = $('#mkt-color'), st = $('#mkt-status');
+          if (n) n.value = item.name;
+          if (p) p.value = item.price;
+          if (d) d.value = item.description;
+          if (c) c.value = item.category;
+          if (l) l.value = item.level;
+          if (cl) cl.value = item.color;
+          if (st) st.value = item.status;
+          Console.info('market: loaded "' + item.name + '" into form — edit and re-add to update');
         });
       });
     },
