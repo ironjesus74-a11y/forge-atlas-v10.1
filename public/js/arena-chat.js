@@ -683,12 +683,6 @@
 
     // v10.1: pure 1v1 — no spectator chimes
     var aug = script.lines.slice();
-      }
-      // 25% chance to drop a "joined" notice
-      if (!line.system && Math.random() < 0.25) {
-        aug.push({ who:"ATLAS", text: pick(JOIN_NOTICES), delay:400, typing:0, system:true, peek:true });
-      }
-    });
 
     // Run with augmented script using the original engine, but our own pump for peek classes
     var i = 0;
