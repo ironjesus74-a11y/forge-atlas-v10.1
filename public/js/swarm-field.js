@@ -32,6 +32,8 @@
   var canvas, ctx, w, h, dpr, raf, paused = false, isAmbient = false;
   var noiseCanvas, noiseCtx, noiseImgData, noiseLfsr = 0xACE1, noiseFrame = 0;
   var quantumEntropy = 0xA4C8;
+  var quantumSource = 'LFSR';
+  var qEntFetchAt = 0;
   var nodes = [];
   var bgLines = [];
   var mouse = { x: -9999, y: -9999, active: false };
@@ -255,6 +257,7 @@
       prompted: getPrompted(),
     };
     renderMatchHUD();
+    fetchQuantumEntropy();
   }
 
   function endMatch(){
@@ -300,6 +303,26 @@
     var s = n.toString(16).toUpperCase();
     while (s.length < len) s = '0' + s;
     return s;
+  }
+
+  // Fetch real quantum entropy from /api/quantum-seed (ANU or IBM Quantum).
+  // Silently falls back to LFSR if the endpoint is unreachable.
+  function fetchQuantumEntropy() {
+    qEntFetchAt = Date.now();
+    fetch('/api/quantum-seed')
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function(data) {
+        if (!data || data.seed == null) return;
+        quantumEntropy = data.seed & 0xFFFF;
+        quantumSource = data.sourceKey
+          ? data.sourceKey.toUpperCase()
+          : (data.fallback ? 'CSPRNG' : 'ANU');
+        var valEl = document.getElementById('swarm-qent-val');
+        if (valEl) valEl.textContent = '0x' + padHex(quantumEntropy, 4);
+        var srcEl = document.getElementById('swarm-qent-src');
+        if (srcEl) srcEl.textContent = ' · ' + quantumSource;
+      })
+      .catch(function() {});
   }
 
   function renderMatchHUD(){
@@ -366,7 +389,7 @@
           '<div class="sm-bar-sigma" style="width:' + sigmaPct + '%"></div>' +
           '<div class="sm-bar-omega" style="width:' + omegaPct + '%"></div>' +
         '</div>' +
-        '<div class="swarm-qent mono">QENT <span id="swarm-qent-val">' + qentStr + '</span></div>' +
+        '<div class="swarm-qent mono">QENT <span id="swarm-qent-val">' + qentStr + '</span><span id="swarm-qent-src"> · ' + quantumSource + '</span></div>' +
         '<div class="swarm-match-actions">' +
           (match.backed
             ? '<div class="sm-backed-note">You\'re backing <strong class="' + match.backed + '">' + (match.backed === 'sigma' ? 'Sigma Pack' : 'Omega Squad') + '</strong></div>'
@@ -466,6 +489,8 @@
         match._lastHudTick = now;
         renderMatchHUD();
       }
+      // Refresh quantum entropy every 45 s from the real API
+      if (now - qEntFetchAt > 45000) fetchQuantumEntropy();
     }
 
     ctx.clearRect(0, 0, w, h);
