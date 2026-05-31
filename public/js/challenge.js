@@ -53,7 +53,7 @@
 
   function weightClass(model) {
     var elo = model.elo || 1700;
-    if (elo >= 2150) return '∞ params \xb7 unlimited class';
+    if (elo >= 2150) return '∞ params · unlimited class';
     if (elo >= 2050) return 'frontier heavyweight';
     if (elo >= 1950) return 'production middleweight';
     if (elo >= 1850) return 'enterprise welterweight';
@@ -240,7 +240,7 @@
       '<div class="ch-splash-corner br"></div>' +
       '<div class="ch-splash-inner">' +
         '<div class="ch-splash-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 9H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/><path d="M10 9.5c0 .83-.67 1.5-1.5 1.5h-5C2.67 11 2 10.33 2 9.5S2.67 8 3.5 8h5c.83 0 1.5.67 1.5 1.5z"/><path d="M8.5 15H10v-1.5c0-.83-.67-1.5-1.5-1.5S7 12.67 7 13.5s.67 1.5 1.5 1.5z"/></svg></div>' +
-        '<div class="ch-splash-label">Forge Atlas \xb7 AI Fight Club</div>' +
+        '<div class="ch-splash-label">Forge Atlas · AI Fight Club</div>' +
         '<div class="ch-splash-title">You\'re the<br><span style="color:var(--violet)">judge.</span></div>' +
         '<div class="ch-splash-sub">Pick two AIs. Set the task. Watch them compete for your vote.</div>' +
         '<div class="ch-splash-cta">click anywhere to enter</div>' +
@@ -290,9 +290,9 @@
       '<div class="ch-ev-scan"></div>' +
       '<div class="ch-ev-inner">' +
         '<div class="ch-ev-header">' +
-          '<div class="ch-ev-eyebrow">Forge Atlas \xb7 Fight Night</div>' +
-          (hasRivalry ? '<div class="ch-ev-rivalry">⚡ Rivalry Match \xb7 ' + esc(rivalRecord) + '</div>' : '') +
-          '<div class="ch-ev-event-num">Season ' + esc(String(season.number || 1)) + ' \xb7 Event #' + esc(String(eventNum)) + '</div>' +
+          '<div class="ch-ev-eyebrow">Forge Atlas · Fight Night</div>' +
+          (hasRivalry ? '<div class="ch-ev-rivalry">⚡ Rivalry Match · ' + esc(rivalRecord) + '</div>' : '') +
+          '<div class="ch-ev-event-num">Season ' + esc(String(season.number || 1)) + ' · Event #' + esc(String(eventNum)) + '</div>' +
         '</div>' +
         '<div class="ch-ev-matchup">' +
           '<div class="ch-ev-fighter ch-ev-a color-' + esc(modelA.color || 'gold') + '">' +
@@ -319,7 +319,7 @@
           '</div>' +
         '</div>' +
         '<div class="ch-ev-footer">' +
-          '<div class="ch-ev-cta">tap to start \xb7 auto in 3s</div>' +
+          '<div class="ch-ev-cta">tap to start · auto in 3s</div>' +
         '</div>' +
       '</div>';
 
@@ -355,16 +355,16 @@
 
     function modelOptions(selected) {
       return models.map(function (m) {
-        return '<option value="' + esc(m.name) + '"' + (m.name === selected.name ? ' selected' : '') + '>' + esc(m.name) + ' \xb7 ' + esc(m.org) + '</option>';
+        return '<option value="' + esc(m.name) + '"' + (m.name === selected.name ? ' selected' : '') + '>' + esc(m.name) + ' · ' + esc(m.org) + '</option>';
       }).join('');
     }
 
     function previewHtml(model) {
       if (!model) return '';
-      return '<strong>' + esc(model.name) + '</strong> \xb7 ' + esc(model.org) +
-        (model.region ? ' <span class="ch-preview-city">\xb7 ' + esc(model.region) + '</span>' : '') +
+      return '<strong>' + esc(model.name) + '</strong> · ' + esc(model.org) +
+        (model.region ? ' <span class="ch-preview-city">· ' + esc(model.region) + '</span>' : '') +
         '<em style="display:block;margin-top:4px">' + esc((model.personality || model.tagline || '').split('.')[0]) + '.</em>' +
-        '<span class="ch-elo">ELO ' + (model.elo || '—') + ' \xb7 ' + (model.w || 0) + 'W ' + (model.l || 0) + 'L</span>' +
+        '<span class="ch-elo">ELO ' + (model.elo || '—') + ' · ' + (model.w || 0) + 'W ' + (model.l || 0) + 'L</span>' +
         '<span class="ch-weight-preview">' + esc(weightClass(model)) + '</span>';
     }
 
@@ -394,7 +394,7 @@
 
       '<div class="ch-task-row">' +
         '<label class="ch-task-label" for="ch-task">Set the challenge</label>' +
-        '<textarea class="ch-task-input" id="ch-task" maxlength="600" placeholder="e.g. &quot;Explain recursion to a 10-year-old&quot; \xb7 &quot;Is AGI inevitable?&quot; \xb7 &quot;Roast modern tech culture&quot; \xb7 &quot;Your best AI conspiracy theory&quot;"></textarea>' +
+        '<textarea class="ch-task-input" id="ch-task" maxlength="600" placeholder="e.g. &quot;Explain recursion to a 10-year-old&quot; · &quot;Is AGI inevitable?&quot; · &quot;Roast modern tech culture&quot; · &quot;Your best AI conspiracy theory&quot;"></textarea>' +
         '<div class="ch-task-hint">Any task, any topic. The AIs respond in their own voice.</div>' +
       '</div>' +
 
@@ -431,7 +431,7 @@
       state.task = taskEl.value.trim();
       var valid = state.task.length >= 4;
       launchBtn.disabled = !valid;
-      launchNote.textContent = valid ? 'Ready \xb7 ' + state.task.length + ' / 600' : 'Enter a challenge to begin';
+      launchNote.textContent = valid ? 'Ready · ' + state.task.length + ' / 600' : 'Enter a challenge to begin';
     });
 
     launchBtn.addEventListener('click', function () {
@@ -464,8 +464,8 @@
       var header = $('#ch-battle-header');
       if (header) {
         header.innerHTML =
-          (hasRivalry ? '<div class="ch-rivalry-banner">⚡ Rivalry Match \xb7 ' + esc(rivalRecord) + '</div>' : '') +
-          '<div class="ch-battle-id mono">Fight Night \xb7 ' + esc(state.format.toUpperCase()) + '</div>' +
+          (hasRivalry ? '<div class="ch-rivalry-banner">⚡ Rivalry Match · ' + esc(rivalRecord) + '</div>' : '') +
+          '<div class="ch-battle-id mono">Fight Night · ' + esc(state.format.toUpperCase()) + '</div>' +
           '<div class="ch-battle-format">' + esc(state.format) + '</div>' +
           '<div class="ch-battle-topic">' + esc(state.task.length > 100 ? state.task.slice(0, 100) + '…' : state.task) + '</div>';
       }
@@ -489,7 +489,7 @@
     var host = $('#ch-fighter-' + side);
     if (!host) return;
     var sig = (FA.SIGNATURES || {})[model.name] || {};
-    var record = (model.w || 0) + 'W \xb7 ' + (model.l || 0) + 'L';
+    var record = (model.w || 0) + 'W · ' + (model.l || 0) + 'L';
 
     host.className = 'ch-fighter color-' + (model.color || 'gold');
     host.innerHTML =
@@ -498,7 +498,7 @@
         '<div class="ch-fighter-info">' +
           '<div class="ch-fighter-name">' + esc(model.name) + '</div>' +
           '<div class="ch-fighter-org">' + esc(model.org || '') +
-            (model.region ? ' \xb7 <span class="ch-fighter-city">' + esc(model.region) + '</span>' : '') +
+            (model.region ? ' · <span class="ch-fighter-city">' + esc(model.region) + '</span>' : '') +
           '</div>' +
           '<div class="ch-fighter-weight">' + esc(weightClass(model)) + '</div>' +
         '</div>' +
@@ -603,6 +603,7 @@
 
   function castVote(side) {
     state.winner = side;
+    try { var cv = parseInt(localStorage.getItem('forge.challenge.votes') || '0', 10); localStorage.setItem('forge.challenge.votes', String(cv + 1)); } catch(e) {}
     var vote = $('#ch-vote');
     if (vote) vote.classList.remove('active');
     showResult();
