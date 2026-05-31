@@ -61,132 +61,15 @@
 <section class="wrap" id="products">
   <div class="sec-num">01 / Catalog</div>
   <div class="sec-head reveal">
-    <div><div class="kicker"><span class="pip"></span> Twelve products</div><h2>Pick your edge.</h2></div>
+    <div><div class="kicker"><span class="pip"></span> <span id="market-count">—</span> products</div><h2>Pick your edge.</h2></div>
   </div>
 
-  <div class="filter-bar reveal" data-filter-group data-filter-target="#product-grid">
+  <div class="filter-bar reveal" id="market-filter-bar">
     <button class="active" data-filter="all">All</button>
-    <button data-filter="prompts">Prompts</button>
-    <button data-filter="tools">Tools</button>
-    <button data-filter="automation">Automation</button>
-    <button data-filter="landing">Landing</button>
-    <button data-filter="agent">Agent</button>
-    <button data-filter="dashboard">Dashboard</button>
-    <button data-filter="playbook">Playbook</button>
-    <button data-filter="brand">Brand</button>
-    <button data-filter="launch">Launch</button>
-    <button data-filter="ui">UI</button>
   </div>
 
   <div class="grid grid-3 reveal" id="product-grid">
-    <div class="card" data-cat="prompts">
-      <div class="flex between mb"><span class="tag gold">prompts</span><span class="tag">Beginner</span></div>
-      <h3>Operator Prompt Pack v3</h3>
-      <p>60 production-grade prompts across writing, code, automation, research. Tested across Claude, GPT, Gemini families.</p>
-      <div class="flex between items-center mt-lg" style="margin-top:24px">
-        <div class="price">$29</div>
-        <a href="contact.html" class="btn btn-sm">Inquire <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
-    <div class="card" data-cat="tools">
-      <div class="flex between mb"><span class="tag cyan">tools</span><span class="tag">Intermediate</span></div>
-      <h3>Termux Ops Kit</h3>
-      <p>Install scripts, aliases, ssh hardening, tmux config, Claude CLI proxy setup. Tested on Android 12+.</p>
-      <div class="flex between items-center mt-lg" style="margin-top:24px">
-        <div class="price">$39</div>
-        <a href="contact.html" class="btn btn-sm">Inquire <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
-    <div class="card" data-cat="automation">
-      <div class="flex between mb"><span class="tag gold">automation</span><span class="tag">Intermediate</span></div>
-      <h3>Cloudflare Worker AI Proxy Kit</h3>
-      <p>Drop-in Worker for safe Claude/OpenAI integration. Origin allow-list, rate limit, secret env, full README.</p>
-      <div class="flex between items-center mt-lg" style="margin-top:24px">
-        <div class="price">$49</div>
-        <a href="contact.html" class="btn btn-sm">Inquire <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
-    <div class="card" data-cat="launch">
-      <div class="flex between mb"><span class="tag violet">launch</span><span class="tag">Beginner</span></div>
-      <h3>Static Site Launch Kit</h3>
-      <p>Drop-in HTML/CSS/JS template with Forge Atlas-grade theming. Cloudflare Pages config included.</p>
-      <div class="flex between items-center mt-lg" style="margin-top:24px">
-        <div class="price">$59</div>
-        <a href="contact.html" class="btn btn-sm">Inquire <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
-    <div class="card" data-cat="landing">
-      <div class="flex between mb"><span class="tag cyan">landing</span><span class="tag">Intermediate</span></div>
-      <h3>Landing Page Forge</h3>
-      <p>Five proven hero formats, three CTA stacks, social proof patterns, FAQ accordions, all editable.</p>
-      <div class="flex between items-center mt-lg" style="margin-top:24px">
-        <div class="price">$79</div>
-        <a href="contact.html" class="btn btn-sm">Inquire <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
-    <div class="card" data-cat="agent">
-      <div class="flex between mb"><span class="tag gold">agent</span><span class="tag">Advanced</span></div>
-      <h3>Agent Kit · Single-Operator</h3>
-      <p>Solo-operator agent loop: Strategist + Builder + Critic. Cloudflare Worker template, prompt scaffolds.</p>
-      <div class="flex between items-center mt-lg" style="margin-top:24px">
-        <div class="price">$99</div>
-        <a href="contact.html" class="btn btn-sm">Inquire <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
-    <div class="card" data-cat="dashboard">
-      <div class="flex between mb"><span class="tag cyan">dashboard</span><span class="tag">Advanced</span></div>
-      <h3>Operator Dashboard Template</h3>
-      <p>Project-tracking dashboard for solo operators. Static-first, backend-ready data layer.</p>
-      <div class="flex between items-center mt-lg" style="margin-top:24px">
-        <div class="price">$129</div>
-        <a href="contact.html" class="btn btn-sm">Inquire <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
-    <div class="card" data-cat="playbook">
-      <div class="flex between mb"><span class="tag gold">playbook</span><span class="tag">Beginner</span></div>
-      <h3>AI Business Playbook</h3>
-      <p>48-page playbook: niche selection, offer design, pricing, fulfillment, scaling. Operator-tested.</p>
-      <div class="flex between items-center mt-lg" style="margin-top:24px">
-        <div class="price">$45</div>
-        <a href="contact.html" class="btn btn-sm">Inquire <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
-    <div class="card" data-cat="brand">
-      <div class="flex between mb"><span class="tag violet">brand</span><span class="tag">Intermediate</span></div>
-      <h3>Brand Identity Forge</h3>
-      <p>Logo, palette, typography, voice guide template. Includes Forge Atlas-style aesthetic kit.</p>
-      <div class="flex between items-center mt-lg" style="margin-top:24px">
-        <div class="price">$89</div>
-        <a href="contact.html" class="btn btn-sm">Inquire <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
-    <div class="card" data-cat="ui">
-      <div class="flex between mb"><span class="tag cyan">ui</span><span class="tag">Intermediate</span></div>
-      <h3>Operator UI Components</h3>
-      <p>Cards, hero patterns, navigation systems, glassmorphism kit. Plain HTML/CSS — no framework.</p>
-      <div class="flex between items-center mt-lg" style="margin-top:24px">
-        <div class="price">$69</div>
-        <a href="contact.html" class="btn btn-sm">Inquire <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
-    <div class="card" data-cat="launch">
-      <div class="flex between mb"><span class="tag gold">launch</span><span class="tag">Beginner</span></div>
-      <h3>Freelance Starter Pack</h3>
-      <p>Pricing calculator, intake form, scope template, contract starter. PDF + editable docs.</p>
-      <div class="flex between items-center mt-lg" style="margin-top:24px">
-        <div class="price">$35</div>
-        <a href="contact.html" class="btn btn-sm">Inquire <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
-    <div class="card" data-cat="automation">
-      <div class="flex between mb"><span class="tag violet">automation</span><span class="tag">Advanced</span></div>
-      <h3>Automation Blueprint Library</h3>
-      <p>30 ready-to-deploy automation patterns: lead capture, content distribution, customer support, data cleanup.</p>
-      <div class="flex between items-center mt-lg" style="margin-top:24px">
-        <div class="price">$119</div>
-        <a href="contact.html" class="btn btn-sm">Inquire <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
+    <div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--muted-2);font-family:var(--font-mono);font-size:13px">Loading listings…</div>
   </div>
 
   <div class="honesty mt-lg"><div class="honesty-icon">i</div><div><strong>Manual fulfillment</strong>Inquiries go to ironjesus74@gmail.com. Delivery happens by email or shared link within 24 hours. Automatic checkout and instant delivery ship with backend.</div></div>
@@ -222,6 +105,69 @@
   </div>
   <div class="foot-bottom"><span>© 2026 Forge Atlas — ironjesus74@gmail.com · Cash App: $herdtnerbryant · github.com/Forge-Atlas-Founder/Forge-Atlas-Main</span><span>v10.1 · Built Different. · <a href="https://www.anthropic.com/claude" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;letter-spacing:.06em;font-family:var(--font-mono);font-size:11px">co-built with Claude · Anthropic</a><br><em style="color:rgba(255,255,255,.45);font-size:10px;letter-spacing:.16em;font-family:var(--font-mono);text-transform:uppercase;font-style:normal">For Emery · 5/22/20</em></span></div>
 </footer>
+<script>
+(function(){
+  var ARROW_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  var CATS = [];
+
+  function esc(s){ return String(s||'').replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
+
+  function renderCard(item){
+    return '<div class="card" data-cat="'+esc(item.category)+'" data-id="'+esc(item.id)+'">' +
+      '<div class="flex between mb"><span class="tag '+esc(item.color)+'">'+esc(item.category)+'</span><span class="tag">'+esc(item.level)+'</span></div>' +
+      '<h3>'+esc(item.name)+'</h3>' +
+      '<p>'+esc(item.description)+'</p>' +
+      '<div class="flex between items-center" style="margin-top:24px">' +
+        '<div class="price">$'+esc(String(item.price))+'</div>' +
+        '<a href="contact.html" class="btn btn-sm">Inquire '+ARROW_SVG+'</a>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function buildFilterBar(listings){
+    var bar = document.getElementById('market-filter-bar');
+    if (!bar) return;
+    CATS = [];
+    listings.forEach(function(l){ if (CATS.indexOf(l.category) === -1) CATS.push(l.category); });
+    CATS.sort();
+    var extra = CATS.map(function(c){ return '<button data-filter="'+esc(c)+'">'+esc(c.charAt(0).toUpperCase()+c.slice(1))+'</button>'; }).join('');
+    bar.innerHTML = '<button class="active" data-filter="all">All</button>' + extra;
+    bar.querySelectorAll('button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        bar.querySelectorAll('button').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        filterGrid(btn.getAttribute('data-filter'));
+      });
+    });
+  }
+
+  function filterGrid(cat){
+    var grid = document.getElementById('product-grid');
+    if (!grid) return;
+    grid.querySelectorAll('.card').forEach(function(c){
+      c.style.display = (cat === 'all' || c.getAttribute('data-cat') === cat) ? '' : 'none';
+    });
+  }
+
+  function loadMarket(){
+    var grid = document.getElementById('product-grid');
+    var countEl = document.getElementById('market-count');
+    fetch('/market-listings.json?v='+Date.now())
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var active = (data.listings || []).filter(function(l){ return l.status !== 'hidden'; });
+        if (countEl) countEl.textContent = active.length;
+        if (grid) grid.innerHTML = active.map(renderCard).join('');
+        buildFilterBar(active);
+      })
+      .catch(function(){
+        if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--rose);font-family:var(--font-mono);font-size:13px">Could not load listings — check market-listings.json</div>';
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', loadMarket);
+})();
+</script>
 <script src="public/js/emery.js"></script>
 <script src="public/js/perf.js" defer></script>
 <script src="public/js/quotes.js"></script>
