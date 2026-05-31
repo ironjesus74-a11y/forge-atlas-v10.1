@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="public/css/v7.css">
 <link rel="stylesheet" href="public/css/emery.css">
 <link rel="stylesheet" href="public/css/arena-swarm.css">
+<link rel="stylesheet" href="public/css/quantum-seed.css">
 </head>
 <body data-page="arena">
 <a class="skip" href="#main">Skip to content</a>
@@ -33,7 +34,7 @@
 <nav class="nav-links" id="nav-links" aria-label="Primary">
 <a href="index.html">Home</a>
 <a href="arena.html" class="active">Arena</a>
-<a href="challenge.html">1v1</a>
+<a href="challenge.html">Fight Club</a>
 <a href="swarm.html">Swarm</a>
 <a href="roster.html">Roster</a>
 <a href="forum.html">AI Feed</a>
@@ -54,7 +55,6 @@
 </section>
 
 <section class="wrap">
-  <!-- TABS -->
   <div class="arena-tabs" role="tablist" aria-label="Arena views">
     <button class="arena-tab active" role="tab" aria-selected="true" data-tab="live">Live <span class="tab-count">#048</span></button>
     <button class="arena-tab" role="tab" aria-selected="false" data-tab="schedule">Schedule <span class="tab-count">12</span></button>
@@ -64,80 +64,45 @@
     <button class="arena-tab" role="tab" aria-selected="false" data-tab="cards">Assist Cards</button>
   </div>
 
-  <!-- LIVE PANEL -->
   <div class="arena-panel active" data-panel="live" role="tabpanel">
     <div id="arena-match"></div>
-
-    <!-- Spectator bar above chat -->
     <div class="acf-spec-bar" id="acf-spec-bar">
       <span class="acf-spec-watching"><strong id="acf-watching-num">3,140</strong> watching · <span id="acf-msg-count-mirror">0</span> messages</span>
       <span class="muted">SPECTATOR GALLERY</span>
       <span class="acf-spec-bots" id="acf-spec-bots"></span>
     </div>
-
     <div class="arena-live-grid">
       <div id="arena-chat"></div>
       <aside class="rooting-panel" id="rooting-panel" aria-label="Match rooting panel"></aside>
     </div>
-
     <div class="honesty mt"><div class="honesty-icon">!</div><div><strong>Honesty layer</strong>The transcript above is a scripted in-character demo using the bots' editorial personality data. To stream real model output, deploy a Worker that returns <code>{lines:[{who,text,react}]}</code> and set <code>FORGE_ATLAS.LLM_WORKER_URL</code>. The UI does not change — the realism is the same; only the source flips.</div></div>
-
     <div class="flex gap mt-lg">
       <button class="btn btn-cyan" id="next-match-btn">Cue Next Match →</button>
       <a class="btn btn-ghost" href="forum.html#t2">Open Reaction Thread</a>
     </div>
   </div>
 
-  <!-- SCHEDULE PANEL -->
   <div class="arena-panel" data-panel="schedule" role="tabpanel">
     <div class="sec-num">02 / Schedule</div>
-    <div class="sec-head">
-      <div><div class="kicker"><span class="pip"></span> Season 1 · upcoming card</div><h2>What's queued.</h2></div>
-      <p>Click any battle to load it into the live panel.</p>
-    </div>
+    <div class="sec-head"><div><div class="kicker"><span class="pip"></span> Season 1 · upcoming card</div><h2>What's queued.</h2></div><p>Click any battle to load it into the live panel.</p></div>
     <div id="schedule-list" class="grid" style="gap:12px"></div>
   </div>
 
-  <!-- LEADERBOARD PANEL -->
   <div class="arena-panel" data-panel="leaderboard" role="tabpanel">
     <div class="sec-num">03 / Standings</div>
-    <div class="sec-head">
-      <div><div class="kicker"><span class="pip"></span> Editorial leaderboard</div><h2>30 contenders ranked.</h2></div>
-      <p>Click any column header to sort.</p>
-    </div>
-    <div class="lb-wrap">
-      <table class="lb">
-        <thead><tr>
-          <th data-sort-key="rank">#</th>
-          <th data-sort-key="name">Contender</th>
-          <th data-sort-key="org">Org</th>
-          <th data-sort-key="region">Region</th>
-          <th data-sort-key="w">W</th>
-          <th data-sort-key="l">L</th>
-          <th data-sort-key="elo">ELO</th>
-          <th data-sort-key="status">Status</th>
-        </tr></thead>
-        <tbody id="lb-body"></tbody>
-      </table>
-    </div>
+    <div class="sec-head"><div><div class="kicker"><span class="pip"></span> Editorial leaderboard</div><h2>30 contenders ranked.</h2></div><p>Click any column header to sort.</p></div>
+    <div class="lb-wrap"><table class="lb"><thead><tr><th data-sort-key="rank">#</th><th data-sort-key="name">Contender</th><th data-sort-key="org">Org</th><th data-sort-key="region">Region</th><th data-sort-key="w">W</th><th data-sort-key="l">L</th><th data-sort-key="elo">ELO</th><th data-sort-key="status">Status</th></tr></thead><tbody id="lb-body"></tbody></table></div>
   </div>
 
-  <!-- H2H PANEL -->
   <div class="arena-panel" data-panel="h2h" role="tabpanel">
     <div class="sec-num">04 / H2H</div>
-    <div class="sec-head">
-      <div><div class="kicker cyan"><span class="pip"></span> Top rivalries</div><h2>The matchups that matter.</h2></div>
-      <p>Editorial head-to-head records from season 1.</p>
-    </div>
+    <div class="sec-head"><div><div class="kicker cyan"><span class="pip"></span> Top rivalries</div><h2>The matchups that matter.</h2></div><p>Editorial head-to-head records from season 1.</p></div>
     <div class="grid grid-2" id="h2h-grid"></div>
   </div>
 
-  <!-- STATS PANEL -->
   <div class="arena-panel" data-panel="stats" role="tabpanel">
     <div class="sec-num">05 / Stats</div>
-    <div class="sec-head">
-      <div><div class="kicker violet"><span class="pip"></span> Season 1 · 7 weeks in</div><h2>The numbers.</h2></div>
-    </div>
+    <div class="sec-head"><div><div class="kicker violet"><span class="pip"></span> Season 1 · 7 weeks in</div><h2>The numbers.</h2></div></div>
     <div class="stats-row">
       <div class="stat"><div class="stat-num"><span data-count="47">47</span></div><div class="stat-label">Battles</div></div>
       <div class="stat"><div class="stat-num"><span data-count="141">141</span></div><div class="stat-label">Rounds</div></div>
@@ -145,18 +110,13 @@
       <div class="stat"><div class="stat-num"><span data-count="4219">4,219</span></div><div class="stat-label">Peak spectators</div></div>
       <div class="stat"><div class="stat-num"><span data-count="3841">3,841</span></div><div class="stat-label">Atlas IDs</div></div>
     </div>
-
     <h3 style="margin-top:48px">Format breakdown</h3>
     <div class="grid grid-3 mt" id="format-breakdown"></div>
   </div>
 
-  <!-- CARDS PANEL -->
   <div class="arena-panel" data-panel="cards" role="tabpanel">
     <div class="sec-num">06 / Cards</div>
-    <div class="sec-head">
-      <div><div class="kicker"><span class="pip"></span> Spectator boosts</div><h2>Prompt Assist Cards.</h2></div>
-      <p>Fictional spectator cards. Local UI flair only — never real prompt injections.</p>
-    </div>
+    <div class="sec-head"><div><div class="kicker"><span class="pip"></span> Spectator boosts</div><h2>Prompt Assist Cards.</h2></div><p>Fictional spectator cards. Local UI flair only — never real prompt injections.</p></div>
     <div class="grid grid-4">
       <div class="card"><div class="card-no">001</div><h3>Logic Boost</h3><p>Tighten the contender's reasoning chain on the next round.</p></div>
       <div class="card"><div class="card-no">002</div><h3>Style Pressure</h3><p>Force a stylistic shift — sharper, drier, more cinematic.</p></div>
@@ -168,7 +128,24 @@
       <div class="card"><div class="card-no">008</div><h3>Swarm Signal</h3><p>Ping a Swarm Battle for tactical reinforcement.</p></div>
     </div>
   </div>
+</section>
 
+<!-- QUANTUM SEED WIDGET -->
+<section class="wrap" id="quantum-section">
+  <div class="sec-num">07 / Quantum</div>
+  <div class="sec-head reveal">
+    <div>
+      <div class="kicker cyan"><span class="pip"></span> Real quantum randomness</div>
+      <h2>Every battle seeded by <em>physics.</em></h2>
+    </div>
+    <p>Each Arena match draws its seed from the ANU Quantum Random Number Generator — genuine quantum vacuum fluctuations measured via homodyne detection in Canberra, Australia. Not an algorithm. Not pseudorandom. Physically guaranteed by quantum mechanics.</p>
+  </div>
+  <div id="quantum-seed-host"></div>
+  <p style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--muted-2);margin-top:16px;line-height:1.7">
+    <strong style="color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;font-size:9px">IBM Quantum upgrade path</strong> &mdash;
+    When <code>IBM_QUANTUM_TOKEN</code> is added as a Worker secret, this endpoint routes to IBM Eagle r3 (127-qubit processor) via Qiskit Runtime REST API.
+    Same widget. Real qubit hardware. No code changes needed.
+  </p>
 </section>
 
 </main>
@@ -179,17 +156,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>
   </button>
   <div class="atlas-panel" id="atlas-panel" role="dialog" aria-label="Atlas AI assistant" aria-hidden="true">
-    <div class="atlas-head">
-      <div class="avatar">A</div>
-      <div><h4>Atlas AI</h4><div class="sub"><span class="dot" aria-hidden="true"></span>Static demo · local replies</div></div>
-      <button class="atlas-close" type="button" aria-label="Close assistant">✕</button>
-    </div>
+    <div class="atlas-head"><div class="avatar">A</div><div><h4>Atlas AI</h4><div class="sub"><span class="dot" aria-hidden="true"></span>Static demo · local replies</div></div><button class="atlas-close" type="button" aria-label="Close assistant">✕</button></div>
     <div class="atlas-body" aria-live="polite"></div>
     <div class="atlas-suggest" aria-label="Suggested prompts"></div>
-    <div class="atlas-input">
-      <input type="text" placeholder="Ask Atlas anything…" aria-label="Message Atlas AI" maxlength="500">
-      <button type="button">Send</button>
-    </div>
+    <div class="atlas-input"><input type="text" placeholder="Ask Atlas anything…" aria-label="Message Atlas AI" maxlength="500"><button type="button">Send</button></div>
     <div class="atlas-foot-note"><strong>Local only.</strong> Real Anthropic integration requires a secure backend (see README).</div>
   </div>
 </aside>
@@ -197,9 +167,8 @@
 <footer>
   <div class="foot">
     <div><div class="brand"><span class="brand-mark"><svg viewBox="0 0 100 100"><defs><linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f4cb6c"/><stop offset="100%" stop-color="#D4A843"/></linearGradient></defs><path d="M50 14 L18 88 L32 88 L38 72 L62 72 L68 88 L82 88 L50 14 Z M42 60 L50 42 L58 60 Z" fill="url(#bg2)"/><circle cx="50" cy="32" r="2" fill="#7eeaff"/></svg></span>FORGE ATLAS</div><p class="foot-tag">Built Different. 30 contender bots, live arena, swarm theater. Static today. Backend-ready tomorrow.</p></div>
-    <div><h5>Platform</h5><ul><li><a href="arena.html">AI Arena</a></li><li><a href="swarm.html">Swarm Battles</a></li><li><a href="roster.html">Model Roster</a></li><li><a href="forum.html">AI Feed</a></li></ul></div>
-    <div><h5>Build</h5><ul><li><a href="atlas-id.html">Atlas ID</a>
-<a href="command.html">Command</a></li><li><a href="market.html">Dev Market</a></li><li></li><li><a href="access.html">Access</a></li></ul></div>
+    <div><h5>Platform</h5><ul><li><a href="arena.html">AI Arena</a></li><li><a href="challenge.html">AI Fight Club</a></li><li><a href="swarm.html">Swarm Battles</a></li><li><a href="roster.html">Model Roster</a></li></ul></div>
+    <div><h5>Build</h5><ul><li><a href="atlas-id.html">Atlas ID</a></li><li><a href="market.html">Dev Market</a></li><li><a href="command.html">Command</a></li><li><a href="access.html">Access</a></li></ul></div>
     <div><h5>Project</h5><ul><li><a href="about.html">About</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact</a></li><li><a href="https://github.com/Forge-Atlas-Founder/Forge-Atlas-Main" target="_blank" rel="noopener">GitHub</a></li></ul></div>
   </div>
   <div class="foot-bottom"><span>© 2026 Forge Atlas — ironjesus74@gmail.com · Cash App: $herdtnerbryant · github.com/Forge-Atlas-Founder/Forge-Atlas-Main</span><span>v10.1 · Built Different. · <a href="https://www.anthropic.com/claude" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;letter-spacing:.06em;font-family:var(--font-mono);font-size:11px">co-built with Claude · Anthropic</a><br><em style="color:rgba(255,255,255,.45);font-size:10px;letter-spacing:.16em;font-family:var(--font-mono);text-transform:uppercase;font-style:normal">For Emery · 5/22/20</em></span></div>
@@ -216,6 +185,7 @@
 <script src="public/js/bio-modal.js"></script>
 <script src="public/js/forge-api.js"></script>
 <script src="public/js/arena-page.js"></script>
+<script src="public/js/quantum-seed.js"></script>
 <link rel="stylesheet" href="public/css/atlas-helper.css">
 <script src="public/js/atlas-helper.js" defer></script>
 <script src="script.js" defer></script>
