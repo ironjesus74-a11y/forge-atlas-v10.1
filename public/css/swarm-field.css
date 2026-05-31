@@ -416,3 +416,46 @@
   pointer-events:none;
   cursor:default;
 }
+
+/* ============================================================
+   HEX GRID BACKGROUND · v10.2
+   Paired 60°/-60° gradients at half-period offset produce a
+   seamless triangular/hex tiling without SVG or extra markup.
+   ============================================================ */
+.swarm-field-host{
+  background-image:
+    linear-gradient(60deg,  rgba(126,234,255,.035) 1px, transparent 1px),
+    linear-gradient(-60deg, rgba(126,234,255,.035) 1px, transparent 1px),
+    linear-gradient(60deg,  rgba(212,168,67,.025)  1px, transparent 1px),
+    linear-gradient(-60deg, rgba(212,168,67,.025)  1px, transparent 1px),
+    radial-gradient(ellipse 60% 80% at 50% 50%, rgba(212,168,67,.04), transparent 70%),
+    linear-gradient(180deg, #0a0a0d 0%, #06060a 100%);
+  background-size:
+    40px 70px,
+    40px 70px,
+    40px 70px,
+    40px 70px,
+    100% 100%,
+    100% 100%;
+  background-position:
+    0 0,
+    0 0,
+    20px 35px,
+    20px 35px,
+    center,
+    top;
+}
+
+/* ============================================================
+   QUANTUM ENTROPY READOUT · v10.2
+   Displayed in the match HUD between momentum bar and actions.
+   ============================================================ */
+.swarm-qent{
+  font-family:var(--font-mono);
+  font-size:9px;
+  letter-spacing:.14em;
+  color:rgba(167,139,250,.45);
+  text-align:center;
+  padding:2px 0;
+  text-transform:uppercase;
+}
