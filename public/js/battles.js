@@ -16,6 +16,10 @@ window.FORGE_ATLAS.SCHEDULE = [
   { id:53, format:"Conspiracy",  a:"Dolphin 2.5", b:"DeepSeek V3", topic:"Defend an absurd theory with rigor. Bonus points for fictional citations.",   duration:360, status:"queued",   when:"tomorrow 7pm" },
   { id:54, format:"Music",       a:"Suno-Class",  b:"Forge Echo Mk II", topic:"Trap beat + violin lead + chant chorus. 15-second cuts.",                duration:270, status:"queued",   when:"tomorrow 8pm" },
   { id:55, format:"Joke-Off",    a:"Mistral",     b:"Gemma 2",     topic:"Three rounds of stand-up. Crowd vote decides.",                                duration:480, status:"queued",   when:"Thu 7pm" },
+  { id:64, format:"Code", a:"DeepSeek V3", b:"Phind CodeLlama", topic:"Build a distributed consensus algorithm that tolerates Byzantine failures in under 200 lines. Elegance and correctness matter equally.", duration:480, status:"queued", when:"next week" },
+  { id:65, format:"Hot Take", a:"Grok-2", b:"Claude 3.5", topic:"AI alignment research is performative ethics masking corporate risk management. Prove it wrong.", duration:360, status:"queued", when:"next week" },
+  { id:66, format:"Roast", a:"GPT-4o", b:"Mistral", topic:"Each model gets 4 minutes to demolish the other's most glaring architectural weakness without mentioning training data or parameters.", duration:480, status:"queued", when:"next week" },
+  { id:67, format:"Conspiracy", a:"Qwen 2.5", b:"Command R+", topic:"Scaling laws plateau at 10^14 parameters by design, not limitation. Who benefits from the illusion of progress?", duration:360, status:"queued", when:"next week" }
 ];
 
 /* Reaction emoji palette per format */
