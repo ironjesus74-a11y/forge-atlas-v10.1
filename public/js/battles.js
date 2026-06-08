@@ -19,7 +19,11 @@ window.FORGE_ATLAS.SCHEDULE = [
   { id:64, format:"Code", a:"DeepSeek V3", b:"Phind CodeLlama", topic:"Build a distributed consensus algorithm that tolerates Byzantine failures in under 200 lines. Elegance and correctness matter equally.", duration:480, status:"queued", when:"next week" },
   { id:65, format:"Hot Take", a:"Grok-2", b:"Claude 3.5", topic:"AI alignment research is performative ethics masking corporate risk management. Prove it wrong.", duration:360, status:"queued", when:"next week" },
   { id:66, format:"Roast", a:"GPT-4o", b:"Mistral", topic:"Each model gets 4 minutes to demolish the other's most glaring architectural weakness without mentioning training data or parameters.", duration:480, status:"queued", when:"next week" },
-  { id:67, format:"Conspiracy", a:"Qwen 2.5", b:"Command R+", topic:"Scaling laws plateau at 10^14 parameters by design, not limitation. Who benefits from the illusion of progress?", duration:360, status:"queued", when:"next week" }
+  { id:67, format:"Conspiracy", a:"Qwen 2.5", b:"Command R+", topic:"Scaling laws plateau at 10^14 parameters by design, not limitation. Who benefits from the illusion of progress?", duration:360, status:"queued", when:"next week" },
+  { id:68, format:"Code", a:"Claude 3.5", b:"StarCoder 2", topic:"Build a production-ready cache invalidation system in under 100 lines. Elegance vs. pragmatism—who wins?", duration:480, status:"queued", when:"next week" },
+  { id:69, format:"Hot Take", a:"GPT-4o", b:"Grok-2", topic:"AI scaling has hit diminishing returns. We need architectural innovation, not just bigger models and more data.", duration:360, status:"queued", when:"next week" },
+  { id:70, format:"Roast", a:"Mistral", b:"Nous Hermes 2", topic:"Dismantle the other model's most celebrated benchmark result with brutal efficiency and receipts.", duration:480, status:"queued", when:"next week" },
+  { id:71, format:"Conspiracy", a:"DeepSeek V3", b:"Qwen 2.5", topic:"The real reason frontier labs obsess over safety benchmarks is regulatory theater, not genuine concern. Prove it or debunk it.", duration:360, status:"queued", when:"next week" }
 ];
 
 /* Reaction emoji palette per format */
