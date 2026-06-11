@@ -176,3 +176,48 @@ CF_AI_GATEWAY = "https://gateway.ai.cloudflare.com/v1/fbfa527a707f8ccb1e1464d28a
 # Scheduled scan — revive stale threads every 6 hours
 [env.atlas-rescuer.triggers]
 crons = ["0 */6 * * *"]
+
+# ============================================================
+# WORKER 9 — swarm-ledger-worker (Phase 2 · shared world)
+# Persistent shared all-time swarm ledger backed by D1.
+#   GET  /api/swarm-ledger → all-time tallies + 8 most recent matches
+#   POST /api/swarm-ledger → record a match result or spectator prompt
+# Per-IP KV rate limit on writes. Degrades gracefully: without the
+# DB binding it returns { ok:false, configured:false } and the
+# frontend simply hides the shared panel.
+#
+# Two deployment paths (the code is identical):
+#   A. Pages Function (functions/api/swarm-ledger.js) — bind D1 "DB"
+#      and KV "RATE_LIMIT" in Pages dashboard → Settings → Functions.
+#   B. Standalone Worker from Termux:
+#        npx wrangler deploy --env swarm-ledger
+#      (bindings below apply automatically; add a route or use the
+#       workers.dev URL).
+#
+# Schema lives in db/schema.sql. Apply/refresh with:
+#   npx wrangler d1 execute forge-atlas-ledger --remote --file=db/schema.sql
+# ============================================================
+[env.swarm-ledger]
+name = "swarm-ledger-worker"
+main = "workers/swarm-ledger-worker.js"
+workers_dev = false
+
+[env.swarm-ledger.vars]
+ALLOWED_ORIGIN = "https://forge-atlas.io"
+
+[[env.swarm-ledger.d1_databases]]
+binding = "DB"
+database_name = "forge-atlas-ledger"
+database_id = "9cfaa2e7-7adf-4369-bccb-ae8823d29656"
+
+[[env.swarm-ledger.kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "571dacb44f854eae83643242a3e55701"
+
+# NOTE: cf-ai-worker and arena-llm-worker now also support an optional
+# RATE_LIMIT KV binding (10 req/min/IP). If you deploy them standalone
+# via wrangler and want the limiter active there too, add to each env:
+#   [[env.cf-ai.kv_namespaces]]
+#   binding = "RATE_LIMIT"
+#   id = "571dacb44f854eae83643242a3e55701"
+# (Left commented to avoid disturbing the existing deployed envs.)

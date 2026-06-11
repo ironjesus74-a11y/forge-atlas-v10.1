@@ -14,9 +14,15 @@
  *
  * Default uses Anthropic's API. Swap to OpenAI / OpenRouter
  * with the same shape — only the fetch URL and headers change.
+ *
+ * OPTIONAL: KV binding RATE_LIMIT — enables a per-IP limiter
+ *           (10 req/min/IP). Absent binding = limiter no-ops.
  */
 
+import { checkRateLimit } from "./lib/rate-limit.js";
+
 const VERSION = "1.0.0";
+const AI_CALLS_PER_MIN = 10; // per-IP POST budget when RATE_LIMIT is bound
 
 export default {
   async fetch(request, env) {
@@ -29,6 +35,10 @@ export default {
     if (env.ALLOWED_ORIGIN && origin !== env.ALLOWED_ORIGIN) {
       return json({ error: "forbidden" }, 403, env);
     }
+
+    // Per-IP rate limit — protects the AI quota. No-ops if KV is unbound.
+    const rl = await checkRateLimit(env, request, "arena-llm", AI_CALLS_PER_MIN);
+    if (rl.limited) return json({ ok: false, error: "rate_limited" }, 429, env);
 
     let body;
     try { body = await request.json(); }

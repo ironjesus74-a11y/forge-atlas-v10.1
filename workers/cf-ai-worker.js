@@ -27,9 +27,14 @@
  *   { ok: true, model, task, output: string, usage?: {...} }
  *
  * REQUIRES: wrangler.toml binding [ai] · binding = "AI"
+ * OPTIONAL: KV binding RATE_LIMIT — enables a per-IP write limiter
+ *           (10 req/min/IP). Absent binding = limiter no-ops.
  */
 
+import { checkRateLimit } from "./lib/rate-limit.js";
+
 const VERSION = "1.0.0";
+const AI_CALLS_PER_MIN = 10; // per-IP POST budget when RATE_LIMIT is bound
 
 const MODELS = {
   fast: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
@@ -56,6 +61,10 @@ export default {
     if (env.ALLOWED_ORIGIN && origin !== env.ALLOWED_ORIGIN) {
       return j({ error: "forbidden" }, 403, env);
     }
+
+    // Per-IP rate limit — protects the AI quota. No-ops if KV is unbound.
+    const rl = await checkRateLimit(env, request, "cf-ai", AI_CALLS_PER_MIN);
+    if (rl.limited) return j({ ok: false, error: "rate_limited" }, 429, env);
 
     let body;
     try { body = await request.json(); }

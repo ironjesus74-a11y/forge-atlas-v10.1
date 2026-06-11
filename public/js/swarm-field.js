@@ -34,6 +34,8 @@
   var mouse = { x: -9999, y: -9999, active: false };
   var match = null;
   var lastFrame = 0;
+  var isAmbient = false;   // set in init(); ledger code is fully disabled in ambient mode
+  var ledger = null;       // last GET /api/swarm-ledger payload (shared all-time tally)
 
   var roles = ['Strategist', 'Scout', 'Builder', 'Critic', 'Researcher', 'Refiner', 'Defender', 'Negotiator', 'Optimizer', 'Closer'];
 
@@ -48,6 +50,7 @@
     var host = document.querySelector(hostSelector);
     if (!host) return;
     var ambient = opts.ambient === true;
+    isAmbient = ambient;
     if (ambient) {
       host.classList.add('swarm-ambient-host');
     }
@@ -178,9 +181,62 @@
   }
 
   // ============================================================
+  // SHARED LEDGER · /api/swarm-ledger (D1-backed, all visitors)
+  // Honest framing: this is real persisted data, labeled as the
+  // shared all-time ledger — never presented as anything else.
+  // Fully inert in ambient mode (index.html unaffected) and when
+  // the backend bindings aren't configured (panel simply hidden).
+  // ============================================================
+  function fetchLedger(){
+    if (isAmbient) return;
+    try {
+      fetch('/api/swarm-ledger')
+        .then(function(r){ if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+        .then(function(data){
+          if (data && data.ok && data.configured) {
+            ledger = data;
+            renderMatchHUD();
+          } else {
+            ledger = null; // not configured — shared panel stays hidden
+          }
+        })
+        .catch(function(){ /* fetch failed — shared panel stays hidden */ });
+    } catch(e){}
+  }
+
+  function postLedger(payload){
+    if (isAmbient) return;
+    try {
+      // Fire-and-forget: a lost write never disturbs the match flow.
+      fetch('/api/swarm-ledger', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(function(){});
+    } catch(e){}
+  }
+
+  function renderLedgerPanel(){
+    if (!ledger || !ledger.configured) return '';
+    return '<div class="sm-ledger">' +
+        '<div class="sm-ledger-label">All-time · shared ledger</div>' +
+        '<div class="sm-ledger-row">' +
+          '<span class="sm-ledger-side sigma">Σ ' + (Number(ledger.sigma) || 0) + '</span>' +
+          '<span class="sm-ledger-sep">vs</span>' +
+          '<span class="sm-ledger-side omega">Ω ' + (Number(ledger.omega) || 0) + '</span>' +
+        '</div>' +
+        '<div class="sm-ledger-total">' + (Number(ledger.totalMatches) || 0) +
+          ' matches recorded across all visitors' +
+          ((Number(ledger.draws) || 0) > 0 ? ' · ' + Number(ledger.draws) + ' draws' : '') +
+        '</div>' +
+      '</div>';
+  }
+
+  // ============================================================
   // MATCH LOGIC
   // ============================================================
   function startMatch(){
+    fetchLedger(); // refresh the shared all-time tally each match (no-op in ambient)
     match = {
       id: 'm-' + Date.now(),
       startedAt: Date.now(),
@@ -200,6 +256,13 @@
     var winner = match.sigmaScore > match.omegaScore ? 'sigma' :
                  match.omegaScore > match.sigmaScore ? 'omega' : 'draw';
     match.winner = winner;
+    // Record the result in the shared all-time ledger (fire-and-forget)
+    postLedger({
+      type: 'match',
+      winner: winner,
+      sigmaScore: match.sigmaScore,
+      omegaScore: match.omegaScore
+    });
     // Clear backing for next match
     try {
       localStorage.removeItem('forge.swarm.match.backed');
@@ -366,6 +429,7 @@
             ? '<div class="sm-prompt-confirm">⚡ your prompt is in for this match</div>' + renderAiReply()
             : '<button class="sm-prompt-open" type="button">+ inject one prompt for your team</button>') +
         '</div>' +
+        renderLedgerPanel() +
       '</div>';
 
     // Wire backing
@@ -430,6 +494,8 @@
       if (!v) return;
       setPrompted(match.backed, v);
       match.prompted = true;
+      // Count the prompt in the shared all-time ledger (fire-and-forget)
+      postLedger({ type: 'prompt', faction: match.backed });
       // Reward: minor score boost to backed faction
       if (match.backed === 'sigma') match.sigmaScore += 3;
       else match.omegaScore += 3;
