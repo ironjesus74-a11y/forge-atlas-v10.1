@@ -4,54 +4,77 @@ title: "[DEPLOY REQUEST] "
 labels: ["deploy", "needs-approval"]
 body:
   - type: textarea
-    id: summary
-    attributes:
-      label: Summary
-      description: What should be deployed or changed?
-    validations:
-      required: true
-
-  - type: dropdown
     id: target
     attributes:
-      label: Target
-      options:
-        - Preview
-        - Production
-        - Worker
-        - Pages
-        - D1
-        - KV
-        - GitHub Actions
-        - Other
+      label: Deployment target
+      description: What target should be deployed or changed?
+      placeholder: "Example: Cloudflare Pages preview, production, worker, D1, KV"
     validations:
       required: true
 
   - type: textarea
-    id: checks
+    id: related-prs
     attributes:
-      label: Checks completed
-      description: List tests, audits, PRs, and approvals.
+      label: Related PRs
+      description: Link all related PRs.
     validations:
       required: true
 
-  - type: checkboxes
-    id: approval
+  - type: textarea
+    id: summary
     attributes:
-      label: Approval gates
+      label: Change summary
+      description: What changed?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk level
       options:
-        - label: Human approval required
-          required: true
-        - label: Rollback plan included
-          required: true
-        - label: Secrets are not printed or committed
-          required: true
-        - label: No sealed files touched
-          required: true
+        - Low
+        - Medium
+        - High
+        - Critical
+    validations:
+      required: true
 
   - type: textarea
     id: rollback
     attributes:
       label: Rollback plan
+      description: How do we safely undo this?
     validations:
       required: true
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification plan
+      description: What checks confirm success?
+    validations:
+      required: true
+
+  - type: input
+    id: approver
+    attributes:
+      label: Human approver
+      description: Who approves this deploy?
+      placeholder: "@ironjesus74-a11y"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: No secrets are printed or committed
+          required: true
+        - label: No sealed files touched
+          required: true
+        - label: No webhook or automation directly triggers production deploy
+          required: true
+        - label: Production deployment requires human approval
+          required: true

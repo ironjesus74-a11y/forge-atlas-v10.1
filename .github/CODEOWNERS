@@ -1,8 +1,11 @@
-# Forge Atlas ownership rules
+# Forge Atlas CODEOWNERS
+# Sensitive automation and infrastructure files require owner review.
 
-* @ironjesus74-a11y
+.github/workflows/ @ironjesus74-a11y
+.github/ISSUE_TEMPLATE/ @ironjesus74-a11y
+.github/pull_request_template.md @ironjesus74-a11y
+.github/CODEOWNERS @ironjesus74-a11y
 
-.github/ @ironjesus74-a11y
 wrangler.toml @ironjesus74-a11y
 workers/ @ironjesus74-a11y
 functions/ @ironjesus74-a11y

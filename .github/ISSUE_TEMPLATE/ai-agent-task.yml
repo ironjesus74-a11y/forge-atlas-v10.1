@@ -1,56 +1,75 @@
 name: AI Agent Task
-description: Controlled task for GPT, Claude, Copilot, or Claude Code
+description: Safe, scoped task for GPT, Claude, Copilot, or Claude Code
 title: "[AI TASK] "
 labels: ["ai-task", "needs-review"]
 body:
   - type: textarea
     id: goal
     attributes:
-      label: Goal
+      label: Task goal
       description: What should the AI help with?
     validations:
       required: true
 
-  - type: dropdown
-    id: agent
+  - type: textarea
+    id: repo-area
     attributes:
-      label: Agent
-      options:
-        - GPT
-        - Claude Project
-        - Claude Code
-        - Copilot
-        - Human
-        - Mixed
+      label: Repo area
+      description: Which area of the repo is involved?
+      placeholder: "Example: swarm page, arena worker, GitHub Actions, docs"
     validations:
       required: true
 
   - type: textarea
-    id: files
+    id: allowed-files
     attributes:
-      label: Files or areas involved
-      description: List expected files. Do not include secrets.
+      label: Files allowed to change
+      description: List files or directories the agent may touch.
     validations:
       required: false
+
+  - type: textarea
+    id: forbidden-files
+    attributes:
+      label: Files/directories forbidden to touch
+      description: List sealed, private, or out-of-scope files.
+      value: |
+        - public/js/emery.js
+        - public/css/emery.css
+        - private docs
+        - ai-relay content
+        - secrets/env files
+    validations:
+      required: true
 
   - type: checkboxes
     id: safety
     attributes:
-      label: Safety rules
+      label: Safety constraints
       options:
-        - label: No sealed files
+        - label: No secrets, tokens, API keys, or credentials
           required: true
-        - label: No secrets
+        - label: No sealed/private files
           required: true
-        - label: No deploy without approval
+        - label: No deploys without human approval
           required: true
-        - label: No fake live stats/users/traffic
+        - label: No fake metrics, fake users, fake traffic, or fake analytics
+          required: true
+        - label: Keep changes scoped and reversible
           required: true
 
   - type: textarea
-    id: output
+    id: validation
     attributes:
-      label: Desired output
-      description: Plan, script, patch, review, prompt, or checklist.
+      label: Validation steps
+      description: What checks should pass?
+    validations:
+      required: true
+
+  - type: textarea
+    id: review
+    attributes:
+      label: Human review requirements
+      description: What must the human approve before merge/deploy?
     validations:
       required: true
