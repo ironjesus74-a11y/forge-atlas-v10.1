@@ -1,0 +1,56 @@
+name: AI Agent Task
+description: Controlled task for GPT, Claude, Copilot, or Claude Code
+title: "[AI TASK] "
+labels: ["ai-task", "needs-review"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should the AI help with?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Agent
+      options:
+        - GPT
+        - Claude Project
+        - Claude Code
+        - Copilot
+        - Human
+        - Mixed
+    validations:
+      required: true
+
+  - type: textarea
+    id: files
+    attributes:
+      label: Files or areas involved
+      description: List expected files. Do not include secrets.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety rules
+      options:
+        - label: No sealed files
+          required: true
+        - label: No secrets
+          required: true
+        - label: No deploy without approval
+          required: true
+        - label: No fake live stats/users/traffic
+          required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Desired output
+      description: Plan, script, patch, review, prompt, or checklist.
+    validations:
+      required: true

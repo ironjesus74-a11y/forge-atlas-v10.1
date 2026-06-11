@@ -1,0 +1,223 @@
+name: Repo Guardian
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Collect changed files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1 || true
+            git diff --name-only "origin/${{ github.base_ref }}...HEAD" > changed.txt || git diff --name-only HEAD~1 HEAD > changed.txt
+          else
+            if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+              git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" > changed.txt || git diff --name-only HEAD~1 HEAD > changed.txt
+            else
+              git diff --name-only HEAD~1 HEAD > changed.txt || git ls-files > changed.txt
+            fi
+          fi
+
+          sort -u changed.txt -o changed.txt
+          echo "Changed files:"
+          cat changed.txt
+
+      - name: Branch name check
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          echo "Branch: $BRANCH"
+
+          case "$BRANCH" in
+            main|feature/*|fix/*|ops/*|agent/gpt-*|agent/claude-*|phase-*|backup/*|dependabot/*)
+              echo "Branch name OK"
+              ;;
+            *)
+              echo "::warning::Branch name should use feature/*, fix/*, ops/*, agent/gpt-*, agent/claude-*, phase-*, backup/*, or dependabot/*"
+              ;;
+          esac
+
+      - name: Sealed file guard
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if grep -Eq '^(public/js/emery\.js|public/css/emery\.css)$' changed.txt; then
+            echo "Sealed file was changed. Stop."
+            exit 1
+          fi
+
+          echo "Sealed file guard passed."
+
+      - name: Private relay guard
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if grep -Eq '(^|/)docs/ai-relay/' changed.txt; then
+            echo "Private AI relay files must stay in forge-atlas-coordination, not public website repo."
+            exit 1
+          fi
+
+          echo "Private relay guard passed."
+
+      - name: Forbidden file guard
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BAD_PATTERNS=(
+            ".env"
+            ".env."
+            ".mcp.json"
+            ".cursor"
+            ".vscode"
+            ".zed"
+            ".gemini"
+            ".codex"
+            "opencode.json"
+            "id_rsa"
+            ".pem"
+            ".key"
+          )
+
+          for pattern in "${BAD_PATTERNS[@]}"; do
+            if git ls-files | grep -q "$pattern"; then
+              echo "Forbidden file tracked: $pattern"
+              exit 1
+            fi
+          done
+
+          echo "Forbidden file guard passed."
+
+      - name: Secret literal scan
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          HIT=0
+
+          while read -r f; do
+            [ -f "$f" ] || continue
+
+            case "$f" in
+              public/js/emery.js|public/css/emery.css)
+                continue
+                ;;
+            esac
+
+            if grep -IqE '(ghp_[A-Za-z0-9_]{20,}|gho_[A-Za-z0-9_]{20,}|sk-ant-[A-Za-z0-9_-]{20,}|sk-proj-[A-Za-z0-9_-]{20,}|BEGIN PRIVATE KEY|CLOUDFLARE_API_TOKEN="?[-A-Za-z0-9_]{20,}|ANTHROPIC_API_KEY="?sk-|OPENAI_API_KEY="?sk-)' "$f"; then
+              echo "Possible secret literal found in: $f"
+              HIT=1
+            fi
+          done < changed.txt
+
+          if [ "$HIT" = "1" ]; then
+            echo "Secret literal scan failed."
+            exit 1
+          fi
+
+          echo "Secret literal scan passed."
+
+      - name: JSON validation
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          find . -name "*.json" -not -path "./node_modules/*" | while read -r f; do
+            echo "Checking JSON: $f"
+            python3 -m json.tool "$f" >/dev/null
+          done
+
+      - name: JavaScript syntax check for changed files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          grep -E '\.js$' changed.txt | while read -r f; do
+            [ -f "$f" ] || continue
+
+            case "$f" in
+              public/js/emery.js)
+                continue
+                ;;
+            esac
+
+            echo "node --check $f"
+            node --check "$f"
+          done || true
+
+      - name: SQL schema check
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if grep -Eq '^db/.*\.sql$|\.sql$' changed.txt; then
+            sudo apt-get update
+            sudo apt-get install -y sqlite3
+
+            find db -name "*.sql" 2>/dev/null | while read -r f; do
+              echo "SQLite parse: $f"
+              sqlite3 :memory: < "$f"
+            done
+          else
+            echo "No SQL changes."
+          fi
+
+      - name: Wrangler risk notice
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if grep -q '^wrangler\.toml$' changed.txt; then
+            echo "::warning::wrangler.toml changed. Review Cloudflare bindings/routes before merge."
+          else
+            echo "No wrangler.toml change."
+          fi
+
+      - name: Honest live/demo claim warning
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          HIT=0
+
+          while read -r f; do
+            [ -f "$f" ] || continue
+
+            case "$f" in
+              public/js/emery.js|public/css/emery.css)
+                continue
+                ;;
+            esac
+
+            if grep -IqE '(live users|real users|real traffic|live traffic|real-time traffic|real analytics|actual visitors)' "$f"; then
+              echo "::warning file=$f::Check that live/real claims are backed by real data or labeled demo/synthetic."
+              HIT=1
+            fi
+          done < changed.txt
+
+          if [ "$HIT" = "0" ]; then
+            echo "No obvious risky live/real claims found."
+          fi
+
+      - name: Done
+        run: echo "Repo Guardian passed."

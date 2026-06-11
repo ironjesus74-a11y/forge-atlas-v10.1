@@ -1,0 +1,72 @@
+name: Manual Site Smoke Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Base URL to test"
+        required: true
+        default: "https://forge-atlas.io"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Smoke test public routes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BASE="${{ github.event.inputs.base_url }}"
+          BASE="${BASE%/}"
+
+          echo "Testing $BASE"
+
+          ROUTES=(
+            "/"
+            "/index.html"
+            "/swarm.html"
+            "/arena.html"
+            "/forum.html"
+            "/challenge.html"
+          )
+
+          for route in "${ROUTES[@]}"; do
+            url="$BASE$route"
+            echo "Checking $url"
+            code="$(curl -L -sS -o /tmp/smoke.out -w '%{http_code}' "$url")"
+            echo "HTTP $code"
+
+            if [ "$code" -lt 200 ] || [ "$code" -ge 400 ]; then
+              echo "Route failed: $url"
+              exit 1
+            fi
+          done
+
+      - name: Optional API checks
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BASE="${{ github.event.inputs.base_url }}"
+          BASE="${BASE%/}"
+
+          API_ROUTES=(
+            "/api/swarm-ledger"
+            "/api/ops-status"
+          )
+
+          for route in "${API_ROUTES[@]}"; do
+            url="$BASE$route"
+            echo "Checking optional API $url"
+            code="$(curl -L -sS -o /tmp/api.out -w '%{http_code}' "$url" || true)"
+            echo "HTTP $code"
+
+            if [ "$code" -lt 200 ] || [ "$code" -ge 500 ]; then
+              echo "::warning::Optional API may not be configured yet: $url returned $code"
+            fi
+          done

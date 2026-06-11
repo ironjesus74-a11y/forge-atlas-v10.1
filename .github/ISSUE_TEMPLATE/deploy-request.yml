@@ -1,0 +1,57 @@
+name: Deploy Request
+description: Request a controlled deploy or Cloudflare change
+title: "[DEPLOY REQUEST] "
+labels: ["deploy", "needs-approval"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What should be deployed or changed?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target
+    attributes:
+      label: Target
+      options:
+        - Preview
+        - Production
+        - Worker
+        - Pages
+        - D1
+        - KV
+        - GitHub Actions
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: checks
+    attributes:
+      label: Checks completed
+      description: List tests, audits, PRs, and approvals.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: approval
+    attributes:
+      label: Approval gates
+      options:
+        - label: Human approval required
+          required: true
+        - label: Rollback plan included
+          required: true
+        - label: Secrets are not printed or committed
+          required: true
+        - label: No sealed files touched
+          required: true
+
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Rollback plan
+    validations:
+      required: true
