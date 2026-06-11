@@ -165,7 +165,7 @@ jobs:
             [ -f "$f" ] || continue
 
             case "$f" in
-              public/js/emery.js|public/css/emery.css)
+              public/js/emery.js|public/css/emery.css|.github/workflows/repo-guardian.yml)
                 continue
                 ;;
             esac
