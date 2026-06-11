@@ -233,6 +233,65 @@
   }
 
   // ============================================================
+  // SPECTATOR PROMPT → REAL AI REPLY (/api/cf-ai · Workers AI)
+  // Only reachable from the match HUD, which never exists in
+  // ambient mode (matches don't start when ambient — index.html safe).
+  // ============================================================
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c];
+    });
+  }
+
+  function renderAiReply(){
+    var r = match && match.aiReply;
+    if (!r) return '';
+    if (r.status === 'pending') {
+      return '<div class="sm-ai-reply pending"><span class="sm-ai-label">' + esc(r.label) + '</span>' +
+             '<span class="sm-ai-text">the swarm is composing a reply…</span></div>';
+    }
+    if (r.status === 'error') {
+      return '<div class="sm-ai-reply error"><span class="sm-ai-label">model unreachable</span>' +
+             '<span class="sm-ai-text">couldn\'t reach the AI right now — your prompt still counts for this match.</span></div>';
+    }
+    return '<div class="sm-ai-reply"><span class="sm-ai-label">' + esc(r.label) + '</span>' +
+           '<span class="sm-ai-text">' + esc(r.text) + '</span></div>';
+  }
+
+  function askSwarmAI(faction, prompt){
+    if (!match) return;
+    var matchId = match.id;
+    var teamName = faction === 'sigma' ? CFG.sigma.name : CFG.omega.name;
+    match.aiReply = { status: 'pending', label: 'Workers AI · Llama 3.3' };
+    renderMatchHUD();
+    fetch('/api/cf-ai', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        task: 'chat',
+        input: prompt,
+        system: 'You are ' + teamName + ', a coordinated swarm of AI agents mid-match in the Forge Atlas arena. ' +
+                'A spectator backing your team just injected this tactical prompt. Reply in character as the swarm ' +
+                'in 1-3 short sentences: acknowledge the order and say how you will act on it. No preamble, no disclaimers.',
+        max_tokens: 220
+      })
+    })
+    .then(function(r){ if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+    .then(function(data){
+      if (!match || match.id !== matchId) return; // match rolled over — drop stale reply
+      if (!data || !data.ok || !data.output) throw new Error('bad_response');
+      var label = /llama-3\.3/i.test(data.model || '') ? 'Workers AI · Llama 3.3' : 'Workers AI';
+      match.aiReply = { status: 'done', label: label, text: String(data.output).slice(0, 600) };
+      renderMatchHUD();
+    })
+    .catch(function(){
+      if (!match || match.id !== matchId) return;
+      match.aiReply = { status: 'error' };
+      renderMatchHUD();
+    });
+  }
+
+  // ============================================================
   // HUD · the match overlay (DOM, not canvas — easier to interact)
   // ============================================================
   function renderMatchHUD(){
@@ -304,7 +363,7 @@
         '</div>' +
         '<div class="swarm-match-prompt">' +
           (match.prompted
-            ? '<div class="sm-prompt-confirm">⚡ your prompt is in for this match</div>'
+            ? '<div class="sm-prompt-confirm">⚡ your prompt is in for this match</div>' + renderAiReply()
             : '<button class="sm-prompt-open" type="button">+ inject one prompt for your team</button>') +
         '</div>' +
       '</div>';
@@ -377,6 +436,8 @@
       // Visual: flash all nodes on backed faction
       nodes.filter(function(n){ return n.faction === match.backed; }).forEach(function(n){ n.flash = 1.5; });
       close();
+      // Route the prompt to the real model and render its reply in the HUD
+      askSwarmAI(match.backed, v);
       renderMatchHUD();
     });
   }

@@ -227,6 +227,36 @@
   text-transform:uppercase;
 }
 
+/* Spectator prompt · live AI reply card */
+.sm-ai-reply{
+  margin:10px auto 0;
+  padding:10px 14px;
+  background:rgba(6,6,10,.65);
+  border:1px solid rgba(126,234,255,.25);
+  border-radius:4px;
+  text-align:left;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  max-width:520px;
+}
+.sm-ai-reply .sm-ai-label{
+  font-family:var(--font-mono);
+  font-size:9px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--cyan);
+}
+.sm-ai-reply .sm-ai-text{
+  font-size:13px;
+  line-height:1.5;
+  color:var(--fg);
+  word-break:break-word;
+}
+.sm-ai-reply.pending .sm-ai-text{ color:var(--muted); font-style:italic; }
+.sm-ai-reply.error{ border-color:rgba(248,113,113,.35); }
+.sm-ai-reply.error .sm-ai-label{ color:#f87171; }
+
 /* Match end card */
 .swarm-match-end{
   background:linear-gradient(180deg, rgba(6,6,10,.95), rgba(6,6,10,.80));

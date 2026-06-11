@@ -315,8 +315,9 @@
       });
   }
 
-  /* Probe asynchronously at startup — no blocking */
-  try { probeEndpoint('forum'); probeEndpoint('status'); } catch (e) {}
+  /* Probe asynchronously at startup — no blocking.
+     'arena' is probed so challenge.js's live gate (available.arena) can pass. */
+  try { probeEndpoint('forum'); probeEndpoint('status'); probeEndpoint('arena'); } catch (e) {}
 
   /* ----------------------------------------------------------
      PUBLIC API
