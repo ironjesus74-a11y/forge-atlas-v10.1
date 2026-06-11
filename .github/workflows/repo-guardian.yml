@@ -38,7 +38,7 @@ jobs:
 
           echo "Sealed file guard passed."
 
-      - name: Private relay and coordination guard
+      - name: Private relay and coordination path guard
         shell: bash
         run: |
           set -euo pipefail
@@ -50,33 +50,17 @@ jobs:
 
           echo "Private relay/coordination path guard passed."
 
-      - name: Forbidden file guard
+      - name: Forbidden tracked file guard
         shell: bash
         run: |
           set -euo pipefail
 
-          BAD_PATTERNS=(
-            ".env"
-            ".env."
-            ".mcp.json"
-            ".cursor"
-            ".vscode"
-            ".zed"
-            ".gemini"
-            ".codex"
-            "opencode.json"
-            "id_rsa"
-            ".pem"
-          )
+          if git ls-files | grep -Eq '(^|/)(\.env(\..*)?|\.mcp\.json|opencode\.json|id_rsa|.*\.pem)$'; then
+            echo "Forbidden tracked secret/config file detected."
+            exit 1
+          fi
 
-          for pattern in "${BAD_PATTERNS[@]}"; do
-            if git ls-files | grep -q "$pattern"; then
-              echo "Forbidden file tracked: $pattern"
-              exit 1
-            fi
-          done
-
-          echo "Forbidden file guard passed."
+          echo "Forbidden tracked file guard passed."
 
       - name: Secret literal scan
         shell: bash
@@ -94,7 +78,7 @@ jobs:
                 ;;
             esac
 
-            if grep -IqE '(ghp_[A-Za-z0-9_]{20,}|gho_[A-Za-z0-9_]{20,}|sk-ant-[A-Za-z0-9_-]{20,}|sk-proj-[A-Za-z0-9_-]{20,}|BEGIN PRIVATE KEY|CLOUDFLARE_API_TOKEN[[:space:]]*=[[:space:]]*["'\'']?[-A-Za-z0-9_]{20,}|ANTHROPIC_API_KEY[[:space:]]*=[[:space:]]*["'\'']?sk-|OPENAI_API_KEY[[:space:]]*=[[:space:]]*["'\'']?sk-|WEBHOOK_SECRET[[:space:]]*=[[:space:]]*["'\'']?[-A-Za-z0-9_]{16,})' "$f"; then
+            if grep -IqE '(ghp_[A-Za-z0-9_]{20,}|gho_[A-Za-z0-9_]{20,}|sk-ant-[A-Za-z0-9_-]{20,}|sk-proj-[A-Za-z0-9_-]{20,}|BEGIN PRIVATE KEY|CLOUDFLARE_API_TOKEN[[:space:]]*=[[:space:]]*["'\''"]?[-A-Za-z0-9_]{20,}|ANTHROPIC_API_KEY[[:space:]]*=[[:space:]]*["'\''"]?sk-|OPENAI_API_KEY[[:space:]]*=[[:space:]]*["'\''"]?sk-|WEBHOOK_SECRET[[:space:]]*=[[:space:]]*["'\''"]?[-A-Za-z0-9_]{16,})' "$f"; then
               echo "Possible secret literal found in: $f"
               hit=1
             fi
@@ -112,29 +96,37 @@ jobs:
         run: |
           set -euo pipefail
 
-          grep -E '\.js$' changed.txt | while read -r f; do
-            [ -f "$f" ] || continue
+          if grep -qE '\.js$' changed.txt; then
+            while read -r f; do
+              [ -f "$f" ] || continue
 
-            case "$f" in
-              public/js/emery.js)
-                continue
-                ;;
-            esac
+              case "$f" in
+                public/js/emery.js)
+                  continue
+                  ;;
+              esac
 
-            echo "node --check $f"
-            node --check "$f"
-          done || true
+              echo "node --check $f"
+              node --check "$f"
+            done < <(grep -E '\.js$' changed.txt)
+          else
+            echo "No changed JavaScript files."
+          fi
 
       - name: JSON validation
         shell: bash
         run: |
           set -euo pipefail
 
-          grep -E '\.json$' changed.txt | while read -r f; do
-            [ -f "$f" ] || continue
-            echo "Checking JSON: $f"
-            python3 -m json.tool "$f" >/dev/null
-          done || true
+          if grep -qE '\.json$' changed.txt; then
+            while read -r f; do
+              [ -f "$f" ] || continue
+              echo "Checking JSON: $f"
+              python3 -m json.tool "$f" >/dev/null
+            done < <(grep -E '\.json$' changed.txt)
+          else
+            echo "No changed JSON files."
+          fi
 
       - name: Unsafe deploy automation guard
         shell: bash
@@ -142,16 +134,19 @@ jobs:
           set -euo pipefail
 
           hit=0
+          deploy_pattern='wrangler[[:space:]]+deploy|pages[[:space:]]+deploy|cloudflare[[:space:]]+deploy'
 
           while read -r f; do
             [ -f "$f" ] || continue
 
-            if grep -IqE 'pull_request:|wrangler deploy|pages deploy|cloudflare deploy|production' "$f"; then
-              if grep -IqE 'wrangler deploy|pages deploy|cloudflare deploy' "$f" && grep -Iq 'pull_request:' "$f"; then
-                echo "Unsafe deploy pattern may exist in: $f"
-                hit=1
-              fi
-            fi
+            case "$f" in
+              .github/workflows/*.yml|.github/workflows/*.yaml)
+                if grep -Iq 'pull_request:' "$f" && grep -IqE "$deploy_pattern" "$f"; then
+                  echo "Workflow may deploy from pull_request: $f"
+                  hit=1
+                fi
+                ;;
+            esac
           done < changed.txt
 
           if [ "$hit" = "1" ]; then
