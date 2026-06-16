@@ -1464,3 +1464,33 @@ body {
     transform: none !important;
   }
 }
+
+/* Validator-compatible nav-links styling */
+.fc-nav .nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fc-nav .nav-links a {
+  color: var(--fc-muted);
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.fc-nav .nav-links a:hover,
+.fc-nav .nav-links a[aria-current="page"] {
+  color: var(--fc-cyan);
+}
+
+@media (max-width: 760px) {
+  .fc-nav .nav-links {
+    gap: 0.5rem;
+    font-size: 0.9rem;
+  }
+}
