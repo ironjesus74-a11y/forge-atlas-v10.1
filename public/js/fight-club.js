@@ -1,5 +1,5 @@
 // Fight Club Phase 1 — Browser logic
-// Local-only leaderboard. No fake global stats.
+// Local-only leaderboard. No simulated global stats.
 
 const QUICK_BATTLES = [
   { id: "todo-app", prompt: "Build a React todo app with add and delete buttons", category: "Frontend" },
