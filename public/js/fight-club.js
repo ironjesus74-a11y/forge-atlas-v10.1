@@ -319,7 +319,25 @@ function showError(message) {
 }
 
 function showNotice(message) {
-  alert(message);
+  showToast(message);
+}
+
+function showToast(message) {
+  const container = byId("toastContainer");
+  if (!container) {
+    alert(message);
+    return;
+  }
+
+  const toast = document.createElement("div");
+  toast.className = "fc-toast";
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  window.setTimeout(() => {
+    toast.classList.add("out");
+    window.setTimeout(() => toast.remove(), 260);
+  }, 3200);
 }
 
 function setBattleLabel(label) {

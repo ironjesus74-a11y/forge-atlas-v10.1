@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="public/css/fight-club.css">
 </head>
 <body>
+  <div class="fc-ambient-bg" aria-hidden="true"></div>
+  <div class="fc-scan-line" aria-hidden="true"></div>
+  <div id="toastContainer" class="fc-toast-container" aria-live="polite"></div>
   <div class="fc-page">
     <nav class="fc-nav" aria-label="Fight Club navigation">
       <a href="index.html">← Home</a>
@@ -71,6 +74,30 @@
         </article>
       </section>
 
+      <section class="fc-tale-tape" aria-label="Fight card preview">
+        <div class="fc-event-kicker">FORGE ATLAS · FIGHT NIGHT · PHASE 1</div>
+
+        <div class="fc-tape-grid">
+          <article class="fc-tape-card fc-tape-a">
+            <div class="fc-corner-label">CORNER A</div>
+            <div class="fc-fighter-mark">A</div>
+            <h3>Workers AI Fighter A</h3>
+            <p class="fc-fighter-style">Clarity build · readable structure · setup notes</p>
+            <p class="fc-fighter-meta">No public rank · no fake ELO · local match only</p>
+          </article>
+
+          <div class="fc-vs-mark">VS</div>
+
+          <article class="fc-tape-card fc-tape-b">
+            <div class="fc-corner-label">CORNER B</div>
+            <div class="fc-fighter-mark">B</div>
+            <h3>Workers AI Fighter B</h3>
+            <p class="fc-fighter-style">Compact build · reusable functions · production mindset</p>
+            <p class="fc-fighter-meta">No public rank · no fake ELO · local match only</p>
+          </article>
+        </div>
+      </section>
+
       <section class="fc-control-deck" aria-label="Fight Club control deck">
         <article>
           <strong>Endpoint Status</strong>
@@ -89,6 +116,21 @@
       <section class="fc-mode-selector" aria-label="Battle mode selector">
         <button class="fc-mode-btn fc-mode-active" data-mode="quick" type="button">Quick Battles</button>
         <button class="fc-mode-btn" data-mode="custom" type="button">Custom Prompt</button>
+      </section>
+
+      <section class="fc-fight-setup" aria-label="Fight setup">
+        <div class="fc-setup-head">
+          <span>SET THE MATCH</span>
+          <strong>Real model names stay hidden until the enabled Workers AI model is confirmed.</strong>
+        </div>
+
+        <div class="fc-format-row" aria-label="Fight formats">
+          <button class="fc-format-chip active" type="button">Code</button>
+          <button class="fc-format-chip locked" type="button" disabled>Image · Locked</button>
+          <button class="fc-format-chip locked" type="button" disabled>Music · Locked</button>
+          <button class="fc-format-chip locked" type="button" disabled>Website · Locked</button>
+          <button class="fc-format-chip locked" type="button" disabled>Agent · Approval</button>
+        </div>
       </section>
 
       <section id="quick-mode" class="fc-mode-view fc-mode-view-active">
