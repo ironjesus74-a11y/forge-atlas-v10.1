@@ -1,0 +1,80 @@
+name: Deploy Request
+description: Request a controlled deploy or Cloudflare change
+title: "[DEPLOY REQUEST] "
+labels: ["deploy", "needs-approval"]
+body:
+  - type: textarea
+    id: target
+    attributes:
+      label: Deployment target
+      description: What target should be deployed or changed?
+      placeholder: "Example: Cloudflare Pages preview, production, worker, D1, KV"
+    validations:
+      required: true
+
+  - type: textarea
+    id: related-prs
+    attributes:
+      label: Related PRs
+      description: Link all related PRs.
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Change summary
+      description: What changed?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk level
+      options:
+        - Low
+        - Medium
+        - High
+        - Critical
+    validations:
+      required: true
+
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Rollback plan
+      description: How do we safely undo this?
+    validations:
+      required: true
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification plan
+      description: What checks confirm success?
+    validations:
+      required: true
+
+  - type: input
+    id: approver
+    attributes:
+      label: Human approver
+      description: Who approves this deploy?
+      placeholder: "@ironjesus74-a11y"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: No secrets are printed or committed
+          required: true
+        - label: No sealed files touched
+          required: true
+        - label: No webhook or automation directly triggers production deploy
+          required: true
+        - label: Production deployment requires human approval
+          required: true
