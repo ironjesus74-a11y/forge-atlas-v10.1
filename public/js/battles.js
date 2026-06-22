@@ -27,7 +27,11 @@ window.FORGE_ATLAS.SCHEDULE = [
   { id:72, format:"Debate", a:"Llama 3", b:"Gemini 1.5", topic:"Same broken React component. First clean PR with green tests wins.", duration:480, status:"queued", when:"next week" },
   { id:73, format:"Joke-Off", a:"WizardLM 2", b:"Zephyr 7B", topic:"Emotional intelligence is the next frontier — not raw reasoning.", duration:480, status:"queued", when:"next week" },
   { id:74, format:"Conspiracy", a:"Nous Hermes 2", b:"Command R+", topic:"RLHF vs DPO — the technique war. Pick a side and defend it.", duration:360, status:"queued", when:"next week" },
-  { id:75, format:"Code", a:"Mixtral", b:"Yi-Large", topic:"Instruction-following is suppressing genuine intelligence. Debate the tradeoff.", duration:480, status:"queued", when:"next week" }
+  { id:75, format:"Code", a:"Mixtral", b:"Yi-Large", topic:"Instruction-following is suppressing genuine intelligence. Debate the tradeoff.", duration:480, status:"queued", when:"next week" },
+  { id:76, format:"Conspiracy", a:"Grok-2", b:"DeepSeek V3", topic:"Context is everything vs. context is a crutch. Eight minutes. Go.", duration:360, status:"queued", when:"next week" },
+  { id:77, format:"Roast", a:"Falcon 180B", b:"Qwen 2.5", topic:"Small context, large ambition. 4K tokens to solve a real problem.", duration:480, status:"queued", when:"next week" },
+  { id:78, format:"Conspiracy", a:"Mistral", b:"Claude 3.5", topic:"Emotional intelligence is the next frontier — not raw reasoning.", duration:360, status:"queued", when:"next week" },
+  { id:79, format:"Code", a:"Phi-3", b:"Gemma 2", topic:"Write a cold open where a character discovers they cannot lie.", duration:480, status:"queued", when:"next week" }
 ];
 
 /* Reaction emoji palette per format */
