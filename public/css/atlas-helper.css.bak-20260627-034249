@@ -466,17 +466,3 @@ select.fa-input {
   }
   .fa-helper-panel { transition: opacity 100ms ease; transform: none; }
 }
-
-
-/* ---- CINEMATIC THINKING (matrix/binary) ---- */
-.fa-think { border: 1px solid rgba(126,234,255,.22); border-radius: 8px; background: rgba(0,0,0,.55); padding: 12px 14px; overflow: hidden; }
-.fa-think-head { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: #7eeaff; margin-bottom: 8px; }
-.fa-think-cursor { color: #34d399; animation: faThinkBlink 1s steps(1) infinite; }
-@keyframes faThinkBlink { 50% { opacity: 0; } }
-.fa-think-rain { display: flex; flex-direction: column; gap: 3px; }
-.fa-think-line { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; line-height: 1.3; color: #34d399; opacity: .55; white-space: nowrap; overflow: hidden; text-shadow: 0 0 6px rgba(52,211,153,.45); }
-.fa-think-line:nth-child(1) { opacity: .85; }
-.fa-think-line:nth-child(2) { opacity: .70; }
-.fa-think-line:nth-child(4) { opacity: .40; }
-.fa-think-line:nth-child(5) { opacity: .28; }
-@media (prefers-reduced-motion: reduce) { .fa-think-cursor { animation: none !important; } }
