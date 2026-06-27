@@ -71,7 +71,7 @@ export default {
     catch { return j({ error: "invalid_json" }, 400, env); }
 
     const task = String(body.task || "chat");
-    const input = String(body.input || "").slice(0, 8000);
+    const input = String(body.input || body.message || "").slice(0, 8000);
     if (!input) return j({ error: "missing_input" }, 400, env);
 
     const model = body.model || MODELS.fast;
@@ -97,6 +97,7 @@ export default {
         model,
         task,
         output,
+        reply: output,
         len: output.length,
       }, 200, env);
     } catch (err) {
