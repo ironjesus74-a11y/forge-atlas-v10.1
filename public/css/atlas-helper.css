@@ -480,3 +480,7 @@ select.fa-input {
 .fa-think-line:nth-child(4) { opacity: .40; }
 .fa-think-line:nth-child(5) { opacity: .28; }
 @media (prefers-reduced-motion: reduce) { .fa-think-cursor { animation: none !important; } }
+
+/* ---- THINKING graph bars + word stream ---- */
+.fa-think-bars { display: flex; align-items: flex-end; gap: 3px; height: 34px; margin: 2px 0 8px; }
+.fa-think-bars i { width: 6px; height: 12px; background: linear-gradient(180deg,#7eeaff,#34d399); border-radius: 2px 2px 0 0; transition: height 130ms linear; box-shadow: 0 0 6px rgba(126,234,255,.35); }

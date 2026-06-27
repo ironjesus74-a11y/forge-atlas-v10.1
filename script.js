@@ -413,22 +413,56 @@
       ];
       return fallbacks[Math.floor(Math.random()*fallbacks.length)];
     }
+    function faType(node, text){
+      text = String(text||'');
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduce || text.length < 2){ node.textContent = text; return; }
+      var i = 0, step = Math.max(1, Math.round(text.length/110));
+      var id = setInterval(function(){
+        if(!node.isConnected){ clearInterval(id); return; }
+        i += step; node.textContent = text.slice(0, i);
+        if(i >= text.length){ node.textContent = text; clearInterval(id); body.scrollTop = body.scrollHeight; }
+      }, 18);
+    }
     function addMsg(role, text){
       var div = document.createElement('div');
       div.className = 'atlas-msg ' + (role==='user'?'user':'bot');
-      div.textContent = text;
       body.appendChild(div);
+      if(role==='bot'){ faType(div, text); } else { div.textContent = text; }
       body.scrollTop = body.scrollHeight;
     }
     function addThinking(){
       var t = document.createElement('div');
-      t.className = 'atlas-think';
+      t.className = 'atlas-think cine';
       t.setAttribute('data-think','1');
-      t.appendChild(document.createElement('span'));
-      t.appendChild(document.createElement('span'));
-      t.appendChild(document.createElement('span'));
-      body.appendChild(t);
-      body.scrollTop = body.scrollHeight;
+      var head = document.createElement('div'); head.className = 'atlas-cine-head';
+      var cur = document.createElement('span'); cur.className = 'atlas-cine-cursor'; cur.textContent = '\u25B8';
+      var lbl = document.createElement('span'); lbl.className = 'atlas-cine-label'; lbl.textContent = 'BOOTING NEURAL CORE';
+      head.appendChild(cur); head.appendChild(lbl); t.appendChild(head);
+      var barWrap = document.createElement('div'); barWrap.className = 'atlas-cine-bars'; var bars = [];
+      for(var b=0;b<9;b++){ var bb=document.createElement('i'); barWrap.appendChild(bb); bars.push(bb); }
+      t.appendChild(barWrap);
+      var rain = document.createElement('div'); rain.className = 'atlas-cine-rain'; var lines = [];
+      for(var i=0;i<4;i++){ var ln=document.createElement('div'); ln.className='atlas-cine-line'; rain.appendChild(ln); lines.push(ln); }
+      t.appendChild(rain);
+      body.appendChild(t); body.scrollTop = body.scrollHeight;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduce){ lbl.textContent='THINKING'; lines.forEach(function(ln){ ln.textContent='01101001 01010110'; }); return t; }
+      var GLYPHS = '0101101001011010<>{}[]()=+*/$#&@'.split('');
+      var WORDS = ['tensor','vector','weights','token','neuron','entropy','forge','atlas','matrix','kernel','logits','embed','prompt','synapse'];
+      var PHASES = ['BOOTING NEURAL CORE','PARSING REQUEST','ROUTING \u00B7 LLAMA-3.3','WEIGHING TOKENS','SAMPLING','COMPILING RESPONSE'];
+      var tick=0, phase=0;
+      function rnd(){ return GLYPHS[(Math.random()*GLYPHS.length)|0]; }
+      var id = setInterval(function(){
+        if(!t.isConnected){ clearInterval(id); return; }
+        tick++;
+        lines.forEach(function(ln){
+          var s=''; while(s.length<30){ s += (Math.random()<0.07) ? (' '+WORDS[(Math.random()*WORDS.length)|0]+' ') : rnd(); }
+          ln.textContent = s.slice(0,30);
+        });
+        bars.forEach(function(bb){ bb.style.height = (10+((Math.random()*24)|0))+'px'; });
+        if(tick % 9 === 0){ phase=(phase+1)%PHASES.length; lbl.textContent = PHASES[phase]; }
+      }, 130);
       return t;
     }
     function removeThinking(){
