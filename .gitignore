@@ -49,3 +49,7 @@ __pycache__/
 *.pyo
 *.pyd
 
+
+# local backups (never deploy)
+*.bak-*
+*.backup-*
