@@ -1,5 +1,5 @@
-// Forge Atlas — REAL AI Arena v2.0. Divisions + topic pools + cost flags. FREE-first.
-// Pages Function, native env.AI binding. Model IDs verified 2026-06.
+// Forge Atlas — REAL AI Arena v2.1. Divisions + topic pools + cost flags + Groq guests. FREE-first.
+// Pages Function. cf models via env.AI binding; groq guests via env.GROQ_KEY. Model IDs verified 2026-06.
 // >>> ADD A MODEL = ADD ONE LINE. ADD A DIVISION = add to DIVISIONS + give it a topic pool. <<<
 
 const DIVISIONS = {
@@ -68,6 +68,10 @@ const REGISTRY = [
   { key:"dream",     label:"DreamShaper 8",      division:"image", provider:"cf", id:"@cf/lykon/dreamshaper-8-lcm",                    tier:"free", status:"live", persona:"Photoreal specialist." },
   { key:"leolucid",  label:"Leonardo Lucid",     division:"image", provider:"cf", id:"@cf/leonardo/lucid-origin",                     tier:"free", status:"live", costly:true, persona:"Premium-grade adherence. (Eats free budget ~130x faster.)" },
   { key:"leophoenix",label:"Leonardo Phoenix",   division:"image", provider:"cf", id:"@cf/leonardo/phoenix-1.0",                      tier:"free", status:"live", costly:true, persona:"Sharp text, coherent scenes. (Costly.)" },
+  // ===== GROQ guests (free tier, blazing fast; needs GROQ_KEY secret) =====
+  { key:"groq_llama", label:"Llama 3.3 (Groq)",  division:"text", provider:"groq", id:"llama-3.3-70b-versatile",        tier:"free", status:"guest", persona:"Same Llama, Groq speed. ~280 tok/s. Special guest." },
+  { key:"groq_kimi",  label:"Kimi K2 (Groq)",    division:"text", provider:"groq", id:"moonshotai/kimi-k2-instruct",    tier:"free", status:"guest", persona:"Moonshot's heavyweight. Rare guest appearance." },
+  { key:"groq_qwen",  label:"Qwen3 32B (Groq)",  division:"code", provider:"groq", id:"qwen/qwen3-32b",                 tier:"free", status:"guest", persona:"Fast reasoning guest via Groq." },
   // ===== locked / coming =====
   { key:"gemma",     label:"Gemma 3 12B",        division:"text",  provider:"cf", id:"@cf/google/gemma-3-12b-it",                     tier:"free", status:"locked", persona:"Not enabled on this account." },
   { key:"claude",    label:"Claude 3.5 Sonnet",  division:"text",  provider:"openrouter", id:"anthropic/claude-3.5-sonnet", tier:"paid", status:"coming", persona:"Reigning closed-lab champ." },
@@ -97,7 +101,7 @@ function bufToB64(buf){ const b=new Uint8Array(buf); let s=""; const C=0x8000; f
 export async function onRequestOptions(){ return new Response(null,{headers:{"access-control-allow-origin":"*","access-control-allow-methods":"POST, GET, OPTIONS","access-control-allow-headers":"content-type"}}); }
 export async function onRequestGet(){
   const roster = REGISTRY.map(({id,...p})=>p);
-  return json({ ok:true, version:"2.0.0", divisions:DIVISIONS, topicPools:TOPIC_POOLS, models:roster });
+  return json({ ok:true, version:"2.1.0", divisions:DIVISIONS, topicPools:TOPIC_POOLS, models:roster });
 }
 export async function onRequestPost(context){
   const { request, env } = context;
@@ -105,7 +109,12 @@ export async function onRequestPost(context){
   let body; try { body = await request.json(); } catch { body = {}; }
   const A = byKey(body.a), B = byKey(body.b);
   if(!A || !B) return json({ ok:false, error:"unknown model(s)", allowed: REGISTRY.filter(m=>m.status==="live").map(m=>m.key) }, 400);
-  for(const m of [A,B]) if(m.provider!=="cf" || m.status!=="live") return json({ ok:false, error:`${m.label} isn't battle-ready (free build).` }, 400);
+  for(const m of [A,B]){
+    const okProvider = (m.provider==="cf") || (m.provider==="groq");
+    const okStatus = (m.status==="live") || (m.status==="guest");
+    if(!okProvider || !okStatus) return json({ ok:false, error:m.label+" isn't battle-ready (free build)." }, 400);
+    if(m.provider==="groq" && !env.GROQ_KEY) return json({ ok:false, error:m.label+" is RESTING — no GROQ_KEY set yet." }, 400);
+  }
 
   const division = A.division;
   let prompt = String(body.prompt || body.topic || "").slice(0,2000).trim();
@@ -131,8 +140,24 @@ export async function onRequestPost(context){
       return { key:m.key, label:m.label, type:"image", image: b64?("data:image/png;base64,"+b64):null, ok: !!b64, costly: !!m.costly };
     }catch(e){ return { key:m.key, label:m.label, ok:false, error:String(e&&e.message||e) }; }
   }
-  const run = (m)=> division==="image" ? runImage(m) : runText(m, division==="webapp"?"webapp":"text");
+  async function runGroq(m, mode){
+    let sys = "You are competing in the Forge Atlas AI Arena, head-to-head vs another model on the SAME prompt. Persona: "+m.persona+" Answer directly, skill + brevity + personality. No reasoning shown. Final answer only. Under 150 words.";
+    if(mode==="webapp") sys = "You are competing in the Forge Atlas AI Arena (Web/App division). Output ONE self-contained HTML file with inline CSS only. Just the HTML. Persona: "+m.persona;
+    try{
+      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method:"POST",
+        headers:{ "content-type":"application/json", "authorization":"Bearer "+env.GROQ_KEY },
+        body: JSON.stringify({ model:m.id, messages:[{role:"system",content:sys},{role:"user",content:prompt}], max_tokens: mode==="webapp"?1200:500 })
+      });
+      if(!r.ok){ const t=await r.text(); return { key:m.key, label:m.label, ok:false, error:"groq "+r.status+": "+t.slice(0,120) }; }
+      const data = await r.json();
+      let out = cleanOutput((data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "");
+      if(mode==="webapp"){ const html=extractHtml(out); return { key:m.key, label:m.label, type:"html", html, ok: html.length>0 }; }
+      return { key:m.key, label:m.label, type:"text", output:out, ok: out.length>0 };
+    }catch(e){ return { key:m.key, label:m.label, ok:false, error:String(e&&e.message||e) }; }
+  }
+  const run = (m)=> m.provider==="groq" ? runGroq(m, division==="webapp"?"webapp":"text") : (division==="image" ? runImage(m) : runText(m, division==="webapp"?"webapp":"text"));
 
   const [ra,rb] = await Promise.all([run(A),run(B)]);
-  return json({ ok:true, version:"2.0.0", division, prompt, a:ra, b:rb, note:"Real Cloudflare Workers AI output (free). Stats not stored yet (Slice B)." });
+  return json({ ok:true, version:"2.1.0", division, prompt, a:ra, b:rb, note:"Real Cloudflare Workers AI output (free). Stats not stored yet (Slice B)." });
 }
