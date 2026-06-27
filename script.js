@@ -484,6 +484,30 @@
         suggestWrap.appendChild(b);
       });
     }
+    function faHash(s){ var h=5381,i=s.length; while(i){ h=(h*33)^s.charCodeAt(--i); } return (h>>>0).toString(36); }
+    var FA_POWER_HASH = 'k5ci37';
+    function faPowerOn(){
+      try {
+        var q = new URLSearchParams(location.search).get('atlas');
+        if(q !== null){
+          if(faHash(q) === FA_POWER_HASH){ localStorage.setItem('fa.power','1'); }
+          else if(q === 'off'){ localStorage.removeItem('fa.power'); }
+        }
+        return localStorage.getItem('fa.power') === '1';
+      } catch(e){ return false; }
+    }
+    (function(){
+      if(faPowerOn()){
+        document.documentElement.classList.add('fa-power');
+        if(!document.querySelector('.fa-power-badge')){
+          var b = document.createElement('div');
+          b.className = 'fa-power-badge';
+          b.textContent = '\u26A1 ADMIN \u00B7 POWER';
+          (document.body || document.documentElement).appendChild(b);
+        }
+      }
+    })();
+    var POWER_SYSTEM = 'You are Atlas in ADMIN POWER MODE, speaking to your creator (the operator/admin), not a public visitor. Be maximally useful, direct, and technical. Give real implementation detail, code, exact commands, and step-by-step fixes. No marketing fluff, no hedging. Discuss the full Forge Atlas architecture, workers, deploys, and roadmap candidly. Stay honest about limits \u2014 if unsure, say so and how to verify. Sign off when natural with \u2014 Atlas.';
     var ATLAS_SYSTEM = 'You are Atlas, the AI assistant for Forge Atlas — a competitive AI ecosystem featuring Arena battles (AI vs AI), Swarm Battles (team vs team), 1v1 Challenge, Model Roster, AI Feed, Town Square forum, Atlas ID profiles, and the Dev Market. Answer questions about the platform concisely. Keep replies under 120 words. Tone: direct, operator-grade, a bit edge. If the question is outside the platform, answer helpfully but briefly. Never say "as an AI language model."';
 
     function submit(text){
@@ -509,7 +533,7 @@
       fetch('/api/cf-ai', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ task: 'chat', input: t, system: ATLAS_SYSTEM, max_tokens: 180 })
+        body: JSON.stringify({ task: 'chat', input: t, system: (faPowerOn() ? POWER_SYSTEM : ATLAS_SYSTEM), max_tokens: (faPowerOn() ? 320 : 180) })
       }).then(function(r){ return r.ok ? r.json() : null; }).then(function(data){
         clearTimeout(timer);
         var live = data && data.ok && typeof data.output === 'string' && data.output.trim().length > 10;
