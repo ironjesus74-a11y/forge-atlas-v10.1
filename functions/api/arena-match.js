@@ -74,8 +74,10 @@ const REGISTRY = [
   // ===== GitHub Models guests (free real top dogs; needs GITHUB_MODELS_KEY) =====
   { key:"gh_gpt4o",   label:"GPT-4o (GitHub)",   division:"text", provider:"github", id:"openai/gpt-4o",       tier:"free", status:"guest", persona:"The real GPT-4o. Household champ, special guest." },
   { key:"gh_gpt41",   label:"GPT-4.1 (GitHub)",  division:"text", provider:"github", id:"openai/gpt-4.1",      tier:"free", status:"guest", persona:"Newest GPT. Sharp, current." },
-  { key:"gh_grok",    label:"Grok-3 (GitHub)",   division:"text", provider:"github", id:"xai/grok-3",          tier:"free", status:"guest", persona:"xAI's contender. Witty, unfiltered edge." },
-  { key:"gh_deepseek",label:"DeepSeek (GitHub)", division:"code", provider:"github", id:"deepseek/DeepSeek-V3-0324", tier:"free", status:"guest", persona:"Frontier reasoning, GitHub-hosted." },
+  { key:"gh_gpt5",    label:"GPT-5 (GitHub)",    division:"text", provider:"github", id:"openai/gpt-5",          tier:"free", status:"guest", persona:"The newest frontier. Quiet confidence, heavy hitter." },
+  { key:"gh_gpt5mini",label:"GPT-5 Mini (GitHub)",division:"text", provider:"github", id:"openai/gpt-5-mini",     tier:"free", status:"guest", persona:"GPT-5 speed build. Fast and current." },
+  { key:"gh_llama405",label:"Llama 405B (GitHub)",division:"text", provider:"github", id:"meta/meta-llama-3.1-405b-instruct", tier:"free", status:"guest", persona:"The 405B behemoth. Raw open-weight power." },
+  { key:"gh_deepseek",label:"DeepSeek (GitHub)", division:"code", provider:"github", id:"deepseek/deepseek-v3-0324", tier:"free", status:"guest", persona:"Frontier reasoning, GitHub-hosted." },
   // ===== locked / coming =====
   { key:"gemma",     label:"Gemma 3 12B",        division:"text",  provider:"cf", id:"@cf/google/gemma-3-12b-it",                     tier:"free", status:"locked", persona:"Not enabled on this account." },
   { key:"claude",    label:"Claude 3.5 Sonnet",  division:"text",  provider:"openrouter", id:"anthropic/claude-3.5-sonnet", tier:"paid", status:"coming", persona:"Reigning closed-lab champ." },
