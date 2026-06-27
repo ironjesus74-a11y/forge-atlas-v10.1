@@ -328,6 +328,23 @@
     var send = $('.atlas-input button', ai);
     var closeBtn = $('.atlas-close', ai);
     var suggestWrap = $('.atlas-suggest', ai);
+    (function(){
+      if(!ai || !suggestWrap) return;
+      var head = ai.querySelector('.atlas-head');
+      if(!head) return;
+      var hintBtn = document.createElement('button');
+      hintBtn.type = 'button';
+      hintBtn.className = 'atlas-hint-toggle';
+      hintBtn.setAttribute('aria-label','Toggle suggestions');
+      hintBtn.title = 'Suggestions';
+      hintBtn.textContent = '\uD83D\uDCA1';
+      var closeB = head.querySelector('.atlas-close');
+      if(closeB){ head.insertBefore(hintBtn, closeB); } else { head.appendChild(hintBtn); }
+      hintBtn.addEventListener('click', function(){
+        var on = suggestWrap.classList.toggle('show');
+        hintBtn.classList.toggle('active', on);
+      });
+    })();
 
     var SUGGESTIONS = [
       'What is Forge Atlas?',
