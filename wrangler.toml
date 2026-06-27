@@ -23,12 +23,12 @@ workers_dev = false
 [env.helper.vars]
 # Lock the CORS origin to the deployed Pages domain.
 # Replace with your actual domain.
-ALLOWED_ORIGIN = "https://forge-atlas.pages.dev"
+ALLOWED_ORIGIN = "https://forge-atlas.io"
 
 # Optional: URL of a separate Worker that holds the Anthropic key
 # and proxies POST {message: string} → {reply: string}.
 # Leaving this unset keeps the helper fully rules-driven.
-# LIVE_AI_URL = "https://forge-ai-adapter.YOUR-SUBDOMAIN.workers.dev"
+LIVE_AI_URL = "https://cf-ai-worker.ironjesus74.workers.dev/api/cf-ai"
 
 # Recommended Worker route (custom domain attached to Pages):
 # [[env.helper.routes]]
@@ -45,7 +45,7 @@ main = "workers/seo-audit-worker.js"
 workers_dev = false
 
 [env.audit.vars]
-ALLOWED_ORIGIN = "https://forge-atlas.pages.dev"
+ALLOWED_ORIGIN = "https://forge-atlas.io"
 
 # [[env.audit.routes]]
 # pattern = "forge-atlas.com/api/seo-audit"
@@ -61,7 +61,7 @@ main = "workers/ops-status-worker.js"
 workers_dev = false
 
 [env.ops.vars]
-ALLOWED_ORIGIN = "https://forge-atlas.pages.dev"
+ALLOWED_ORIGIN = "https://forge-atlas.io"
 SITE_MODE = "static"
 ENV = "production"
 
