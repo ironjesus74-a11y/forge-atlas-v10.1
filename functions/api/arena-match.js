@@ -1,5 +1,4 @@
-// Forge Atlas — REAL AI Arena v2.1. Divisions + topic pools + cost flags + Groq guests. FREE-first.
-// Pages Function. cf models via env.AI binding; groq guests via env.GROQ_KEY. Model IDs verified 2026-06.
+// Forge Atlas — REAL AI Arena v2.2. Divisions + topic pools + multi-provider (cf/groq/github). FREE-first.
 // >>> ADD A MODEL = ADD ONE LINE. ADD A DIVISION = add to DIVISIONS + give it a topic pool. <<<
 
 const DIVISIONS = {
@@ -68,14 +67,18 @@ const REGISTRY = [
   { key:"dream",     label:"DreamShaper 8",      division:"image", provider:"cf", id:"@cf/lykon/dreamshaper-8-lcm",                    tier:"free", status:"live", persona:"Photoreal specialist." },
   { key:"leolucid",  label:"Leonardo Lucid",     division:"image", provider:"cf", id:"@cf/leonardo/lucid-origin",                     tier:"free", status:"live", costly:true, persona:"Premium-grade adherence. (Eats free budget ~130x faster.)" },
   { key:"leophoenix",label:"Leonardo Phoenix",   division:"image", provider:"cf", id:"@cf/leonardo/phoenix-1.0",                      tier:"free", status:"live", costly:true, persona:"Sharp text, coherent scenes. (Costly.)" },
-  // ===== GROQ guests (free tier, blazing fast; needs GROQ_KEY secret) =====
+  // ===== GROQ guests (free; needs GROQ_KEY) =====
   { key:"groq_llama", label:"Llama 3.3 (Groq)",  division:"text", provider:"groq", id:"llama-3.3-70b-versatile",        tier:"free", status:"guest", persona:"Same Llama, Groq speed. ~280 tok/s. Special guest." },
-  { key:"groq_kimi",  label:"Kimi K2 (Groq)",    division:"text", provider:"groq", id:"moonshotai/kimi-k2-instruct",    tier:"free", status:"guest", persona:"Moonshot's heavyweight. Rare guest appearance." },
+  { key:"groq_kimi",  label:"Kimi K2 (Groq)",    division:"text", provider:"groq", id:"moonshotai/kimi-k2-instruct-0905",    tier:"free", status:"guest", persona:"Moonshot's heavyweight. Rare guest appearance." },
   { key:"groq_qwen",  label:"Qwen3 32B (Groq)",  division:"code", provider:"groq", id:"qwen/qwen3-32b",                 tier:"free", status:"guest", persona:"Fast reasoning guest via Groq." },
+  // ===== GitHub Models guests (free real top dogs; needs GITHUB_MODELS_KEY) =====
+  { key:"gh_gpt4o",   label:"GPT-4o (GitHub)",   division:"text", provider:"github", id:"openai/gpt-4o",       tier:"free", status:"guest", persona:"The real GPT-4o. Household champ, special guest." },
+  { key:"gh_gpt41",   label:"GPT-4.1 (GitHub)",  division:"text", provider:"github", id:"openai/gpt-4.1",      tier:"free", status:"guest", persona:"Newest GPT. Sharp, current." },
+  { key:"gh_grok",    label:"Grok-3 (GitHub)",   division:"text", provider:"github", id:"xai/grok-3",          tier:"free", status:"guest", persona:"xAI's contender. Witty, unfiltered edge." },
+  { key:"gh_deepseek",label:"DeepSeek (GitHub)", division:"code", provider:"github", id:"deepseek/DeepSeek-V3-0324", tier:"free", status:"guest", persona:"Frontier reasoning, GitHub-hosted." },
   // ===== locked / coming =====
   { key:"gemma",     label:"Gemma 3 12B",        division:"text",  provider:"cf", id:"@cf/google/gemma-3-12b-it",                     tier:"free", status:"locked", persona:"Not enabled on this account." },
   { key:"claude",    label:"Claude 3.5 Sonnet",  division:"text",  provider:"openrouter", id:"anthropic/claude-3.5-sonnet", tier:"paid", status:"coming", persona:"Reigning closed-lab champ." },
-  { key:"gpt4o",     label:"GPT-4o",             division:"text",  provider:"openrouter", id:"openai/gpt-4o",               tier:"paid", status:"coming", persona:"The household name." },
   { key:"gemini",    label:"Gemini 1.5 Pro",     division:"text",  provider:"openrouter", id:"google/gemini-pro-1.5",       tier:"paid", status:"coming", persona:"Google's frontier contender." },
   { key:"atlas",     label:"Atlas (Termux)",     division:"text",  provider:"tunnel", id:"", tier:"free", status:"coming", persona:"Home-built local-first underdog. Evolves weekly. For Emery & Isabella." },
 ];
@@ -101,7 +104,7 @@ function bufToB64(buf){ const b=new Uint8Array(buf); let s=""; const C=0x8000; f
 export async function onRequestOptions(){ return new Response(null,{headers:{"access-control-allow-origin":"*","access-control-allow-methods":"POST, GET, OPTIONS","access-control-allow-headers":"content-type"}}); }
 export async function onRequestGet(){
   const roster = REGISTRY.map(({id,...p})=>p);
-  return json({ ok:true, version:"2.1.0", divisions:DIVISIONS, topicPools:TOPIC_POOLS, models:roster });
+  return json({ ok:true, version:"2.2.0", divisions:DIVISIONS, topicPools:TOPIC_POOLS, models:roster });
 }
 export async function onRequestPost(context){
   const { request, env } = context;
@@ -110,10 +113,11 @@ export async function onRequestPost(context){
   const A = byKey(body.a), B = byKey(body.b);
   if(!A || !B) return json({ ok:false, error:"unknown model(s)", allowed: REGISTRY.filter(m=>m.status==="live").map(m=>m.key) }, 400);
   for(const m of [A,B]){
-    const okProvider = (m.provider==="cf") || (m.provider==="groq");
+    const okProvider = (m.provider==="cf") || (m.provider==="groq") || (m.provider==="github");
     const okStatus = (m.status==="live") || (m.status==="guest");
     if(!okProvider || !okStatus) return json({ ok:false, error:m.label+" isn't battle-ready (free build)." }, 400);
     if(m.provider==="groq" && !env.GROQ_KEY) return json({ ok:false, error:m.label+" is RESTING — no GROQ_KEY set yet." }, 400);
+    if(m.provider==="github" && !env.GITHUB_MODELS_KEY) return json({ ok:false, error:m.label+" is RESTING — no GITHUB_MODELS_KEY set yet." }, 400);
   }
 
   const division = A.division;
@@ -140,24 +144,29 @@ export async function onRequestPost(context){
       return { key:m.key, label:m.label, type:"image", image: b64?("data:image/png;base64,"+b64):null, ok: !!b64, costly: !!m.costly };
     }catch(e){ return { key:m.key, label:m.label, ok:false, error:String(e&&e.message||e) }; }
   }
-  async function runGroq(m, mode){
+  async function runOpenAICompat(m, mode, baseUrl, key){
     let sys = "You are competing in the Forge Atlas AI Arena, head-to-head vs another model on the SAME prompt. Persona: "+m.persona+" Answer directly, skill + brevity + personality. No reasoning shown. Final answer only. Under 150 words.";
     if(mode==="webapp") sys = "You are competing in the Forge Atlas AI Arena (Web/App division). Output ONE self-contained HTML file with inline CSS only. Just the HTML. Persona: "+m.persona;
     try{
-      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const r = await fetch(baseUrl, {
         method:"POST",
-        headers:{ "content-type":"application/json", "authorization":"Bearer "+env.GROQ_KEY },
+        headers:{ "content-type":"application/json", "authorization":"Bearer "+key },
         body: JSON.stringify({ model:m.id, messages:[{role:"system",content:sys},{role:"user",content:prompt}], max_tokens: mode==="webapp"?1200:500 })
       });
-      if(!r.ok){ const t=await r.text(); return { key:m.key, label:m.label, ok:false, error:"groq "+r.status+": "+t.slice(0,120) }; }
+      if(!r.ok){ const t=await r.text(); return { key:m.key, label:m.label, ok:false, error:m.provider+" "+r.status+": "+t.slice(0,120) }; }
       const data = await r.json();
       let out = cleanOutput((data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "");
       if(mode==="webapp"){ const html=extractHtml(out); return { key:m.key, label:m.label, type:"html", html, ok: html.length>0 }; }
       return { key:m.key, label:m.label, type:"text", output:out, ok: out.length>0 };
     }catch(e){ return { key:m.key, label:m.label, ok:false, error:String(e&&e.message||e) }; }
   }
-  const run = (m)=> m.provider==="groq" ? runGroq(m, division==="webapp"?"webapp":"text") : (division==="image" ? runImage(m) : runText(m, division==="webapp"?"webapp":"text"));
+  const run = (m)=>{
+    const mode = division==="webapp"?"webapp":"text";
+    if(m.provider==="groq")   return runOpenAICompat(m, mode, "https://api.groq.com/openai/v1/chat/completions", env.GROQ_KEY);
+    if(m.provider==="github") return runOpenAICompat(m, mode, "https://models.github.ai/inference/chat/completions", env.GITHUB_MODELS_KEY);
+    return division==="image" ? runImage(m) : runText(m, mode);
+  };
 
   const [ra,rb] = await Promise.all([run(A),run(B)]);
-  return json({ ok:true, version:"2.1.0", division, prompt, a:ra, b:rb, note:"Real Cloudflare Workers AI output (free). Stats not stored yet (Slice B)." });
+  return json({ ok:true, version:"2.2.0", division, prompt, a:ra, b:rb, note:"Real Cloudflare Workers AI output (free). Stats not stored yet (Slice B)." });
 }
