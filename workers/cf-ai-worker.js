@@ -58,7 +58,7 @@ export default {
     if (!env.AI) return j({ error: "not_configured", hint: "Add [ai] binding 'AI' in wrangler.toml" }, 503, env);
 
     const origin = request.headers.get("origin") || "";
-    if (env.ALLOWED_ORIGIN && origin !== env.ALLOWED_ORIGIN) {
+    if (env.ALLOWED_ORIGIN && env.ALLOWED_ORIGIN !== "*" && origin !== env.ALLOWED_ORIGIN) {
       return j({ error: "forbidden" }, 403, env);
     }
 
