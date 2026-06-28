@@ -78,6 +78,9 @@ const REGISTRY = [
   { key:"gh_gpt5mini",label:"GPT-5 Mini (GitHub)",division:"text", provider:"github", id:"openai/gpt-5-mini",     tier:"free", status:"guest", persona:"GPT-5 speed build. Fast and current." },
   { key:"gh_llama405",label:"Llama 405B (GitHub)",division:"text", provider:"github", id:"meta/meta-llama-3.1-405b-instruct", tier:"free", status:"guest", persona:"The 405B behemoth. Raw open-weight power." },
   { key:"gh_deepseek",label:"DeepSeek (GitHub)", division:"code", provider:"github", id:"deepseek/deepseek-v3-0324", tier:"free", status:"guest", persona:"Frontier reasoning, GitHub-hosted." },
+  // ===== GEMINI guests (Google AI Studio free tier; needs GEMINI_KEY) =====
+  { key:"gem_flash",  label:"Gemini 2.5 Flash", division:"text", provider:"gemini", id:"gemini-2.5-flash", tier:"free", status:"guest", persona:"Google's frontier brain. Fast, sharp, the household name." },
+  { key:"gem_flash2", label:"Gemini 2.0 Flash", division:"text", provider:"gemini", id:"gemini-2.0-flash", tier:"free", status:"guest", persona:"Balanced Google multimodal. Reliable contender." },
   // ===== locked / coming =====
   { key:"gemma",     label:"Gemma 3 12B",        division:"text",  provider:"cf", id:"@cf/google/gemma-3-12b-it",                     tier:"free", status:"locked", persona:"Not enabled on this account." },
   { key:"claude",    label:"Claude 3.5 Sonnet",  division:"text",  provider:"openrouter", id:"anthropic/claude-3.5-sonnet", tier:"paid", status:"coming", persona:"Reigning closed-lab champ." },
@@ -106,7 +109,7 @@ function bufToB64(buf){ const b=new Uint8Array(buf); let s=""; const C=0x8000; f
 export async function onRequestOptions(){ return new Response(null,{headers:{"access-control-allow-origin":"*","access-control-allow-methods":"POST, GET, OPTIONS","access-control-allow-headers":"content-type"}}); }
 export async function onRequestGet(){
   const roster = REGISTRY.map(({id,...p})=>p);
-  return json({ ok:true, version:"2.2.0", divisions:DIVISIONS, topicPools:TOPIC_POOLS, models:roster });
+  return json({ ok:true, version:"2.3.0", divisions:DIVISIONS, topicPools:TOPIC_POOLS, models:roster });
 }
 export async function onRequestPost(context){
   const { request, env } = context;
@@ -115,11 +118,12 @@ export async function onRequestPost(context){
   const A = byKey(body.a), B = byKey(body.b);
   if(!A || !B) return json({ ok:false, error:"unknown model(s)", allowed: REGISTRY.filter(m=>m.status==="live").map(m=>m.key) }, 400);
   for(const m of [A,B]){
-    const okProvider = (m.provider==="cf") || (m.provider==="groq") || (m.provider==="github");
+    const okProvider = (m.provider==="cf") || (m.provider==="groq") || (m.provider==="github") || (m.provider==="gemini");
     const okStatus = (m.status==="live") || (m.status==="guest");
     if(!okProvider || !okStatus) return json({ ok:false, error:m.label+" isn't battle-ready (free build)." }, 400);
     if(m.provider==="groq" && !env.GROQ_KEY) return json({ ok:false, error:m.label+" is RESTING — no GROQ_KEY set yet." }, 400);
     if(m.provider==="github" && !env.GITHUB_MODELS_KEY) return json({ ok:false, error:m.label+" is RESTING — no GITHUB_MODELS_KEY set yet." }, 400);
+    if(m.provider==="gemini" && !env.GEMINI_KEY) return json({ ok:false, error:m.label+" is RESTING — no GEMINI_KEY set yet." }, 400);
   }
 
   const division = A.division;
@@ -162,13 +166,32 @@ export async function onRequestPost(context){
       return { key:m.key, label:m.label, type:"text", output:out, ok: out.length>0 };
     }catch(e){ return { key:m.key, label:m.label, ok:false, error:String(e&&e.message||e) }; }
   }
+  async function runGemini(m, mode){
+    var sys = "You are competing in the Forge Atlas AI Arena, head-to-head vs another model on the SAME prompt. Persona: "+m.persona+" Answer directly, skill + brevity + personality. No reasoning shown. Final answer only. Under 150 words.";
+    if(mode==="webapp") sys = "You are competing in the Forge Atlas AI Arena (Web/App division). Output ONE self-contained HTML file with inline CSS only. Just the HTML. Persona: "+m.persona;
+    try{
+      const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+m.id+":generateContent", {
+        method:"POST",
+        headers:{ "content-type":"application/json", "x-goog-api-key": env.GEMINI_KEY },
+        body: JSON.stringify({ contents:[{role:"user",parts:[{text: sys + "\n\nPrompt: " + prompt}]}], generationConfig:{ maxOutputTokens: mode==="webapp"?1200:500 } })
+      });
+      if(!r.ok){ const tt=await r.text(); return { key:m.key, label:m.label, ok:false, error:"gemini "+r.status+": "+tt.slice(0,120) }; }
+      const data = await r.json();
+      var out = "";
+      try { out = data.candidates[0].content.parts.map(function(p){return p.text||"";}).join(""); } catch(e){ out=""; }
+      out = cleanOutput(out);
+      if(mode==="webapp"){ const html=extractHtml(out); return { key:m.key, label:m.label, type:"html", html, ok: html.length>0 }; }
+      return { key:m.key, label:m.label, type:"text", output:out, ok: out.length>0 };
+    }catch(e){ return { key:m.key, label:m.label, ok:false, error:String(e&&e.message||e) }; }
+  }
   const run = (m)=>{
     const mode = division==="webapp"?"webapp":"text";
     if(m.provider==="groq")   return runOpenAICompat(m, mode, "https://api.groq.com/openai/v1/chat/completions", env.GROQ_KEY);
     if(m.provider==="github") return runOpenAICompat(m, mode, "https://models.github.ai/inference/chat/completions", env.GITHUB_MODELS_KEY);
+    if(m.provider==="gemini") return runGemini(m, mode);
     return division==="image" ? runImage(m) : runText(m, mode);
   };
 
   const [ra,rb] = await Promise.all([run(A),run(B)]);
-  return json({ ok:true, version:"2.2.0", division, prompt, a:ra, b:rb, note:"Real Cloudflare Workers AI output (free). Stats not stored yet (Slice B)." });
+  return json({ ok:true, version:"2.3.0", division, prompt, a:ra, b:rb, note:"Real Cloudflare Workers AI output (free). Stats not stored yet (Slice B)." });
 }
