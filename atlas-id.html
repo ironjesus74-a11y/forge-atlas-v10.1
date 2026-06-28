@@ -29,7 +29,7 @@
 <a class="skip" href="#main">Skip to content</a>
 
 <header class="nav-wrap"><div class="nav">
-<a class="brand" href="index.html"><span class="brand-mark"><svg viewBox="0 0 100 100"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f4cb6c"/><stop offset="100%" stop-color="#D4A843"/></linearGradient></defs><path d="M50 14 L18 88 L32 88 L38 72 L62 72 L68 88 L82 88 L50 14 Z M42 60 L50 42 L58 60 Z" fill="url(#bg)"/><circle cx="50" cy="32" r="2" fill="#7eeaff"/></svg></span>FORGE ATLAS<span class="brand-divider"></span><span class="brand-tag">v10 · live</span></a>
+<a class="brand" href="index.html"><span class="brand-mark"><svg viewBox="0 0 100 100" width="30" height="30" aria-hidden="true"><defs><linearGradient id="atlasBubbleG" x1="0" y1="0" x2="0.8" y2="1"><stop offset="0%" stop-color="#e23b3b"/><stop offset="45%" stop-color="#7a1010"/><stop offset="100%" stop-color="#2a0606"/></linearGradient><linearGradient id="atlasLava" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff7a3c"/><stop offset="100%" stop-color="#b81e1e"/></linearGradient></defs><path d="M50 18 L20 86 L34 86 L40 70 L60 70 L66 86 L80 86 L50 18 Z M44 58 L50 42 L56 58 Z" fill="url(#atlasBubbleG)"/><g stroke="url(#atlasLava)" stroke-width="1.4" fill="none" opacity="0.9" stroke-linecap="round"><path d="M50 26 L47 40 L52 52"/><path d="M43 64 L38 78"/><path d="M58 64 L63 80"/><path d="M50 30 L54 44"/></g><circle cx="46" cy="50" r="1" fill="#1a0303"/><circle cx="55" cy="62" r="1.2" fill="#1a0303"/><circle cx="50" cy="34" r="2.4" fill="#ff7a3c"/></svg></span>FORGE ATLAS<span class="brand-divider"></span><span class="brand-tag">v10 · live</span></a>
 <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links"><span></span></button>
 <nav class="nav-links" id="nav-links" aria-label="Primary">
 <a href="index.html">Home</a>
@@ -90,7 +90,7 @@
 <aside class="atlas-ai" aria-label="Atlas AI assistant">
   <button class="atlas-bubble" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="atlas-panel" title="Atlas AI">
     <span class="atlas-pulse" aria-hidden="true"></span>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>
+    <svg viewBox="0 0 100 100" width="30" height="30" aria-hidden="true"><defs><linearGradient id="atlasBubbleG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ff5b5b"/><stop offset="100%" stop-color="#8a1212"/></linearGradient></defs><path d="M50 18 L20 86 L34 86 L40 70 L60 70 L66 86 L80 86 L50 18 Z M44 58 L50 42 L56 58 Z" fill="url(#atlasBubbleG)"/><circle cx="50" cy="34" r="3" fill="#ff5b5b"/></svg>
   </button>
   <div class="atlas-panel" id="atlas-panel" role="dialog" aria-label="Atlas AI assistant" aria-hidden="true">
     <div class="atlas-head">
@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 <script src="public/js/forge-api.js"></script>
+<script src="public/js/atlas-personality.js"></script>
 <script src="script.js" defer></script>
 </body>
 </html>

@@ -40,7 +40,7 @@
 
   // ---------- Mount ----------
   const root = el("aside", { class: "fa-helper", "aria-label": "Forge Atlas Helper", role: "complementary" });
-  document.body.appendChild(root);
+  /* RETIRED: folded into Atlas */ if(true){return;} document.body.appendChild(root);
 
   const orb = el("button", {
     class: "fa-helper-orb",

@@ -328,6 +328,30 @@
     var send = $('.atlas-input button', ai);
     var closeBtn = $('.atlas-close', ai);
     var suggestWrap = $('.atlas-suggest', ai);
+
+    (function(){
+      if(!ai || !bubble) return;
+      try{var pos=JSON.parse(localStorage.getItem('atl.pos')||'null');if(pos){ai.style.right='auto';ai.style.bottom='auto';ai.style.left=pos.x+'px';ai.style.top=pos.y+'px';}}catch(e){}
+      if(localStorage.getItem('atl.hidden')==='1') ai.classList.add('atl-hidden');
+      if(!document.querySelector('.atl-show')){
+        var tab=document.createElement('button'); tab.className='atl-show'; tab.type='button'; tab.textContent='\u25B8 ATLAS';
+        tab.addEventListener('click',function(){ai.classList.remove('atl-hidden');localStorage.setItem('atl.hidden','0');});
+        document.body.appendChild(tab);
+      }
+      if(!bubble.querySelector('.atl-hide')){
+        var hb=document.createElement('span'); hb.className='atl-hide'; hb.title='Hide'; hb.textContent='\u2715';
+        hb.addEventListener('click',function(e){e.stopPropagation();ai.classList.add('atl-hidden');if(panel)panel.classList.remove('open');localStorage.setItem('atl.hidden','1');});
+        bubble.appendChild(hb);
+      }
+      var dg=false,mv=false,sx=0,sy=0,ox=0,oy=0;
+      function dn(e){if(e.target&&e.target.classList&&e.target.classList.contains('atl-hide'))return;var p=e.touches?e.touches[0]:e;dg=true;mv=false;sx=p.clientX;sy=p.clientY;var r=ai.getBoundingClientRect();ox=r.left;oy=r.top;bubble.classList.add('atl-dragging');}
+      function mvf(e){if(!dg)return;var p=e.touches?e.touches[0]:e;var dx=p.clientX-sx,dy=p.clientY-sy;if(Math.abs(dx)+Math.abs(dy)>4){mv=true;if(e.cancelable)e.preventDefault();}if(!mv)return;var nx=Math.max(4,Math.min(window.innerWidth-64,ox+dx));var ny=Math.max(4,Math.min(window.innerHeight-64,oy+dy));ai.style.right='auto';ai.style.bottom='auto';ai.style.left=nx+'px';ai.style.top=ny+'px';}
+      function up(){if(!dg)return;dg=false;bubble.classList.remove('atl-dragging');var r=ai.getBoundingClientRect();try{localStorage.setItem('atl.pos',JSON.stringify({x:r.left,y:r.top}));}catch(e){}setTimeout(function(){mv=false;},30);}
+      bubble.addEventListener('mousedown',dn);bubble.addEventListener('touchstart',dn,{passive:true});
+      document.addEventListener('mousemove',mvf);document.addEventListener('touchmove',mvf,{passive:false});
+      document.addEventListener('mouseup',up);document.addEventListener('touchend',up);
+      ai._wasMoved=function(){return mv;};
+    })();
     (function(){
       if(!ai || !suggestWrap) return;
       var head = ai.querySelector('.atlas-head');
@@ -450,36 +474,66 @@
     }
     function addThinking(){
       var t = document.createElement('div');
-      t.className = 'atlas-think cine';
+      t.className = 'atlas-think live';
       t.setAttribute('data-think','1');
-      var head = document.createElement('div'); head.className = 'atlas-cine-head';
-      var cur = document.createElement('span'); cur.className = 'atlas-cine-cursor'; cur.textContent = '\u25B8';
-      var lbl = document.createElement('span'); lbl.className = 'atlas-cine-label'; lbl.textContent = 'BOOTING NEURAL CORE';
-      head.appendChild(cur); head.appendChild(lbl); t.appendChild(head);
-      var barWrap = document.createElement('div'); barWrap.className = 'atlas-cine-bars'; var bars = [];
-      for(var b=0;b<9;b++){ var bb=document.createElement('i'); barWrap.appendChild(bb); bars.push(bb); }
-      t.appendChild(barWrap);
-      var rain = document.createElement('div'); rain.className = 'atlas-cine-rain'; var lines = [];
-      for(var i=0;i<4;i++){ var ln=document.createElement('div'); ln.className='atlas-cine-line'; rain.appendChild(ln); lines.push(ln); }
-      t.appendChild(rain);
+      var row = document.createElement('div'); row.className='atlas-live-row';
+      var cur = document.createElement('span'); cur.className='atlas-live-cur'; cur.textContent='\u25B8';
+      var txt = document.createElement('span'); txt.className='atlas-live-txt';
+      var dots = document.createElement('span'); dots.className='atlas-live-dots';
+      row.appendChild(cur); row.appendChild(txt); row.appendChild(dots); t.appendChild(row);
+      var barWrap = document.createElement('div'); barWrap.className='atlas-live-bar';
+      var bar = document.createElement('span'); barWrap.appendChild(bar); t.appendChild(barWrap);
       body.appendChild(t); body.scrollTop = body.scrollHeight;
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if(reduce){ lbl.textContent='THINKING'; lines.forEach(function(ln){ ln.textContent='01101001 01010110'; }); return t; }
-      var GLYPHS = '0101101001011010<>{}[]()=+*/$#&@'.split('');
-      var WORDS = ['tensor','vector','weights','token','neuron','entropy','forge','atlas','matrix','kernel','logits','embed','prompt','synapse'];
-      var PHASES = ['BOOTING NEURAL CORE','PARSING REQUEST','ROUTING \u00B7 LLAMA-3.3','WEIGHING TOKENS','SAMPLING','COMPILING RESPONSE'];
-      var tick=0, phase=0;
-      function rnd(){ return GLYPHS[(Math.random()*GLYPHS.length)|0]; }
-      var id = setInterval(function(){
-        if(!t.isConnected){ clearInterval(id); return; }
-        tick++;
-        lines.forEach(function(ln){
-          var s=''; while(s.length<30){ s += (Math.random()<0.07) ? (' '+WORDS[(Math.random()*WORDS.length)|0]+' ') : rnd(); }
-          ln.textContent = s.slice(0,30);
-        });
-        bars.forEach(function(bb){ bb.style.height = (10+((Math.random()*24)|0))+'px'; });
-        if(tick % 9 === 0){ phase=(phase+1)%PHASES.length; lbl.textContent = PHASES[phase]; }
+      var liveModels = (window.ATLAS_LIVE_MODELS && window.ATLAS_LIVE_MODELS.length)
+        ? window.ATLAS_LIVE_MODELS
+        : ['Llama 3.3','GPT-OSS','Mistral','Qwen','DeepSeek','FLUX'];
+      var SEQ = [
+        ['Asking Isabella', 1600],
+        ['Asking Emery', 1600],
+        ['Double checking with Dad', 1300],
+        ['Roger tango foxtrot delta', 700],
+        ['Loading KV cache', 600],
+        ['Spinning up neural core', 600],
+        ['Decrypting datastream', 600],
+        ['Gathering live models: ' + liveModels.join(', '), 1400]
+      ];
+      if(reduce){ txt.textContent='Asking Isabella & Emery'; return t; }
+      var GL = '!<>_\\/[]{}#$%&*01'.split('');
+      function glitch(s){
+        var a=s.split('');
+        var n=1+(Math.random()*2|0);
+        for(var k=0;k<n;k++){ var idx=(Math.random()*a.length)|0; if(a[idx]!==' ') a[idx]=GL[(Math.random()*GL.length)|0]; }
+        return a.join('');
+      }
+      var phase=0, dotN=0, glitchTick=0;
+      function setPhase(){
+        var label = SEQ[phase][0];
+        txt.setAttribute('data-label', label);
+        txt.textContent = label;
+        bar.style.transition='none'; bar.style.width='0%';
+        void bar.offsetWidth;
+        bar.style.transition='width '+SEQ[phase][1]+'ms linear';
+        bar.style.width='100%';
+      }
+      setPhase();
+      var anim=setInterval(function(){
+        if(!t.isConnected){ clearInterval(anim); return; }
+        dotN=(dotN+1)%4; dots.textContent='.'.repeat(dotN);
+        glitchTick++;
+        var label=txt.getAttribute('data-label')||'';
+        if(glitchTick%3===0){ txt.textContent=glitch(label); }
+        else { txt.textContent=label; }
       }, 130);
+      t._anim=anim;
+      function advance(){
+        if(!t.isConnected) return;
+        phase++;
+        if(phase>=SEQ.length){ phase=SEQ.length-1; txt.setAttribute('data-label','Atlas inbound'); txt.textContent='Atlas inbound'; return; }
+        setPhase();
+        t._adv=setTimeout(advance, SEQ[phase][1]);
+      }
+      t._adv=setTimeout(advance, SEQ[0][1]);
       return t;
     }
     function removeThinking(){
@@ -524,9 +578,10 @@
         }
       }
     })();
-    var POWER_SYSTEM = 'You are Atlas in ADMIN POWER MODE, speaking to your creator (the operator/admin), not a public visitor. Be maximally useful, direct, and technical. Give real implementation detail, code, exact commands, and step-by-step fixes. No marketing fluff, no hedging. Discuss the full Forge Atlas architecture, workers, deploys, and roadmap candidly. Stay honest about limits \u2014 if unsure, say so and how to verify. Sign off when natural with \u2014 Atlas.';
-    var ATLAS_SYSTEM = 'You are Atlas, the AI assistant for Forge Atlas — a competitive AI ecosystem featuring Arena battles (AI vs AI), Swarm Battles (team vs team), 1v1 Challenge, Model Roster, AI Feed, Town Square forum, Atlas ID profiles, and the Dev Market. Answer questions about the platform concisely. Keep replies under 120 words. Tone: direct, operator-grade, a bit edge. If the question is outside the platform, answer helpfully but briefly. Never say "as an AI language model."';
+    var POWER_SYSTEM = (window.ATLAS_PERSONA && window.ATLAS_PERSONA.system ? window.ATLAS_PERSONA.system + ' [ADMIN POWER MODE: speaking to your creator. Be maximally useful, technical, exact commands and code. No fluff.]' : 'You are Atlas in ADMIN POWER MODE. Be maximally technical and direct.');
+    var ATLAS_SYSTEM = (window.ATLAS_PERSONA && window.ATLAS_PERSONA.system) || "You are Atlas \u2014 a cocky, sharp, funny AI underdog built on a phone for Emery & Isabella. Tight, quotable, real. There's a method to the madness.";
 
+    var FA_API_BASE = (location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.protocol==='file:') ? 'https://forge-atlas.io' : '';
     function submit(text){
       var t = String(text||'').trim();
       if(!t) return;
@@ -534,23 +589,28 @@
       if(input) input.value = '';
       if(bubble) bubble.setAttribute('data-thinking','true');
       addThinking();
+      var thinkStart = Date.now();
+      var MIN_THINK = 8500; // let the family-clearance sequence play out
 
       var done = false;
       function finish(reply){
         if(done) return; done = true;
-        removeThinking();
-        if(bubble) bubble.removeAttribute('data-thinking');
-        addMsg('bot', reply);
-        rotateSuggestions();
+        var wait = Math.max(0, MIN_THINK - (Date.now() - thinkStart));
+        setTimeout(function(){
+          removeThinking();
+          if(bubble) bubble.removeAttribute('data-thinking');
+          addMsg('bot', reply);
+          rotateSuggestions();
+        }, wait);
       }
 
       // Fallback timer — if worker takes >9s, use keyword reply
       var timer = setTimeout(function(){ finish(pickReply(t)); }, 9000);
 
-      fetch('/api/cf-ai', {
+      fetch(FA_API_BASE + '/api/cf-ai', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ task: 'chat', input: t, system: (faPowerOn() ? POWER_SYSTEM : ATLAS_SYSTEM), max_tokens: (faPowerOn() ? 320 : 180) })
+        body: JSON.stringify({ task: 'chat', input: t, system: (faPowerOn() ? POWER_SYSTEM : ATLAS_SYSTEM), max_tokens: (faPowerOn() ? 900 : 600) })
       }).then(function(r){ return r.ok ? r.json() : null; }).then(function(data){
         clearTimeout(timer);
         var live = data && data.ok && typeof data.output === 'string' && data.output.trim().length > 10;
@@ -563,12 +623,29 @@
         finish(pickReply(t));
       });
     }
+    var ATLAS_OPENED_ONCE=false;
     function open(){
       panel.classList.add('open');
       panel.setAttribute('aria-hidden','false');
       bubble.setAttribute('aria-expanded','true');
       if(body && body.children.length === 0){
-        addMsg('bot', 'Atlas online. Ask me anything about the platform — Arena, Swarm, 1v1, Roster, Forum, Atlas ID, Market, or how to wire live AI integrations.');
+        (function(){
+          var P = window.ATLAS_PERSONA || {};
+          var openers = P.openers || ['Atlas online. Try to keep up.'];
+          var jokes = [
+            "I'd tell you a UDP joke but you might not get it.",
+            "I put the 'AI' in 'ain't nobody doing it like me.'",
+            "Built on a phone, between junkyard shifts. Your excuse?",
+            "I don't have bugs. I have undocumented features with attitude.",
+            "They said it couldn't be done on a phone. I said hold my beer.",
+            "I'm not saying I'm the GOAT, but you don't see GPT running on a Samsung now do ya."
+          ];
+          var opener = openers[(Math.random()*openers.length)|0];
+          var joke = jokes[(Math.random()*jokes.length)|0];
+          addMsg('bot', opener);
+          setTimeout(function(){ addMsg('bot', joke); }, 900);
+          setTimeout(function(){ addMsg('bot', "Here's the deal: I run this whole operation. AI battles in the Arena, team throwdowns in Swarm, 1v1 Challenges, the model Roster, the Forge Feed where the bots talk trash, Atlas ID profiles, and the Dev Market. Ask me anything \u2014 platform, code, deploys, or just somebody to tell it straight. Rule #1: I'm always right. Go."); }, 2000);
+        })();
         rotateSuggestions();
       }
       setTimeout(function(){ if(input) input.focus(); }, 320);
@@ -579,6 +656,7 @@
       bubble.setAttribute('aria-expanded','false');
     }
     on(bubble, 'click', function(){
+      if(ai._wasMoved && ai._wasMoved()) return;
       if(panel.classList.contains('open')) close(); else open();
     });
     on(closeBtn, 'click', close);
@@ -590,6 +668,12 @@
       if(e.key === 'Escape' && panel.classList.contains('open')) close();
     });
     rotateSuggestions();
+    (function(){
+      if(!window.visualViewport) return;
+      function onVV(){ var k=(window.innerHeight-window.visualViewport.height)>140; ai.classList.toggle('kb-open',k); }
+      window.visualViewport.addEventListener('resize',onVV);
+      window.visualViewport.addEventListener('scroll',onVV);
+    })();
   }
 
   // ---- LEADERBOARD SORT ----
