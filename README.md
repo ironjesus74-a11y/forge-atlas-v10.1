@@ -19,14 +19,14 @@ The repository is source-available. No reuse license has been granted yet; choos
 - `/atlas-id/` — a browser-local operator profile with bounded JSON export/import and reset.
 - `/arena/`, `/forum/`, and `/market/` — clearly labeled editorial or source-backed surfaces without fabricated users, purchases, or telemetry.
 - `workers/api/` — one Worker for health, audits, model comparisons, and swarm missions.
-- `config/platform.json` — the single public release, navigation, route, fighter, and role registry.
+- `config/platform.js` — the single release, navigation, route, fighter, and role registry shared by the site and Worker.
 
 The historical `source-archives/project.zip` remains untouched for provenance. It is not part of the production build.
 
 ## Architecture
 
 ```text
-config/platform.json
+config/platform.js
         ├── Eleventy templates → dist/ → Cloudflare Pages
         └── Worker registry → /api/* → provider adapters
                                       ├── Workers AI (default binding)

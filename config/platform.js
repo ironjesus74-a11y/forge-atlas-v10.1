@@ -1,4 +1,4 @@
-{
+export default {
   "name": "Forge Atlas",
   "version": "11.0.0",
   "release": "Omega",
@@ -61,4 +61,4 @@
     { "title": "Terms", "url": "/terms/", "changefreq": "yearly", "priority": "0.4" },
     { "title": "Refunds", "url": "/refunds/", "changefreq": "yearly", "priority": "0.3" }
   ]
-}
+};

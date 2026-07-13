@@ -1,4 +1,4 @@
-import platform from "../../../config/platform.json" with { type: "json" };
+import platform from "../../../config/platform.js";
 import { ApiError } from "./errors.js";
 import { analyzeHtml, fetchPublicHtml } from "./audit.js";
 import { assertMethod, enforceRateLimit, failure, readJson, success, verifyRequestOrigin } from "./http.js";

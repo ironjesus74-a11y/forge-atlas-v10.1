@@ -1,4 +1,4 @@
-import platform from "../../../config/platform.json" with { type: "json" };
+import platform from "../../../config/platform.js";
 import { ApiError } from "./errors.js";
 import { cleanText } from "./http.js";
 import { PROVIDERS, runProvider } from "./providers.js";

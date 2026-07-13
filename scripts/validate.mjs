@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import platform from "../config/platform.json" with { type: "json" };
+import platform from "../config/platform.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dist = path.join(root, "dist");
@@ -104,7 +104,7 @@ for (const page of platform.pages) {
 const sitemap = read(path.join(dist, "sitemap.xml"));
 const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
 const expectedUrls = platform.pages.map((page) => `${platform.baseUrl}${page.url}`);
-check(JSON.stringify(sitemapUrls) === JSON.stringify(expectedUrls), "sitemap.xml does not exactly match config/platform.json.");
+check(JSON.stringify(sitemapUrls) === JSON.stringify(expectedUrls), "sitemap.xml does not exactly match config/platform.js.");
 
 const robots = read(path.join(dist, "robots.txt"));
 check(robots.includes(`Sitemap: ${platform.baseUrl}/sitemap.xml`), "robots.txt does not contain the absolute canonical sitemap URL.");
@@ -174,6 +174,7 @@ const secretPatterns = [
   /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/
 ];
 for (const relative of trackedAndNew) {
+  if (!fs.existsSync(path.join(root, relative))) continue;
   if (!textExtensions.has(path.extname(relative).toLowerCase())) continue;
   const value = read(path.join(root, relative));
   if (secretPatterns.some((pattern) => pattern.test(value))) failures.push(`${relative}: possible credential or private key found.`);
