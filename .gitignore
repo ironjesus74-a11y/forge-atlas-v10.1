@@ -1,55 +1,12 @@
-
-# AI / MCP / Editor local configs
-.claude/
-.codex/
-.cursor/
-.gemini/
-.vscode/
-.zed/
-.mcp.json
-opencode.json
-config/mcporter.json
-
-# =========================
-# AI / MCP / Editor noise
-# =========================
-.codex/
-.cursor/
-.gemini/
-.vscode/
-.zed/
-.mcp.json
-*.mcp.json
-opencode.json
-config/mcporter.json
-
-# =========================
-# OS / system junk
-# =========================
-.DS_Store
-Thumbs.db
-
-# =========================
-# dependencies / builds
-# =========================
 node_modules/
 dist/
-build/
-*.log
-
-# =========================
-# env secrets
-# =========================
-.env
+.wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
 .env.*
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-
-# local backups (never deploy)
-*.bak-*
-*.backup-*
+.env
+!.env.example
+*.log
+extracted/
+live-source/
