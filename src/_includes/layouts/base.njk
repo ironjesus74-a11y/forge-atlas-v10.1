@@ -29,6 +29,14 @@
   <body class="{{ bodyClass or '' }}" data-page="{{ pageKey or '' }}">
     <a class="skip-link" href="#main-content">Skip to content</a>
 
+    <div class="cinema-backdrop" aria-hidden="true">
+      <canvas class="cinema-particles" data-cinema-canvas></canvas>
+      <div class="cinema-pointer" data-cinema-pointer></div>
+      <div class="cinema-vignette"></div>
+      <div class="cinema-grain"></div>
+    </div>
+    <div class="scroll-progress" aria-hidden="true"><i data-scroll-progress></i></div>
+
     <div class="system-ribbon" aria-label="Platform release status">
       <span><i class="status-pip" aria-hidden="true"></i>{{ platform.release }} {{ platform.version }}</span>
       <span class="system-ribbon__mode">{{ platform.mode }}</span>

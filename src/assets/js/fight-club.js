@@ -29,6 +29,8 @@ const judgeDeck = document.querySelector("[data-judge-deck]");
 const fallback = document.querySelector("[data-fight-fallback]");
 const fallbackMessage = document.querySelector("[data-fallback-message]");
 const demoButton = document.querySelector("[data-run-demo]");
+const heroLeft = document.querySelector("[data-hero-left]");
+const heroRight = document.querySelector("[data-hero-right]");
 const storage = safeStorage();
 let selected = fighterButtons.filter((button) => button.getAttribute("aria-pressed") === "true").map((button) => button.dataset.fighterId).slice(0, 2);
 let activeRound = null;
@@ -44,13 +46,16 @@ function timeoutSignal(milliseconds) {
 function syncSelection() {
   fighterButtons.forEach((button) => button.setAttribute("aria-pressed", String(selected.includes(button.dataset.fighterId))));
   countNode.textContent = `${selected.length} / 2`;
+  const names = selected.map((id) => fighterButtons.find((button) => button.dataset.fighterId === id)?.dataset.fighterName || id);
+  if (heroLeft) heroLeft.textContent = names[0] || "Select contender";
+  if (heroRight) heroRight.textContent = names[1] || "Select contender";
 }
 
 const requestedFighter = new URLSearchParams(window.location.search).get("fighter");
 if (requestedFighter && fighterButtons.some((button) => button.dataset.fighterId === requestedFighter) && !selected.includes(requestedFighter)) {
   selected = [requestedFighter, selected[0]].filter(Boolean).slice(0, 2);
-  syncSelection();
 }
+syncSelection();
 
 picker?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-fighter-id]");
@@ -61,6 +66,8 @@ picker?.addEventListener("click", (event) => {
   } else if (selected.length < 2) selected.push(id);
   else selected = [selected[1], id];
   syncSelection();
+  button.dataset.selectionFlash = "true";
+  window.setTimeout(() => delete button.dataset.selectionFlash, 420);
   errorNode.textContent = "";
 });
 
@@ -96,6 +103,9 @@ function prepareStage() {
   const [left, right] = selected.map(fighterMeta);
   setStageNames(left, right);
   stage.hidden = false;
+  stage.dataset.phase = "connecting";
+  stage.dataset.entering = "true";
+  window.setTimeout(() => delete stage.dataset.entering, 780);
   fallback.dataset.visible = "false";
   judgeDeck.dataset.open = "false";
   document.querySelector("[data-fight-result]").textContent = "";
@@ -130,6 +140,7 @@ function completeRound(round) {
   document.querySelector("[data-round-id]").textContent = `ROUND · ${round.id}`;
   document.querySelector("[data-round-status]").textContent = round.mode === "demo" ? "Curated demo" : "Responses verified";
   setProgress(3);
+  stage.dataset.phase = "complete";
   judgeDeck.dataset.open = "true";
 }
 
@@ -146,6 +157,7 @@ function showFallback(error, prompt) {
     ? `${error} A curated response exists for this exact demo prompt.`
     : `${error} Choose one of the curated demo prompts before using the fallback.`;
   document.querySelector("[data-round-status]").textContent = "Live round unavailable";
+  stage.dataset.phase = "error";
   for (const side of ["left", "right"]) {
     const output = document.querySelector(`[data-${side}-output]`);
     output.dataset.state = "error";
@@ -185,6 +197,7 @@ form?.addEventListener("submit", async (event) => {
       signal: timeoutSignal(60_000)
     });
     setProgress(2);
+    stage.dataset.phase = "analyzing";
     const payload = await response.json().catch(() => null);
     if (!response.ok || !payload?.ok) throw new Error(payload?.error?.message || `Worker returned HTTP ${response.status}.`);
     completeRound(payload.round);
@@ -219,7 +232,10 @@ judgeDeck?.addEventListener("click", (event) => {
   if (!button || !activeRound) return;
   const choice = button.dataset.judge;
   const winner = choice === "tie" ? "Tie recorded" : `${activeRound.responses[choice === "left" ? 0 : 1].name} selected`;
-  document.querySelector("[data-fight-result]").textContent = `${winner} · stored only in this browser`;
+  const resultNode = document.querySelector("[data-fight-result]");
+  resultNode.textContent = `${winner} · stored only in this browser`;
+  resultNode.dataset.flash = "true";
+  window.setTimeout(() => delete resultNode.dataset.flash, 620);
 
   if (storage) {
     try {

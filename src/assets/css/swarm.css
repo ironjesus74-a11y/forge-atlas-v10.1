@@ -1,99 +1,336 @@
 .swarm-page {
-  --swarm-violet: #a88cff;
-  --swarm-blue: #50d7e8;
+  --swarm-violet: #ad92ff;
+  --swarm-violet-rgb: 173, 146, 255;
+  --swarm-blue: #55e6f4;
+  --swarm-blue-rgb: 85, 230, 244;
   background:
-    radial-gradient(circle at 50% 18%, rgba(168, 140, 255, 0.12), transparent 33rem),
-    radial-gradient(circle at 78% 48%, rgba(80, 215, 232, 0.07), transparent 28rem),
-    var(--void);
+    radial-gradient(circle at 68% 13%, rgba(var(--swarm-violet-rgb), 0.15), transparent 36rem),
+    radial-gradient(circle at 22% 44%, rgba(var(--swarm-blue-rgb), 0.075), transparent 32rem),
+    linear-gradient(180deg, #06070b, #080911 48%, #050609);
 }
+
+.swarm-page .cinema-particles { opacity: 0.84; }
 
 .swarm-hero {
   position: relative;
   display: grid;
   width: var(--content);
-  min-height: min(790px, calc(100vh - 103px));
+  min-height: min(900px, calc(100svh - 103px));
   margin-inline: auto;
-  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+  grid-template-columns: minmax(0, 1.03fr) minmax(410px, 0.97fr);
   align-items: center;
-  gap: 50px;
-  padding-block: 80px;
+  gap: clamp(34px, 5vw, 80px);
+  padding-block: clamp(90px, 11vh, 126px);
+  isolation: isolate;
 }
 
-.swarm-hero h1 { font-size: clamp(4rem, 10vw, 8.2rem); }
-.swarm-hero h1 span { color: transparent; background: linear-gradient(110deg, var(--swarm-violet), var(--cyan)); background-clip: text; }
-.swarm-hero .lede { margin-top: 28px; }
+.swarm-hero::before {
+  position: absolute;
+  inset: 8% -22% 2% 36%;
+  z-index: -2;
+  content: "";
+  opacity: 0.56;
+  background: conic-gradient(from 32deg at center, transparent, rgba(var(--swarm-violet-rgb), 0.18), transparent 28%, rgba(var(--swarm-blue-rgb), 0.13), transparent 61%);
+  filter: blur(42px);
+  animation: swarmHeroAura 9s ease-in-out infinite;
+}
 
-.hive-visual { position: relative; aspect-ratio: 1; min-width: 0; }
-.hive-visual::before { position: absolute; inset: 8%; border: 1px solid rgba(168, 140, 255, 0.2); border-radius: 50%; content: ""; box-shadow: inset 0 0 90px rgba(168, 140, 255, 0.08), 0 0 90px rgba(80, 215, 232, 0.06); }
-.hive-visual::after { position: absolute; inset: 23%; border: 1px dashed rgba(80, 215, 232, 0.28); border-radius: 50%; content: ""; animation: hiveSpin 30s linear infinite; }
-.hive-core { position: absolute; inset: 38%; display: grid; place-items: center; border: 1px solid var(--gold); color: var(--gold-bright); background: #0a0c11; font-family: var(--font-display); font-size: 1.25rem; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; transform: rotate(30deg); box-shadow: 0 0 50px rgba(214, 174, 92, 0.18); }
-.hive-core span { transform: rotate(-30deg); }
-.hive-node { position: absolute; display: grid; width: 92px; height: 92px; place-items: center; border: 1px solid var(--line-strong); color: var(--text); background: rgba(12, 14, 20, 0.94); font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.07em; text-align: center; text-transform: uppercase; clip-path: polygon(25% 4%, 75% 4%, 98% 50%, 75% 96%, 25% 96%, 2% 50%); }
-.hive-node--1 { top: 3%; left: 40%; color: var(--gold-bright); }
-.hive-node--2 { top: 35%; right: 1%; color: var(--cyan); }
-.hive-node--3 { bottom: 4%; left: 40%; color: var(--orange); }
-.hive-node--4 { top: 35%; left: 1%; color: var(--swarm-violet); }
-.hive-line { position: absolute; top: 50%; left: 50%; width: 34%; height: 1px; background: linear-gradient(90deg, rgba(168, 140, 255, 0.5), transparent); transform-origin: left center; }
+.swarm-hero__copy { position: relative; z-index: 4; animation: swarmCopyIn 1s cubic-bezier(.16,1,.3,1) both; }
+.swarm-hero__hud { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.swarm-hero h1 { font-size: clamp(4.5rem, 9vw, 9.2rem); line-height: 0.82; letter-spacing: -0.058em; }
+.swarm-hero h1 span { color: transparent; background: linear-gradient(110deg, var(--swarm-violet), #e5dcff 38%, var(--cyan) 96%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 12px 32px rgba(80, 215, 232, 0.08)); }
+.swarm-hero .lede { max-width: 670px; margin-top: 30px; }
+
+.hive-visual {
+  position: relative;
+  z-index: 2;
+  width: min(46vw, 580px);
+  aspect-ratio: 1;
+  min-width: 0;
+  justify-self: end;
+  animation: hiveEntrance 1.2s cubic-bezier(.16,1,.3,1) both 120ms;
+  filter: drop-shadow(0 42px 70px rgba(0, 0, 0, 0.48));
+}
+
+.hive-visual::before,
+.hive-visual::after {
+  position: absolute;
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+.hive-visual::before { inset: 2%; border: 1px solid rgba(var(--swarm-violet-rgb), 0.14); box-shadow: inset 0 0 110px rgba(var(--swarm-violet-rgb), 0.07), 0 0 110px rgba(var(--swarm-blue-rgb), 0.055); }
+.hive-visual::after { inset: 15%; border: 1px solid rgba(255, 255, 255, 0.055); background: radial-gradient(circle, rgba(var(--swarm-violet-rgb), 0.045), transparent 64%); }
+
+.hive-aurora {
+  position: absolute;
+  inset: -14%;
+  border-radius: 50%;
+  opacity: 0.68;
+  background: conic-gradient(from 0deg, transparent, rgba(var(--swarm-violet-rgb), 0.2), transparent 24%, rgba(var(--swarm-blue-rgb), 0.16), transparent 51%, rgba(214, 174, 92, 0.12), transparent 78%);
+  filter: blur(32px);
+  animation: hiveAurora 8s ease-in-out infinite;
+}
+
+.hive-orbit {
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
+  transform-style: preserve-3d;
+}
+.hive-orbit::before { position: absolute; inset: 0; border: 1px solid currentColor; border-radius: inherit; content: ""; opacity: 0.22; }
+.hive-orbit i { position: absolute; display: block; width: 7px; height: 7px; border-radius: 50%; color: inherit; background: currentColor; box-shadow: 0 0 15px currentColor; }
+.hive-orbit i:nth-child(1) { top: -3px; left: 50%; }
+.hive-orbit i:nth-child(2) { right: 7%; bottom: 22%; }
+.hive-orbit i:nth-child(3) { bottom: 8%; left: 17%; }
+.hive-orbit--1 { inset: 7%; color: var(--swarm-violet); animation: hiveSpin 28s linear infinite; }
+.hive-orbit--2 { inset: 20%; color: var(--swarm-blue); animation: hiveSpinReverse 18s linear infinite; }
+.hive-orbit--2::before { border-style: dashed; }
+.hive-orbit--3 { inset: 31%; color: var(--gold-bright); animation: hiveSpin 11s linear infinite; }
+
+.hive-core {
+  position: absolute;
+  inset: 38%;
+  z-index: 8;
+  display: grid;
+  place-content: center;
+  gap: 4px;
+  border: 1px solid rgba(242, 205, 121, 0.76);
+  color: var(--gold-bright);
+  background: radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.12), transparent 24%), rgba(8, 10, 15, 0.94);
+  font-family: var(--font-display);
+  font-size: 1.18rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-align: center;
+  text-transform: uppercase;
+  transform: rotate(30deg);
+  box-shadow: inset 0 0 38px rgba(214, 174, 92, 0.11), 0 0 55px rgba(214, 174, 92, 0.2);
+  animation: hiveCore 3.4s ease-in-out infinite;
+}
+.hive-core::before, .hive-core::after { position: absolute; inset: -12px; border: 1px solid rgba(var(--swarm-blue-rgb), 0.12); content: ""; animation: coreBracket 8s linear infinite; }
+.hive-core::after { inset: -23px; border-color: rgba(var(--swarm-violet-rgb), 0.1); animation-direction: reverse; animation-duration: 13s; }
+.hive-core span, .hive-core small { transform: rotate(-30deg); }
+.hive-core small { color: var(--cyan); font-family: var(--font-mono); font-size: 0.46rem; font-weight: 500; letter-spacing: 0.14em; }
+
+.hive-node {
+  position: absolute;
+  z-index: 9;
+  display: grid;
+  width: 100px;
+  height: 100px;
+  place-content: center;
+  gap: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  color: var(--text);
+  background: radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.06), transparent 32%), rgba(9, 12, 18, 0.94);
+  font-family: var(--font-mono);
+  font-size: 0.57rem;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  clip-path: polygon(25% 4%, 75% 4%, 98% 50%, 75% 96%, 25% 96%, 2% 50%);
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.35));
+  transition: color 300ms ease, border-color 300ms ease, filter 300ms ease, scale 300ms cubic-bezier(.16,1,.3,1);
+}
+.hive-node i { width: 6px; height: 6px; margin-inline: auto; border-radius: 50%; background: currentColor; box-shadow: 0 0 12px currentColor; }
+.hive-node--1 { top: 0; left: calc(50% - 50px); color: var(--gold-bright); }
+.hive-node--2 { top: calc(50% - 50px); right: 0; color: var(--cyan); }
+.hive-node--3 { bottom: 0; left: calc(50% - 50px); color: var(--orange); }
+.hive-node--4 { top: calc(50% - 50px); left: 0; color: var(--swarm-violet); }
+.hive-node[data-state="active"] { border-color: currentColor; filter: drop-shadow(0 0 24px currentColor); scale: 1.1; animation: hiveNodeActive 1.1s ease-in-out infinite; }
+.hive-node[data-state="complete"] { border-color: var(--green); color: var(--green); filter: drop-shadow(0 0 14px rgba(105, 221, 161, 0.35)); }
+.hive-node[data-state="error"] { border-color: var(--red); color: var(--red); }
+
+.hive-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3;
+  width: 40%;
+  height: 1px;
+  overflow: visible;
+  background: linear-gradient(90deg, rgba(var(--swarm-violet-rgb), 0.68), transparent);
+  transform-origin: left center;
+}
+.hive-line::after { position: absolute; top: -1px; left: 0; width: 22%; height: 3px; border-radius: 50%; content: ""; background: linear-gradient(90deg, transparent, var(--cyan), transparent); filter: blur(1px); animation: lineSignal 2.4s ease-in-out infinite; }
 .hive-line--1 { transform: rotate(-90deg); }
 .hive-line--2 { transform: rotate(0deg); }
 .hive-line--3 { transform: rotate(90deg); }
 .hive-line--4 { transform: rotate(180deg); }
+.hive-line--2::after { animation-delay: -0.6s; }
+.hive-line--3::after { animation-delay: -1.2s; }
+.hive-line--4::after { animation-delay: -1.8s; }
 
-.mission-console { width: var(--content); margin: 0 auto 90px; }
-.mission-setup { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr); gap: 16px; }
+.hive-packet {
+  position: absolute;
+  z-index: 6;
+  top: calc(50% - 3px);
+  left: calc(50% - 3px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  opacity: 0;
+  background: var(--cyan);
+  box-shadow: 0 0 14px var(--cyan);
+}
+.hive-packet--1 { animation: packetNorth 3.2s ease-in-out infinite; }
+.hive-packet--2 { animation: packetEast 3.2s ease-in-out infinite -0.8s; }
+.hive-packet--3 { animation: packetSouth 3.2s ease-in-out infinite -1.6s; }
+.hive-packet--4 { animation: packetWest 3.2s ease-in-out infinite -2.4s; }
+
+.hive-readout {
+  position: absolute;
+  right: 8%;
+  bottom: 13%;
+  z-index: 10;
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border-left: 1px solid var(--cyan);
+  color: var(--muted);
+  background: rgba(7, 9, 13, 0.76);
+  font-family: var(--font-mono);
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+  backdrop-filter: blur(9px);
+}
+.hive-readout b { color: var(--cyan); font-weight: 600; }
+
+.hive-visual[data-state="selected"] .hive-core { border-color: var(--swarm-violet); box-shadow: inset 0 0 38px rgba(var(--swarm-violet-rgb), 0.15), 0 0 68px rgba(var(--swarm-violet-rgb), 0.24); }
+.hive-visual[data-state="running"] .hive-orbit--1 { animation-duration: 8s; }
+.hive-visual[data-state="running"] .hive-orbit--2 { animation-duration: 5.5s; }
+.hive-visual[data-state="running"] .hive-orbit--3 { animation-duration: 3.5s; }
+.hive-visual[data-state="running"] .hive-core { box-shadow: inset 0 0 44px rgba(var(--swarm-blue-rgb), 0.16), 0 0 86px rgba(var(--swarm-blue-rgb), 0.28); }
+.hive-visual[data-state="complete"] .hive-core { border-color: var(--green); color: var(--green); box-shadow: inset 0 0 38px rgba(105, 221, 161, 0.12), 0 0 72px rgba(105, 221, 161, 0.24); }
+.hive-visual[data-state="error"] .hive-core { border-color: var(--red); color: var(--red); }
+
+.mission-console { position: relative; width: var(--content); margin: 10px auto 100px; }
+.mission-console::before { position: absolute; inset: -32px; z-index: -1; content: ""; opacity: 0.16; background: radial-gradient(ellipse at center, rgba(var(--swarm-violet-rgb), 0.3), transparent 66%); filter: blur(32px); }
+.mission-setup { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(290px, 0.65fr); gap: 16px; }
+.mission-setup .panel { position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(17, 20, 29, 0.95), rgba(8, 10, 15, 0.91)); }
+.mission-setup .panel::after { position: absolute; inset: 0; pointer-events: none; content: ""; background: linear-gradient(125deg, rgba(var(--swarm-violet-rgb), 0.035), transparent 38%); }
+.mission-setup .panel > * { position: relative; z-index: 1; }
+
 .mission-presets { display: grid; gap: 9px; }
-.mission-preset { padding: 16px; border: 1px solid var(--line); color: var(--text); background: #0a0c11; text-align: left; cursor: pointer; }
-.mission-preset:hover, .mission-preset[aria-pressed="true"] { border-color: var(--swarm-violet); background: rgba(168, 140, 255, 0.07); }
-.mission-preset strong { display: block; font-family: var(--font-display); font-size: 1rem; text-transform: uppercase; }
-.mission-preset span { display: block; margin-top: 5px; color: var(--muted); font-size: 0.75rem; }
+.mission-preset {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  --glow-x: 50%;
+  --glow-y: 50%;
+  position: relative;
+  overflow: hidden;
+  padding: 18px;
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: radial-gradient(circle at var(--glow-x) var(--glow-y), rgba(var(--swarm-violet-rgb), 0.12), transparent 44%), #090b10;
+  text-align: left;
+  cursor: pointer;
+  transform: perspective(800px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transform-style: preserve-3d;
+  transition: border-color 220ms ease, background 220ms ease, transform 180ms ease, box-shadow 220ms ease;
+}
+.mission-preset::before { position: absolute; top: 0; bottom: 0; left: 0; width: 2px; content: ""; opacity: 0; background: var(--swarm-violet); box-shadow: 0 0 16px var(--swarm-violet); transition: opacity 220ms ease; }
+.mission-preset:hover { border-color: rgba(var(--swarm-violet-rgb), 0.72); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28); }
+.mission-preset[aria-pressed="true"] { border-color: var(--swarm-violet); background: radial-gradient(circle at var(--glow-x) var(--glow-y), rgba(var(--swarm-violet-rgb), 0.2), transparent 48%), #0c0d15; box-shadow: 0 0 28px rgba(var(--swarm-violet-rgb), 0.09); }
+.mission-preset[aria-pressed="true"]::before { opacity: 1; }
+.mission-preset strong { display: block; font-family: var(--font-display); font-size: 1.08rem; text-transform: uppercase; transform: translateZ(12px); }
+.mission-preset span { display: block; margin-top: 6px; color: var(--muted); font-size: 0.76rem; transform: translateZ(8px); }
 
-.swarm-room { display: none; overflow: hidden; margin-top: 16px; border: 1px solid var(--line); background: #080a0e; box-shadow: var(--shadow); }
-.swarm-room[data-open="true"] { display: block; }
-.swarm-room__bar { display: flex; min-height: 46px; align-items: center; justify-content: space-between; gap: 14px; padding: 9px 14px; border-bottom: 1px solid var(--line); color: var(--muted); font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; }
-.swarm-room__body { display: grid; grid-template-columns: 270px minmax(0, 1fr); min-height: 620px; }
-.role-rail { padding: 18px; border-right: 1px solid var(--line); background: rgba(255, 255, 255, 0.018); }
-.role-rail h2 { margin-bottom: 16px; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; }
-.role-node { position: relative; display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 15px 10px; border-bottom: 1px solid var(--line); }
-.role-node__number { display: grid; width: 31px; height: 31px; place-items: center; border: 1px solid var(--line); color: var(--dim); font-family: var(--font-mono); font-size: 0.62rem; }
-.role-node strong { display: block; font-family: var(--font-display); font-size: 0.95rem; text-transform: uppercase; }
+.swarm-room { display: none; position: relative; overflow: hidden; margin-top: 18px; border: 1px solid rgba(255, 255, 255, 0.14); background: #07090e; box-shadow: 0 38px 100px rgba(0, 0, 0, 0.46); }
+.swarm-room::before { position: absolute; inset: 0; z-index: 0; pointer-events: none; content: ""; opacity: 0.55; background: repeating-linear-gradient(0deg, transparent 0 6px, rgba(255, 255, 255, 0.017) 7px), radial-gradient(circle at 72% 22%, rgba(var(--swarm-violet-rgb), 0.07), transparent 40%); }
+.swarm-room[data-open="true"] { display: block; animation: swarmRoomIn 700ms cubic-bezier(.16,1,.3,1) both; }
+.swarm-room[data-phase="complete"] { border-color: rgba(105, 221, 161, 0.28); }
+.swarm-room[data-phase="error"] { border-color: rgba(255, 104, 104, 0.3); }
+.swarm-room__bar { position: relative; z-index: 3; display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 14px; padding: 9px 15px; border-bottom: 1px solid var(--line); color: var(--muted); background: rgba(8, 10, 15, 0.84); font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.1em; text-transform: uppercase; backdrop-filter: blur(12px); }
+.swarm-room__body { position: relative; z-index: 2; display: grid; grid-template-columns: 285px minmax(0, 1fr); min-height: 650px; }
+
+.role-rail { padding: 20px; border-right: 1px solid var(--line); background: rgba(255, 255, 255, 0.014); }
+.role-rail h2 { margin-bottom: 18px; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em; }
+.role-node { position: relative; display: grid; grid-template-columns: 38px 1fr; gap: 13px; padding: 17px 10px; border-bottom: 1px solid var(--line); transition: background 260ms ease, translate 260ms ease; }
+.role-node:not(:last-child)::after { position: absolute; bottom: -15px; left: 25px; z-index: 2; width: 1px; height: 29px; content: ""; background: var(--line); }
+.role-node__number { position: relative; display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid var(--line); color: var(--dim); background: #090b10; font-family: var(--font-mono); font-size: 0.62rem; transition: color 240ms ease, border-color 240ms ease, box-shadow 240ms ease; }
+.role-node strong { display: block; font-family: var(--font-display); font-size: 1rem; text-transform: uppercase; }
 .role-node span { color: var(--muted); font-size: 0.7rem; }
-.role-node[data-state="active"] .role-node__number { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 18px rgba(80, 215, 232, 0.2); }
-.role-node[data-state="complete"] .role-node__number { border-color: var(--green); color: var(--green); }
+.role-node[data-state="active"] { background: linear-gradient(90deg, rgba(var(--swarm-blue-rgb), 0.07), transparent); translate: 4px 0; }
+.role-node[data-state="active"] .role-node__number { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 24px rgba(var(--swarm-blue-rgb), 0.24); animation: roleNodePulse 1s ease-in-out infinite; }
+.role-node[data-state="complete"] .role-node__number { border-color: var(--green); color: var(--green); box-shadow: 0 0 18px rgba(105, 221, 161, 0.14); }
+.role-node[data-state="complete"]::after { background: linear-gradient(var(--green), transparent); }
 .role-node[data-state="error"] .role-node__number { border-color: var(--red); color: var(--red); }
 
 .swarm-output { display: grid; grid-template-rows: auto 1fr; min-width: 0; }
-.swarm-log { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 20px; border-bottom: 1px solid var(--line); color: var(--dim); font-family: var(--font-mono); font-size: 0.64rem; }
-.swarm-log span { display: inline-flex; gap: 7px; align-items: center; }
-.swarm-log i { width: 5px; height: 5px; border-radius: 50%; background: var(--swarm-violet); }
-.swarm-results { display: grid; gap: 12px; max-height: 700px; overflow: auto; padding: 20px; scrollbar-color: var(--line-strong) transparent; }
-.role-output { display: none; padding: 18px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.018); }
-.role-output[data-visible="true"] { display: block; animation: roleReveal 220ms ease both; }
-.role-output__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
-.role-output h3 { font-size: 1.15rem; }
-.role-output pre { margin: 0; color: #ced0cf; font: inherit; font-size: 0.88rem; line-height: 1.68; white-space: pre-wrap; }
-.role-output--closer { border-color: var(--line-strong); background: linear-gradient(135deg, rgba(214, 174, 92, 0.07), rgba(80, 215, 232, 0.035)); }
+.swarm-log { display: flex; flex-wrap: wrap; gap: 8px; min-height: 54px; padding: 16px 20px; border-bottom: 1px solid var(--line); color: var(--dim); font-family: var(--font-mono); font-size: 0.63rem; }
+.swarm-log span { display: inline-flex; gap: 7px; align-items: center; padding: 4px 7px; border: 1px solid rgba(255, 255, 255, 0.055); background: rgba(255, 255, 255, 0.018); animation: logEntry 320ms ease both; }
+.swarm-log i { width: 5px; height: 5px; border-radius: 50%; background: var(--swarm-violet); box-shadow: 0 0 9px var(--swarm-violet); }
+.swarm-results { display: grid; gap: 12px; max-height: 740px; overflow: auto; padding: 22px; scrollbar-color: var(--line-strong) transparent; }
+.role-output { display: none; position: relative; overflow: hidden; padding: 20px; border: 1px solid var(--line); background: linear-gradient(145deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.009)); }
+.role-output::before { position: absolute; top: 0; bottom: 0; left: 0; width: 2px; content: ""; background: var(--swarm-violet); box-shadow: 0 0 14px var(--swarm-violet); }
+.role-output[data-visible="true"] { display: block; animation: roleReveal 560ms cubic-bezier(.16,1,.3,1) both; }
+.role-output__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 13px; }
+.role-output h3 { font-size: 1.2rem; }
+.role-output pre { margin: 0; color: #d3d7d5; font: inherit; font-size: 0.89rem; line-height: 1.72; white-space: pre-wrap; }
+.role-output--closer { border-color: rgba(214, 174, 92, 0.32); background: linear-gradient(135deg, rgba(214, 174, 92, 0.085), rgba(var(--swarm-blue-rgb), 0.045)); box-shadow: inset 0 0 42px rgba(214, 174, 92, 0.025); }
+.role-output--closer::before { background: var(--gold-bright); box-shadow: 0 0 14px var(--gold-bright); }
 
 .swarm-fallback { display: none; margin-top: 12px; }
-.swarm-fallback[data-visible="true"] { display: flex; }
+.swarm-fallback[data-visible="true"] { display: flex; animation: logEntry 320ms ease both; }
 
+@keyframes swarmHeroAura { 50% { opacity: 0.9; transform: scale(1.08) rotate(8deg); } }
+@keyframes swarmCopyIn { from { opacity: 0; transform: translateX(-38px); filter: blur(8px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes hiveEntrance { from { opacity: 0; transform: scale(0.72) rotate(12deg); filter: blur(16px); } to { opacity: 1; transform: scale(1) rotate(0); filter: blur(0) drop-shadow(0 42px 70px rgba(0, 0, 0, 0.48)); } }
+@keyframes hiveAurora { 50% { opacity: 0.44; transform: scale(1.1) rotate(18deg); } }
 @keyframes hiveSpin { to { transform: rotate(360deg); } }
-@keyframes roleReveal { from { opacity: 0; transform: translateY(8px); } }
+@keyframes hiveSpinReverse { to { transform: rotate(-360deg); } }
+@keyframes hiveCore { 50% { box-shadow: inset 0 0 45px rgba(214, 174, 92, 0.16), 0 0 78px rgba(var(--swarm-violet-rgb), 0.22); } }
+@keyframes coreBracket { to { transform: rotate(360deg); } }
+@keyframes hiveNodeActive { 50% { scale: 1.16; } }
+@keyframes lineSignal { 0%, 100% { left: 0; opacity: 0; } 20%, 80% { opacity: 1; } 100% { left: 82%; } }
+@keyframes packetNorth { 0%, 10% { opacity: 0; transform: translate(0, 0); } 25%, 75% { opacity: 1; } 90%, 100% { opacity: 0; transform: translate(0, -220px); } }
+@keyframes packetEast { 0%, 10% { opacity: 0; transform: translate(0, 0); } 25%, 75% { opacity: 1; } 90%, 100% { opacity: 0; transform: translate(220px, 0); } }
+@keyframes packetSouth { 0%, 10% { opacity: 0; transform: translate(0, 0); } 25%, 75% { opacity: 1; } 90%, 100% { opacity: 0; transform: translate(0, 220px); } }
+@keyframes packetWest { 0%, 10% { opacity: 0; transform: translate(0, 0); } 25%, 75% { opacity: 1; } 90%, 100% { opacity: 0; transform: translate(-220px, 0); } }
+@keyframes swarmRoomIn { from { opacity: 0; transform: translateY(32px) scale(0.98); filter: blur(7px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes roleNodePulse { 50% { box-shadow: 0 0 34px rgba(var(--swarm-blue-rgb), 0.38); } }
+@keyframes logEntry { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+@keyframes roleReveal { from { opacity: 0; transform: translateY(20px) scale(0.985); filter: blur(5px); } to { opacity: 1; transform: none; filter: blur(0); } }
 
-@media (max-width: 930px) {
+@media (max-width: 980px) {
   .swarm-hero { grid-template-columns: 1fr; padding-top: 110px; }
-  .hive-visual { width: min(560px, 100%); margin-inline: auto; }
+  .swarm-hero__copy { max-width: 850px; }
+  .hive-visual { width: min(590px, 90vw); margin: -8px auto 10px; justify-self: center; }
   .mission-setup { grid-template-columns: 1fr; }
   .swarm-room__body { grid-template-columns: 1fr; }
   .role-rail { display: grid; grid-template-columns: repeat(4, 1fr); border-right: 0; border-bottom: 1px solid var(--line); }
   .role-rail h2 { grid-column: 1 / -1; }
   .role-node { grid-template-columns: 1fr; border: 0; border-right: 1px solid var(--line); }
   .role-node:last-child { border-right: 0; }
+  .role-node::after { display: none; }
 }
 
 @media (max-width: 600px) {
-  .swarm-hero { min-height: auto; padding-block: 90px 60px; }
-  .hive-node { width: 74px; height: 74px; font-size: 0.5rem; }
+  .swarm-hero { min-height: auto; gap: 44px; padding-block: 82px 62px; }
+  .swarm-hero__hud { display: none; }
+  .swarm-hero h1 { font-size: clamp(4rem, 20vw, 6.8rem); }
+  .swarm-hero .lede { font-size: 0.98rem; line-height: 1.62; }
+  .hive-visual { width: min(106vw, 470px); margin-left: -3vw; }
+  .hive-node { width: 76px; height: 76px; font-size: 0.48rem; }
+  .hive-node--1 { left: calc(50% - 38px); }
+  .hive-node--2 { top: calc(50% - 38px); }
+  .hive-node--3 { left: calc(50% - 38px); }
+  .hive-node--4 { top: calc(50% - 38px); }
+  .hive-readout { display: none; }
+  .hive-core { font-size: 0.86rem; }
+  .hive-core small { font-size: 0.36rem; }
+  .mission-console { margin-top: 20px; }
   .role-rail { grid-template-columns: repeat(2, 1fr); }
   .role-node:nth-of-type(2) { border-right: 0; }
   .swarm-room__bar { align-items: flex-start; flex-direction: column; }
+  .swarm-results { padding: 14px; }
+  .role-output__head { align-items: flex-start; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hive-aurora, .hive-orbit, .hive-core, .hive-core::before, .hive-core::after, .hive-node, .hive-line::after, .hive-packet { animation: none !important; }
+  .hive-packet { display: none; }
+  .swarm-hero__copy, .hive-visual, .swarm-room, .role-output { opacity: 1 !important; transform: none !important; filter: none !important; }
 }

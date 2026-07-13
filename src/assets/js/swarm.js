@@ -37,6 +37,9 @@ const room = document.querySelector("[data-swarm-room]");
 const fallback = document.querySelector("[data-swarm-fallback]");
 const fallbackMessage = document.querySelector("[data-swarm-fallback-message]");
 const demoButton = document.querySelector("[data-run-swarm-demo]");
+const hive = document.querySelector("[data-hive]");
+const hiveStatus = document.querySelector("[data-hive-status]");
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let activeDemoKey = null;
 
 function timeoutSignal(milliseconds) {
@@ -47,7 +50,17 @@ function timeoutSignal(milliseconds) {
 }
 
 function delay(milliseconds) {
-  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+  return new Promise((resolve) => window.setTimeout(resolve, reducedMotion.matches ? 0 : milliseconds));
+}
+
+function setHiveState(state, label) {
+  if (hive) hive.dataset.state = state;
+  if (hiveStatus) hiveStatus.textContent = label;
+}
+
+function setHiveRole(role, state) {
+  const node = document.querySelector(`[data-hive-node="${role}"]`);
+  if (node) node.dataset.state = state;
 }
 
 document.querySelectorAll("[data-mission-demo]").forEach((button) => {
@@ -57,18 +70,32 @@ document.querySelectorAll("[data-mission-demo]").forEach((button) => {
     missionInput.value = DEMOS[activeDemoKey].mission;
     missionInput.focus();
     errorNode.textContent = "";
+    setHiveState("selected", `${button.querySelector("strong")?.textContent || "Mission"} ready`);
+    document.querySelectorAll("[data-hive-node]").forEach((node) => node.dataset.state = "waiting");
   });
+});
+
+missionInput?.addEventListener("input", () => {
+  if (activeDemoKey && missionInput.value !== DEMOS[activeDemoKey].mission) {
+    activeDemoKey = null;
+    document.querySelectorAll("[data-mission-demo]").forEach((button) => button.setAttribute("aria-pressed", "false"));
+  }
+  const ready = missionInput.value.trim().length >= 10;
+  setHiveState(ready ? "selected" : "idle", ready ? "Mission ready" : "Standby");
 });
 
 function resetRoom() {
   room.dataset.open = "true";
+  room.dataset.phase = "running";
   fallback.dataset.visible = "false";
   document.querySelector("[data-mission-id]").textContent = "MISSION · CONNECTING";
   document.querySelector("[data-mission-engine]").textContent = "Engine pending";
   document.querySelector("[data-mission-status]").textContent = "Awaiting Worker";
   document.querySelector("[data-swarm-log]").replaceChildren(Object.assign(document.createElement("span"), { textContent: "Connecting to same-origin Worker" }));
   document.querySelectorAll("[data-role-node]").forEach((node) => node.dataset.state = "waiting");
+  document.querySelectorAll("[data-hive-node]").forEach((node) => node.dataset.state = "waiting");
   document.querySelectorAll("[data-role-output]").forEach((output) => output.dataset.visible = "false");
+  setHiveState("running", "Routing mission");
   room.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
 }
 
@@ -90,16 +117,21 @@ async function renderMission(mission) {
     if (!result?.text) throw new Error(`The Worker response is missing the ${role} output.`);
     const node = document.querySelector(`[data-role-node="${role}"]`);
     node.dataset.state = "active";
+    setHiveRole(role, "active");
+    setHiveState("running", `${role} active`);
     const logLine = document.createElement("span");
     const pip = document.createElement("i");
     logLine.append(pip, `${role} received`);
     log.append(logLine);
-    await delay(120);
+    await delay(260);
     document.querySelector(`[data-role-text="${role}"]`).textContent = result.text;
     document.querySelector(`[data-role-engine="${role}"]`).textContent = `${result.provider} · ${result.model}`;
     document.querySelector(`[data-role-output="${role}"]`).dataset.visible = "true";
     node.dataset.state = "complete";
+    setHiveRole(role, "complete");
   }
+  room.dataset.phase = "complete";
+  setHiveState("complete", "Mission complete");
 }
 
 function showFallback(error, mission) {
@@ -111,6 +143,9 @@ function showFallback(error, mission) {
     : `${error} Choose one of the mission cards before using the fallback.`;
   document.querySelector("[data-mission-status]").textContent = "Live mission unavailable";
   document.querySelectorAll("[data-role-node]").forEach((node) => node.dataset.state = "error");
+  document.querySelectorAll("[data-hive-node]").forEach((node) => node.dataset.state = "error");
+  room.dataset.phase = "error";
+  setHiveState("error", "Link unavailable");
 }
 
 form?.addEventListener("submit", async (event) => {
