@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+"""
+AppForge skill — Android app idea -> private repo -> GitHub Actions APK.
+Wrapper around Termux commands:
+  atlas-appforge
+  appforge-repair
+  appforge-iterate
+  appforge-escalate
+"""
+
+import os
+import shlex
+import subprocess
+import sys
+
+NAME = "appforge"
+DESCRIPTION = "Create/repair Android APK projects via private GitHub repos + Actions"
+USAGE = """appforge commands:
+  help
+  doctor
+  new
+  status <owner/repo>
+  download <owner/repo>
+  repair <owner/repo> <local/path>
+  iterate <owner/repo> <local/path> "<feedback>"
+  escalate <owner/repo> <local/path>
+  prompt
+"""
+
+def _run(cmd):
+    print("$ " + cmd)
+    return subprocess.call(cmd, shell=True)
+
+def main(args=None):
+    if args is None:
+        args = sys.argv[1:]
+
+    if not args or args[0] in ("help", "-h", "--help"):
+        print(USAGE)
+        return 0
+
+    cmd = args[0]
+    rest = args[1:]
+
+    if cmd in ("doctor", "new", "status", "download", "ask-prompt"):
+        return _run("atlas-appforge " + " ".join(shlex.quote(x) for x in args))
+
+    if cmd == "repair":
+        if len(rest) < 2:
+            print("Usage: atlas appforge repair <owner/repo> <local/path>")
+            return 1
+        return _run("appforge-repair " + " ".join(shlex.quote(x) for x in rest))
+
+    if cmd == "iterate":
+        if len(rest) < 3:
+            print('Usage: atlas appforge iterate <owner/repo> <local/path> "<feedback>"')
+            return 1
+        return _run("appforge-iterate " + " ".join(shlex.quote(x) for x in rest))
+
+    if cmd == "escalate":
+        if len(rest) < 2:
+            print("Usage: atlas appforge escalate <owner/repo> <local/path>")
+            return 1
+        return _run("appforge-escalate " + " ".join(shlex.quote(x) for x in rest))
+
+    if cmd == "prompt":
+        print("""APPFORGE DEEP SPEC MODE. Ask me up to 5 sharp questions about the Android app I want. Then convert my answers into one executable command using atlas-appforge new with APP_NAME, REPO_NAME, APP_IDEA, FEATURES, STYLE, and PERMS. Run the command. If GitHub Actions fails, inspect logs, repair, push, rerun, and report the repo URL plus APK path. Do not give general advice.""")
+        return 0
+
+    print("Unknown appforge command:", cmd)
+    print(USAGE)
+    return 1
+
+def run(args=None):
+    return main(args)
+
+def handle(args=None):
+    return main(args)
+
+if __name__ == "__main__":
+    raise SystemExit(main())

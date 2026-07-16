@@ -1,0 +1,67 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -u
+
+echo "=================================================="
+echo "ATLAS / TERMUX TOOL MENU"
+echo "=================================================="
+echo
+echo "Core Atlas:"
+echo "  atlas                         interactive shell"
+echo "  atlas help                    Atlas help"
+echo "  atlas skills                  Atlas skill list"
+echo "  atlas status                  Atlas status"
+echo "  atlas doctor                  health check"
+echo "  atlas rag list                RAG docs"
+echo
+echo "Star / quality modes:"
+echo "  atlas-star \"task\"             deep executable mode"
+echo "  atlas-appmode \"app idea\"      app idea -> questions -> repo/APK"
+echo "  atlas-repair-build repo path  repair GitHub Actions build"
+echo
+echo "AppForge SDK:"
+echo "  atlas-appforge doctor"
+echo "  atlas-appforge new"
+echo "  atlas-appforge status owner/repo"
+echo "  atlas-appforge download owner/repo"
+echo "  appforge-repair owner/repo /path"
+echo "  appforge-iterate owner/repo /path \"feedback\""
+echo "  appforge-escalate owner/repo /path"
+echo
+echo "Atlas AppForge skill:"
+echo "  atlas appforge help"
+echo "  atlas appforge doctor"
+echo "  atlas appforge new"
+echo "  atlas appforge repair owner/repo /path"
+echo "  atlas appforge iterate owner/repo /path \"feedback\""
+echo
+echo "SameWave:"
+echo "  samewave-hotfix status"
+echo "  samewave-hotfix tunnel"
+echo "  samewave-hotfix all"
+echo
+echo "GitHub:"
+echo "  gh auth status"
+echo "  gh repo list --limit 10"
+echo "  gh run list --repo owner/repo --limit 5"
+echo
+echo "System:"
+echo "  pkg list-installed | head"
+echo "  termux-info"
+echo "  ps -A | grep -Ei 'atlas|cloudflared|python|node|java|gradle'"
+echo
+echo "Installed relevant commands:"
+for x in atlas atlas-star atlas-appmode atlas-repair-build atlas-appforge appforge-repair appforge-iterate appforge-escalate samewave-hotfix gh git python node npm java gradle cloudflared jq aapt adb; do
+  printf "  %-22s " "$x"
+  command -v "$x" || true
+done
+
+echo
+echo "GitHub auth:"
+gh auth status 2>&1 | sed -E 's/(Token: ).*/\1<redacted>/' || true
+
+echo
+echo "Current AppForge APK downloads:"
+find /storage/emulated/0/Download/AppForge -maxdepth 1 -type f -name "*.apk" -print 2>/dev/null | tail -10 || true
+
+echo
+echo "=================================================="

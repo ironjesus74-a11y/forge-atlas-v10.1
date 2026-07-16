@@ -10,3 +10,26 @@ dist/
 *.log
 extracted/
 live-source/
+
+# Android / Gradle
+.gradle/
+**/.gradle/
+build/
+**/build/
+local.properties
+*.apk
+*.aab
+*.apks
+*.dex
+*.class
+captures/
+.externalNativeBuild/
+.cxx/
+
+
+# Atlas local secrets/generated assets
+**/mcp_token
+**/*token*
+**/*.keystore
+**/*.backup.*
+**/cf.json

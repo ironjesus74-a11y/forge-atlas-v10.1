@@ -1,0 +1,556 @@
+{
+  "fixes": [
+    {
+      "t": 1782285209.7117996,
+      "problem": "",
+      "strategy": "strategy 1",
+      "command": "I can't reason generatively right now, but here is a structured starting point.",
+      "worked": false
+    },
+    {
+      "t": 1782285209.7183414,
+      "problem": "",
+      "strategy": "strategy 2",
+      "command": "Goal restated: The user has this problem in Termux:",
+      "worked": false
+    },
+    {
+      "t": 1782285209.7253573,
+      "problem": "",
+      "strategy": "strategy 3",
+      "command": "List up to 5 DISTINCT shell command strategies to fix it, most likely first, ONE per line, no numbering, no prose. Safe commands only.",
+      "worked": false
+    },
+    {
+      "t": 1782285209.732441,
+      "problem": "",
+      "strategy": "strategy 4",
+      "command": "Suggested next steps: 1) break the task into <=5 concrete steps 2) run each as a skill 3) verify output.",
+      "worked": false
+    },
+    {
+      "t": 1782286087.3730438,
+      "problem": "install ollama on termux",
+      "strategy": "pkg install ollama",
+      "command": "pkg install -y ollama",
+      "worked": true
+    },
+    {
+      "t": 1782289245.7745318,
+      "problem": "",
+      "strategy": "strategy 1",
+      "command": "I can't reason generatively right now, but here is a structured starting point.",
+      "worked": false
+    },
+    {
+      "t": 1782289245.7821233,
+      "problem": "",
+      "strategy": "strategy 2",
+      "command": "Goal restated: The user has this problem in Termux:",
+      "worked": false
+    },
+    {
+      "t": 1782289245.7903564,
+      "problem": "",
+      "strategy": "strategy 3",
+      "command": "List up to 5 DISTINCT shell command strategies to fix it, most likely first, ONE per line, no numbering, no prose. Safe commands only.",
+      "worked": false
+    },
+    {
+      "t": 1782289245.8006713,
+      "problem": "",
+      "strategy": "strategy 4",
+      "command": "Suggested next steps: 1) break the task into <=5 concrete steps 2) run each as a skill 3) verify output.",
+      "worked": false
+    },
+    {
+      "t": 1782294031.6614144,
+      "problem": "i want to create a light weight but very dynamic apk or app that can share witg a friend in sync what ur lisrening to on ur phone call it samewave i have a folder in /storage/0/samewave look at it then upgrade enhance evolve it to be better",
+      "strategy": "Scan the /storage/0/samewave directory for audio files",
+      "command": "find /storage/0/samewave -type f -name '*.wav'",
+      "worked": false
+    },
+    {
+      "t": 1782294288.9065118,
+      "problem": "ok the app i want to create is between few folders take a look and make it better /storage/emulated/0/Download/SameWave and /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "inspect files",
+      "command": "skill:adb shell \"find /storage/emulated/0/Download/SameWave -type f\"",
+      "worked": false
+    },
+    {
+      "t": 1782294321.602748,
+      "problem": "install adb",
+      "strategy": "pkg install android-tools",
+      "command": "pkg install -y android-tools",
+      "worked": true
+    },
+    {
+      "t": 1782294329.3301327,
+      "problem": "install nmap",
+      "strategy": "pkg install nmap",
+      "command": "pkg install -y nmap",
+      "worked": true
+    },
+    {
+      "t": 1782294442.3982997,
+      "problem": "ok the app i want to create is between few folders take a look and make it better /storage/emulated/0/Download/SameWave and /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "inspect files",
+      "command": "skill:adb shell \"find /storage/emulated/0/AndroidIDEProjects/SameWave -type f\"",
+      "worked": false
+    },
+    {
+      "t": 1782294447.1181376,
+      "problem": "ok the app i want to create is between few folders take a look and make it better /storage/emulated/0/Download/SameWave and /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "improve code",
+      "command": "skill:automate 'code review and refactoring'",
+      "worked": false
+    },
+    {
+      "t": 1782294450.2127938,
+      "problem": "turn off adb and shizuka focus on samewave",
+      "strategy": "stop all running ADB processes",
+      "command": "pkill -f adb",
+      "worked": true
+    },
+    {
+      "t": 1782294599.4002898,
+      "problem": "sec",
+      "strategy": "Monitor network traffic",
+      "command": "skill:netcat -l -u -e /bin/sh",
+      "worked": false
+    },
+    {
+      "t": 1782294645.0460644,
+      "problem": "evolve urself so ur faster more snappy and better all around",
+      "strategy": "Understand goal",
+      "command": "",
+      "worked": true
+    },
+    {
+      "t": 1782300534.8608289,
+      "problem": "i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "Start with the existing codebase in AndroidIDEProjects/SameWave",
+      "command": "cd /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "worked": true
+    },
+    {
+      "t": 1782300534.8681674,
+      "problem": "i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "Identify the core features of the app (music streaming, device linking, chat, premium tiers)",
+      "command": "skill:devtools identify_features /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "worked": false
+    },
+    {
+      "t": 1782300589.4413052,
+      "problem": "i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "change directory to project location",
+      "command": "cd /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "worked": true
+    },
+    {
+      "t": 1782300639.104546,
+      "problem": "i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "Change directory to project location",
+      "command": "cd /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "worked": true
+    },
+    {
+      "t": 1782326805.2063015,
+      "problem": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557",
+      "strategy": "strategy 1",
+      "command": "apk update && apk upgrade",
+      "worked": false
+    },
+    {
+      "t": 1782326840.2680447,
+      "problem": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557",
+      "strategy": "strategy 2",
+      "command": "pkg install --update",
+      "worked": true
+    },
+    {
+      "t": 1782491174.6406927,
+      "problem": "install git",
+      "strategy": "pkg install git",
+      "command": "pkg install -y git",
+      "worked": true
+    },
+    {
+      "t": 1782491185.461469,
+      "problem": "install nodejs-lts",
+      "strategy": "pkg install nodejs-lts",
+      "command": "pkg install -y nodejs-lts",
+      "worked": true
+    },
+    {
+      "t": 1782491194.797659,
+      "problem": "install wget",
+      "strategy": "pkg install wget",
+      "command": "pkg install -y wget",
+      "worked": true
+    },
+    {
+      "t": 1782491196.1257992,
+      "problem": "install openssh",
+      "strategy": "memory:pkg install ollama",
+      "command": "pkg install -y ollama",
+      "worked": true
+    },
+    {
+      "t": 1782491205.6508758,
+      "problem": "install ripgrep",
+      "strategy": "pkg install ripgrep",
+      "command": "pkg install -y ripgrep",
+      "worked": true
+    },
+    {
+      "t": 1782491214.576717,
+      "problem": "install fd",
+      "strategy": "pkg install fd",
+      "command": "pkg install -y fd",
+      "worked": true
+    },
+    {
+      "t": 1782491224.3076928,
+      "problem": "install jq",
+      "strategy": "pkg install jq",
+      "command": "pkg install -y jq",
+      "worked": true
+    },
+    {
+      "t": 1782491232.7412639,
+      "problem": "install tree",
+      "strategy": "pkg install tree",
+      "command": "pkg install -y tree",
+      "worked": true
+    },
+    {
+      "t": 1782491243.988248,
+      "problem": "install vim",
+      "strategy": "pkg install vim",
+      "command": "pkg install -y vim",
+      "worked": true
+    },
+    {
+      "t": 1782491253.2082934,
+      "problem": "install shellcheck",
+      "strategy": "pkg install shellcheck",
+      "command": "pkg install -y shellcheck",
+      "worked": true
+    },
+    {
+      "t": 1782491284.6298485,
+      "problem": "install openjdk-17",
+      "strategy": "pkg install openjdk-17",
+      "command": "pkg install -y openjdk-17",
+      "worked": true
+    },
+    {
+      "t": 1782509286.2643435,
+      "problem": "install openssh",
+      "strategy": "memory:memory:pkg install ollama",
+      "command": "pkg install -y ollama",
+      "worked": true
+    },
+    {
+      "t": 1782519334.9817154,
+      "problem": "install openssh",
+      "strategy": "memory:memory:pkg install ollama",
+      "command": "pkg install -y ollama",
+      "worked": true
+    },
+    {
+      "t": 1782527737.11895,
+      "problem": "install openssl",
+      "strategy": "pkg install openssl",
+      "command": "pkg install -y openssl",
+      "worked": false
+    },
+    {
+      "t": 1782527744.9897275,
+      "problem": "install whois",
+      "strategy": "pkg install whois",
+      "command": "pkg install -y whois",
+      "worked": true
+    },
+    {
+      "t": 1782527754.163205,
+      "problem": "install dig",
+      "strategy": "pkg install dnsutils",
+      "command": "pkg install -y dnsutils",
+      "worked": true
+    },
+    {
+      "t": 1782527760.5421324,
+      "problem": "install nikto",
+      "strategy": "pkg install nikto",
+      "command": "pkg install -y nikto",
+      "worked": false
+    },
+    {
+      "t": 1782529852.7449112,
+      "problem": "i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "Navigate to the project directory",
+      "command": "cd /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "worked": true
+    },
+    {
+      "t": 1782529852.771868,
+      "problem": "i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "Initialize a new Android project with basic structure",
+      "command": "skill:automate init_project . --template=app",
+      "worked": false
+    },
+    {
+      "t": 1782529882.2078,
+      "problem": "i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "Design and implement UI for premium tier features (chat box, friends list, request song button)",
+      "command": "skill:webgen create_ui chat_friends_request /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "worked": true
+    },
+    {
+      "t": 1782529882.220648,
+      "problem": "i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "Implement real-time music sharing functionality",
+      "command": "skill:devtools enable_rtmusic_sharing /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "worked": false
+    },
+    {
+      "t": 1782529885.3684509,
+      "problem": "i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "Add premium tier subscription and payment processing logic",
+      "command": "skill:sec add_payment_processor /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "worked": false
+    },
+    {
+      "t": 1782529894.3517697,
+      "problem": "i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "Create an animated UI for premium features",
+      "command": "skill:webgen animate_ui chat_friends_request /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "worked": true
+    },
+    {
+      "t": 1782529894.365731,
+      "problem": "i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "Test the application thoroughly",
+      "command": "skill:adb test_app /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "worked": false
+    },
+    {
+      "t": 1782529901.0341902,
+      "problem": "i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "strategy": "Deploy to Google Play Store for public release",
+      "command": "skill:sec deploy_to_play_store /storage/emulated/0/AndroidIDEProjects/SameWave",
+      "worked": false
+    },
+    {
+      "t": 1782535470.26107,
+      "problem": "install openssh",
+      "strategy": "memory:memory:pkg install ollama",
+      "command": "pkg install -y ollama",
+      "worked": true
+    },
+    {
+      "t": 1782538146.7307,
+      "problem": "run this in termux for me and send output cat <<SCRIPT cd ~/forge-atlas-v10.1 echo === 1. the origin check in cf-ai-worker === grep -n -i origin\\|forbidden\\|ALLOWED workers/cf-ai-worker.js echo  echo === 2. how cf-ai-worker is configured in wrangler.toml === grep -n -A4 -i cf-ai\\|cf_ai\\|ALLOWED_ORIGIN wrangler.toml echo  echo === 3. does an UNLOCKED request (no origin) behave differently? === curl -s -o /dev/null -w no-origin status: %{http_code}\\n  https://cf-ai-worker.ironjesus74.workers.dev/api/cf-ai  -X POST -H Content-Type: application/json -d {\"task\":\"chat\",\"input\":\"hi\"} echo === 4. is it maybe a GET vs the wrong path? try root === curl -s -o /dev/null -w root GET status: %{http_code}\\n https://cf-ai-worker.ironjesus74.workers.dev/ SCRIPT",
+      "strategy": "agent",
+      "command": "agent-loop",
+      "worked": true
+    },
+    {
+      "t": 1782674422.3034143,
+      "problem": "\"EXECUTABLE SHELL TASK. Do not give advice. Do not refuse. Use only shell commands to inspect files and print a report.",
+      "strategy": "agent",
+      "command": "agent-loop",
+      "worked": true
+    },
+    {
+      "t": 1782674701.7328398,
+      "problem": "decompile /storage/emulated/0/1-FINISHED/app/build/outputs/apk/debug/app-debug.apk",
+      "strategy": "apktool d",
+      "command": "apktool d -f '/storage/emulated/0/1-FINISHED/app/build/outputs/apk/debug/app-debug.apk' -o 'app-debug'",
+      "worked": false
+    },
+    {
+      "t": 1782674716.327301,
+      "problem": "install apktool",
+      "strategy": "apktool",
+      "command": "pkg install -y apktool",
+      "worked": false
+    },
+    {
+      "t": 1782674767.5302262,
+      "problem": "install apksigner",
+      "strategy": "apksigner",
+      "command": "pkg install -y apksigner",
+      "worked": true
+    },
+    {
+      "t": 1782674773.9046605,
+      "problem": "install dx",
+      "strategy": "dx/d8",
+      "command": "pkg install -y dx 2>/dev/null || pkg install -y d8",
+      "worked": true
+    },
+    {
+      "t": 1782674790.764197,
+      "problem": "decompile /storage/emulated/0/1-FINISHED/app/build/outputs/apk/debug/app-debug.apk",
+      "strategy": "apktool d",
+      "command": "apktool d -f '/storage/emulated/0/1-FINISHED/app/build/outputs/apk/debug/app-debug.apk' -o 'app-debug'",
+      "worked": false
+    },
+    {
+      "t": 1782674807.6280942,
+      "problem": "install apktool",
+      "strategy": "apktool",
+      "command": "pkg install -y apktool",
+      "worked": false
+    },
+    {
+      "t": 1782674853.4450288,
+      "problem": "decompile /storage/emulated/0/1-FINISHED/app/build/outputs/apk/debug/app-debug.apk",
+      "strategy": "apktool d",
+      "command": "apktool d -f '/storage/emulated/0/1-FINISHED/app/build/outputs/apk/debug/app-debug.apk' -o 'app-debug'",
+      "worked": false
+    },
+    {
+      "t": 1782674866.484932,
+      "problem": "install apktool",
+      "strategy": "apktool",
+      "command": "pkg install -y apktool",
+      "worked": false
+    },
+    {
+      "t": 1782674879.9233227,
+      "problem": "decompile /storage/emulated/0/1-FINISHED/app/build/outputs/apk/debug/app-debug.apk",
+      "strategy": "apktool d",
+      "command": "apktool d -f '/storage/emulated/0/1-FINISHED/app/build/outputs/apk/debug/app-debug.apk' -o 'app-debug'",
+      "worked": false
+    },
+    {
+      "t": 1782727453.3188806,
+      "problem": "syntax and termux env",
+      "strategy": "strategy 1",
+      "command": "apk update && apk upgrade",
+      "worked": false
+    },
+    {
+      "t": 1782727454.5305798,
+      "problem": "syntax and termux env",
+      "strategy": "strategy 2",
+      "command": "pkg install --reinstall bash",
+      "worked": true
+    },
+    {
+      "t": 1782727490.668865,
+      "problem": "atlas",
+      "strategy": "strategy 1",
+      "command": "atlas help",
+      "worked": true
+    }
+  ],
+  "facts": [],
+  "skill_stats": {
+    "evolve": {
+      "runs": 3,
+      "ok": 0
+    },
+    "voice": {
+      "runs": 5,
+      "ok": 3
+    },
+    "deploy": {
+      "runs": 1,
+      "ok": 0
+    },
+    "grab": {
+      "runs": 83,
+      "ok": 76
+    },
+    "adb": {
+      "runs": 4,
+      "ok": 1
+    },
+    "automate": {
+      "runs": 3,
+      "ok": 0
+    },
+    "council": {
+      "runs": 1,
+      "ok": 1
+    },
+    "devtools": {
+      "runs": 7,
+      "ok": 4
+    },
+    "apk": {
+      "runs": 13,
+      "ok": 0
+    },
+    "appstudy": {
+      "runs": 14,
+      "ok": 0
+    },
+    "forge": {
+      "runs": 12,
+      "ok": 2
+    },
+    "sec": {
+      "runs": 13,
+      "ok": 3
+    },
+    "watchdog": {
+      "runs": 7,
+      "ok": 4
+    },
+    "webgen": {
+      "runs": 4,
+      "ok": 4
+    },
+    "sdk": {
+      "runs": 3,
+      "ok": 1
+    },
+    "fetch": {
+      "runs": 1,
+      "ok": 0
+    },
+    "rag": {
+      "runs": 57,
+      "ok": 54
+    },
+    "usb": {
+      "runs": 12,
+      "ok": 4
+    },
+    "selfcheck": {
+      "runs": 14,
+      "ok": 14
+    },
+    "scope": {
+      "runs": 15,
+      "ok": 14
+    },
+    "daemon": {
+      "runs": 11,
+      "ok": 6
+    },
+    "journal": {
+      "runs": 14,
+      "ok": 14
+    },
+    "git": {
+      "runs": 8,
+      "ok": 6
+    },
+    "cloud": {
+      "runs": 3,
+      "ok": 2
+    },
+    "appforge": {
+      "runs": 1,
+      "ok": 1
+    }
+  },
+  "preferences": {}
+}

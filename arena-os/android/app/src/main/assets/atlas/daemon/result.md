@@ -1,0 +1,9 @@
+# i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur listenin to i want it to be easy to invite free teir, 4.99$ premium teir, you can decide how that works a chat box to text each order gotta be smooth and next gen, maybe friends list, a request a song button or search bar make it animated and unique go all out lets change the world to givw u better idea my main project is here take a look /storage/emulated/0/AndroidIDEProjects/SameWave
+
+_(final · 12 passes · 2026-06-26 20:02)_
+
+[Atlas fallback brain — no local model detected]
+I can't reason generatively right now, but here is a structured starting point.
+- Goal restated: Task: i want you to take my idea and vision and enhance evolve transform it Into something special a very well desighned app or apk name Samewave a app to not stream music but to link devices or share real live music ur listening to so if u got a special someone whos far away u can share what ur lis
+- Suggested next steps: 1) break the task into <=5 concrete steps 2) run each as a skill 3) verify output.
+Install a model with:  atlas model install qwen2.5:3b
