@@ -1,0 +1,44 @@
+{
+ "company":"Forge Atlas AI Team",
+
+ "departments":[
+
+ {
+ "name":"Engineering",
+ "agents":[
+ "frontend-engineer",
+ "backend-engineer",
+ "mobile-engineer",
+ "integration-engineer"
+ ]
+ },
+
+ {
+ "name":"Security",
+ "agents":[
+ "guardian",
+ "security-auditor",
+ "recovery-engineer"
+ ]
+ },
+
+ {
+ "name":"Optimization",
+ "agents":[
+ "seo-agent",
+ "performance-agent",
+ "ux-agent"
+ ]
+ },
+
+ {
+ "name":"Operations",
+ "agents":[
+ "project-manager",
+ "deployment-agent",
+ "task-planner"
+ ]
+ }
+
+ ]
+}
