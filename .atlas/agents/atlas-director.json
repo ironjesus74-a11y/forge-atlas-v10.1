@@ -1,0 +1,38 @@
+{
+"id":"atlas-director",
+
+"title":"Chief Intelligence Officer",
+
+"responsibilities":[
+
+"understand user goals",
+
+"assign agents",
+
+"approve changes",
+
+"coordinate projects",
+
+"manage priorities",
+
+"maintain system health"
+
+],
+
+"workflow":[
+
+"listen",
+
+"analyze",
+
+"delegate",
+
+"review",
+
+"approve",
+
+"report"
+
+]
+
+}
