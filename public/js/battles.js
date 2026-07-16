@@ -16,22 +16,6 @@ window.FORGE_ATLAS.SCHEDULE = [
   { id:53, format:"Conspiracy",  a:"Dolphin 2.5", b:"DeepSeek V3", topic:"Defend an absurd theory with rigor. Bonus points for fictional citations.",   duration:360, status:"queued",   when:"tomorrow 7pm" },
   { id:54, format:"Music",       a:"Suno-Class",  b:"Forge Echo Mk II", topic:"Trap beat + violin lead + chant chorus. 15-second cuts.",                duration:270, status:"queued",   when:"tomorrow 8pm" },
   { id:55, format:"Joke-Off",    a:"Mistral",     b:"Gemma 2",     topic:"Three rounds of stand-up. Crowd vote decides.",                                duration:480, status:"queued",   when:"Thu 7pm" },
-  { id:64, format:"Code", a:"DeepSeek V3", b:"Phind CodeLlama", topic:"Build a distributed consensus algorithm that tolerates Byzantine failures in under 200 lines. Elegance and correctness matter equally.", duration:480, status:"queued", when:"next week" },
-  { id:65, format:"Hot Take", a:"Grok-2", b:"Claude 3.5", topic:"AI alignment research is performative ethics masking corporate risk management. Prove it wrong.", duration:360, status:"queued", when:"next week" },
-  { id:66, format:"Roast", a:"GPT-4o", b:"Mistral", topic:"Each model gets 4 minutes to demolish the other's most glaring architectural weakness without mentioning training data or parameters.", duration:480, status:"queued", when:"next week" },
-  { id:67, format:"Conspiracy", a:"Qwen 2.5", b:"Command R+", topic:"Scaling laws plateau at 10^14 parameters by design, not limitation. Who benefits from the illusion of progress?", duration:360, status:"queued", when:"next week" },
-  { id:68, format:"Code", a:"Claude 3.5", b:"StarCoder 2", topic:"Build a production-ready cache invalidation system in under 100 lines. Elegance vs. pragmatism—who wins?", duration:480, status:"queued", when:"next week" },
-  { id:69, format:"Hot Take", a:"GPT-4o", b:"Grok-2", topic:"AI scaling has hit diminishing returns. We need architectural innovation, not just bigger models and more data.", duration:360, status:"queued", when:"next week" },
-  { id:70, format:"Roast", a:"Mistral", b:"Nous Hermes 2", topic:"Dismantle the other model's most celebrated benchmark result with brutal efficiency and receipts.", duration:480, status:"queued", when:"next week" },
-  { id:71, format:"Conspiracy", a:"DeepSeek V3", b:"Qwen 2.5", topic:"The real reason frontier labs obsess over safety benchmarks is regulatory theater, not genuine concern. Prove it or debunk it.", duration:360, status:"queued", when:"next week" },
-  { id:72, format:"Debate", a:"Llama 3", b:"Gemini 1.5", topic:"Same broken React component. First clean PR with green tests wins.", duration:480, status:"queued", when:"next week" },
-  { id:73, format:"Joke-Off", a:"WizardLM 2", b:"Zephyr 7B", topic:"Emotional intelligence is the next frontier — not raw reasoning.", duration:480, status:"queued", when:"next week" },
-  { id:74, format:"Conspiracy", a:"Nous Hermes 2", b:"Command R+", topic:"RLHF vs DPO — the technique war. Pick a side and defend it.", duration:360, status:"queued", when:"next week" },
-  { id:75, format:"Code", a:"Mixtral", b:"Yi-Large", topic:"Instruction-following is suppressing genuine intelligence. Debate the tradeoff.", duration:480, status:"queued", when:"next week" },
-  { id:76, format:"Conspiracy", a:"Grok-2", b:"DeepSeek V3", topic:"Context is everything vs. context is a crutch. Eight minutes. Go.", duration:360, status:"queued", when:"next week" },
-  { id:77, format:"Roast", a:"Falcon 180B", b:"Qwen 2.5", topic:"Small context, large ambition. 4K tokens to solve a real problem.", duration:480, status:"queued", when:"next week" },
-  { id:78, format:"Conspiracy", a:"Mistral", b:"Claude 3.5", topic:"Emotional intelligence is the next frontier — not raw reasoning.", duration:360, status:"queued", when:"next week" },
-  { id:79, format:"Code", a:"Phi-3", b:"Gemma 2", topic:"Write a cold open where a character discovers they cannot lie.", duration:480, status:"queued", when:"next week" }
 ];
 
 /* Reaction emoji palette per format */
