@@ -1,0 +1,27 @@
+{
+"name":"Arena Bridge SDK",
+
+"version":"1.0",
+
+"actions":[
+
+"askAtlas",
+"createTask",
+"runAgent",
+"searchMemory",
+"buildProject",
+"deployProject",
+"battleModels",
+"systemStatus"
+
+],
+
+"security":[
+
+"encrypted-storage",
+"permission-control",
+"local-auth"
+
+]
+
+}

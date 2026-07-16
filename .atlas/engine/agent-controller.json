@@ -1,0 +1,42 @@
+{
+"name":"Atlas Agent Controller",
+
+"chain":[
+
+{
+"level":1,
+"agent":"atlas",
+"job":"Understand request"
+},
+
+{
+"level":2,
+"agent":"planner",
+"job":"Create execution plan"
+},
+
+{
+"level":3,
+"agents":[
+"builder",
+"guardian",
+"optimizer"
+],
+"job":"Execute work"
+},
+
+{
+"level":4,
+"agent":"validator",
+"job":"Test result"
+},
+
+{
+"level":5,
+"agent":"reporter",
+"job":"Explain outcome"
+}
+
+]
+
+}

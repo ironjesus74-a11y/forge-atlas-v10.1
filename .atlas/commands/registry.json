@@ -1,0 +1,48 @@
+{
+"name":"Atlas Command Center",
+
+"commands":[
+
+{
+"id":"ask",
+"description":"Ask Atlas AI assistant"
+},
+
+{
+"id":"website",
+"description":"Manage Forge Atlas website"
+},
+
+{
+"id":"build",
+"description":"Create applications"
+},
+
+{
+"id":"repair",
+"description":"Repair damaged systems"
+},
+
+{
+"id":"analyze",
+"description":"Analyze code and architecture"
+},
+
+{
+"id":"arena",
+"description":"Run AI comparison battles"
+},
+
+{
+"id":"deploy",
+"description":"Deploy projects"
+},
+
+{
+"id":"memory",
+"description":"Search Atlas knowledge"
+}
+
+]
+
+}
