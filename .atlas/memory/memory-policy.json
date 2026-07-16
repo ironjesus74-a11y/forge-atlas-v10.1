@@ -1,0 +1,34 @@
+{
+"memorySystem":"Atlas Memory",
+
+"layers":[
+
+{
+"name":"short-term",
+"purpose":"current tasks and conversations"
+},
+
+{
+"name":"project-memory",
+"purpose":"Forge Atlas history"
+},
+
+{
+"name":"knowledge",
+"purpose":"documents and research"
+},
+
+{
+"name":"experience",
+"purpose":"successful solutions"
+}
+
+],
+
+"rules":[
+"never overwrite important history",
+"version memories",
+"rank useful information"
+]
+
+}

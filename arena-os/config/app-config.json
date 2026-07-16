@@ -1,0 +1,22 @@
+{
+"name":"Arena OS",
+
+"version":"1.0",
+
+"purpose":
+"Forge Atlas mobile command center",
+
+"modules":[
+
+"atlas-chat",
+"agent-control",
+"website-admin",
+"rag-search",
+"app-builder",
+"deployment",
+"arena-battles",
+"system-monitor"
+
+]
+
+}
