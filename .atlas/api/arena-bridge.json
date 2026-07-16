@@ -1,0 +1,13 @@
+{
+ "app":"Arena OS",
+ "connection":"Forge Atlas Bridge",
+ "commands":[
+ "status",
+ "repair",
+ "deploy",
+ "analyze",
+ "build",
+ "create-app",
+ "security-check"
+ ]
+}

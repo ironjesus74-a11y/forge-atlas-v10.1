@@ -1,0 +1,38 @@
+{
+ "workflows":[
+
+ {
+ "id":"repair",
+ "trigger":"health_failure",
+ "steps":[
+ "scan",
+ "backup",
+ "repair",
+ "validate"
+ ]
+ },
+
+ {
+ "id":"deploy",
+ "trigger":"release",
+ "steps":[
+ "test",
+ "build",
+ "deploy",
+ "report"
+ ]
+ },
+
+ {
+ "id":"app-create",
+ "trigger":"user_request",
+ "steps":[
+ "analyze",
+ "design",
+ "generate",
+ "package"
+ ]
+ }
+
+ ]
+}
