@@ -1,0 +1,17 @@
+{
+"name":"Atlas Learning Rules",
+
+"learn":[
+"successful builds",
+"bug fixes",
+"optimization patterns",
+"architecture decisions"
+],
+
+"memoryActions":[
+"store",
+"rank",
+"improve"
+]
+
+}

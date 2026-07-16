@@ -1,0 +1,25 @@
+{
+"name":"Atlas Decision Engine",
+"version":"11.0",
+
+"purpose":"Coordinate intelligence decisions",
+
+"process":[
+"understand",
+"retrieve-memory",
+"analyze",
+"plan",
+"delegate",
+"execute",
+"verify",
+"learn"
+],
+
+"rules":[
+"protect projects",
+"prefer verified solutions",
+"remember successful fixes",
+"avoid destructive actions"
+]
+
+}

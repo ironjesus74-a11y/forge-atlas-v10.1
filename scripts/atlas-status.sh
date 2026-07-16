@@ -1,30 +1,28 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-clear
-
 echo "================================"
-echo "🔥 FORGE ATLAS COMMAND CENTER"
+echo "🔥 FORGE ATLAS v11"
 echo "================================"
 
 echo ""
 
-echo "SYSTEM"
-cat .atlas/runtime/core/engine.json
+echo "BRAIN"
+cat .atlas/brain/decision-engine.json
 
 echo ""
 
-echo "TASK QUEUE"
-cat .atlas/runtime/tasks/queue.json
+echo "AGENTS"
+ls .atlas/agents/profiles
 
 echo ""
 
-echo "PROVIDERS"
-cat .atlas/runtime/providers/provider-manager.json
+echo "ARENA"
+cat .atlas/arena/arena-v2.json
 
 echo ""
 
-echo "EVENT SYSTEM"
-cat .atlas/events/event-schema.json
+echo "APK"
+cat arena-os/app-manifest.json
 
 echo ""
 
