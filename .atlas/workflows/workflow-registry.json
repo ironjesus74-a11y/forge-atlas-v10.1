@@ -1,38 +1,42 @@
 {
- "workflows":[
+"engine":"Atlas Workflow Core",
 
- {
- "id":"repair",
- "trigger":"health_failure",
- "steps":[
- "scan",
- "backup",
- "repair",
- "validate"
- ]
- },
+"workflows":[
 
- {
- "id":"deploy",
- "trigger":"release",
- "steps":[
- "test",
- "build",
- "deploy",
- "report"
- ]
- },
+{
+"id":"safe-update",
+"purpose":"protect before upgrades",
+"steps":[
+"backup",
+"scan",
+"update",
+"test",
+"commit"
+]
+},
 
- {
- "id":"app-create",
- "trigger":"user_request",
- "steps":[
- "analyze",
- "design",
- "generate",
- "package"
- ]
- }
+{
+"id":"developer-mode",
+"purpose":"create software",
+"steps":[
+"idea",
+"architecture",
+"generate",
+"test",
+"package"
+]
+},
 
- ]
+{
+"id":"self-maintenance",
+"purpose":"keep Atlas healthy",
+"steps":[
+"health-check",
+"log",
+"repair",
+"optimize"
+]
+}
+
+]
 }

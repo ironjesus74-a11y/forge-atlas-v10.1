@@ -1,0 +1,23 @@
+{
+"memories":[
+
+{
+"id":"forge-atlas",
+"type":"project",
+"description":"Main AI ecosystem website and platform"
+},
+
+{
+"id":"arena-os",
+"type":"application",
+"description":"Android command center for Forge Atlas"
+},
+
+{
+"id":"development-style",
+"type":"preference",
+"description":"Prefer automation, optimization and practical solutions"
+}
+
+]
+}
