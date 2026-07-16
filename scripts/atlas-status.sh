@@ -1,29 +1,23 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-echo "================================"
-echo "🔥 FORGE ATLAS STATUS"
-echo "================================"
+echo "🔥 FORGE ATLAS v10.2"
 
 echo ""
+echo "CORE"
 
-echo "SYSTEM:"
-cat .atlas/bridge/atlas-config.json
-
-echo ""
-
-echo "AGENTS:"
-cat .atlas/agents/registry.json
+cat .atlas/atlas-core.json
 
 echo ""
+echo "AI PROVIDERS"
 
-echo "WORKFLOWS:"
-cat .atlas/workflows/workflow-registry.json
-
-echo ""
-
-echo "GIT:"
-git status
+cat .atlas/models/providers.json
 
 echo ""
-echo "LAST BUILD:"
-git log --oneline -5
+echo "AGENTS"
+
+cat .atlas/agents/team.json
+
+echo ""
+echo "GIT"
+
+git status --short

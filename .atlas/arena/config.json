@@ -1,0 +1,23 @@
+{
+"name":"Atlas Arena",
+
+"purpose":
+"AI model comparison system",
+
+"fighters":[
+"Atlas",
+"Anthropic",
+"OpenAI",
+"Google",
+"Local Models"
+],
+
+"scoring":[
+"accuracy",
+"code-quality",
+"speed",
+"security",
+"creativity"
+]
+
+}

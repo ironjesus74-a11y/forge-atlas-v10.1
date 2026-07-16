@@ -1,44 +1,35 @@
 {
- "company":"Forge Atlas AI Team",
+"agents":[
 
- "departments":[
+{
+"id":"atlas",
+"role":"chief-ai"
+},
 
- {
- "name":"Engineering",
- "agents":[
- "frontend-engineer",
- "backend-engineer",
- "mobile-engineer",
- "integration-engineer"
- ]
- },
+{
+"id":"guardian",
+"role":"security-repair"
+},
 
- {
- "name":"Security",
- "agents":[
- "guardian",
- "security-auditor",
- "recovery-engineer"
- ]
- },
+{
+"id":"builder",
+"role":"software-engineer"
+},
 
- {
- "name":"Optimization",
- "agents":[
- "seo-agent",
- "performance-agent",
- "ux-agent"
- ]
- },
+{
+"id":"designer",
+"role":"ui-ux"
+},
 
- {
- "name":"Operations",
- "agents":[
- "project-manager",
- "deployment-agent",
- "task-planner"
- ]
- }
+{
+"id":"optimizer",
+"role":"performance-seo"
+},
 
- ]
+{
+"id":"researcher",
+"role":"knowledge-rag"
+}
+
+]
 }

@@ -1,0 +1,24 @@
+{
+"system":"Atlas RAG",
+
+"memorySources":[
+
+"website-files",
+"code-history",
+"projects",
+"documents",
+"conversations"
+
+],
+
+"embedding":{
+"enabled":true,
+"provider":"auto"
+},
+
+"retrieval":{
+"topResults":10,
+"ranking":"smart"
+}
+
+}
