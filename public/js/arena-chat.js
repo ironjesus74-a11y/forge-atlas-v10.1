@@ -70,23 +70,19 @@
 
       var script = (FA.SCRIPTS || {})[match.id] || FA.SCRIPTS_DEFAULT;
       state.script = script;
-      // Honesty rule: always render as scripted first. The badge flips to
-      // LIVE · LLM only after a real model response actually arrives.
-      state.mode = 'static';
 
       this._renderMatchCard(matchPanel, match, script);
       this._renderChatShell(container, match, script);
       this._startTimer();
       this._startTickers();
 
-      // Begin streaming — same-origin /api/arena-llm by default
-      // (mirrors challenge.js's working pattern). Scripted fallback preserved.
-      var llmUrl = FA.LLM_WORKER_URL
-        || (FA.API && FA.API.endpoints && FA.API.endpoints.arena)
-        || '/api/arena-llm';
+      // Begin streaming
+      var llmUrl = FA.LLM_WORKER_URL;
       if (llmUrl) {
+        state.mode = 'live';
         this._streamLive(match, script, llmUrl);
       } else {
+        state.mode = 'static';
         this._playScript(script, match);
       }
     },
@@ -218,8 +214,8 @@
           '<div class="acf-stream" id="acf-stream" aria-live="polite" role="log"></div>'+
           '<div class="acf-foot mono">'+
             (state.mode === 'live'
-              ? '<span class="acf-foot-live">● LIVE · LLM — real model output</span>'
-              : '<span class="acf-foot-static">● Requesting live model — scripted demo plays if the model is unavailable.</span>')+
+              ? '<span class="acf-foot-live">● LLM Worker connected · responses streaming from real model</span>'
+              : '<span class="acf-foot-static">● Scripted demo — in-character editorial dialog. Set <code>FA.LLM_WORKER_URL</code> to stream real model output.</span>')+
           '</div>'+
         '</div>';
     },
@@ -302,27 +298,10 @@
       next();
     },
 
-    /**
-     * Flip the honesty badge + footer between scripted and live states.
-     * Called only once a real model response has arrived (live=true),
-     * or when the live attempt fails (live=false).
-     */
-    _setLiveBadge: function(live, modelName){
-      var safeModel = String(modelName || '').replace(/[<>&"']/g, '');
-      var st = $('.bs-status');
-      if (st) st.innerHTML = '<span class="dot live"></span> ' + (live ? 'LIVE · LLM' : 'LIVE DEMO · scripted');
-      var foot = $('.acf-foot');
-      if (foot) {
-        foot.innerHTML = live
-          ? '<span class="acf-foot-live">● LIVE · LLM — real model output' + (safeModel ? ' · ' + safeModel : '') + '</span>'
-          : '<span class="acf-foot-static">● Scripted demo — in-character editorial dialog. Live model unavailable right now.</span>';
-      }
-    },
-
     _streamLive: function(match, script, url){
-      // POST to the arena LLM endpoint. Expected JSON: { lines: [{who, text, react?, system?}], model }
-      // Honesty: stays labeled scripted until real lines arrive; falls back to scripted on any failure.
-      ArenaChat._appendSystem('Requesting live transcript from the model…');
+      // POST to the user's Worker. Expected JSON response: { lines: [{who, text, react?}, ...] }
+      // Falls back to scripted if Worker fails.
+      ArenaChat._appendSystem('Connecting to LLM Worker…');
       fetch(url, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -330,11 +309,8 @@
       })
       .then(function(r){ if (!r.ok) throw new Error('worker '+r.status); return r.json(); })
       .then(function(data){
-        if (state.cancelled || state.matchId !== match.id) return;
         if (!data || !Array.isArray(data.lines) || !data.lines.length) throw new Error('empty');
-        state.mode = 'live';
-        ArenaChat._setLiveBadge(true, data.model);
-        ArenaChat._appendSystem('Live model connected. Real output begins.');
+        ArenaChat._appendSystem('Connected. Live stream begins.');
         // Convert worker output to scripted lines and play
         var liveScript = { intro: script.intro, lines: data.lines.map(function(L){
           return { who: L.who, text: L.text, react: L.react, delay: 800, typing: 1200 + Math.min((L.text||'').length*10, 2200), system: L.system };
@@ -342,10 +318,8 @@
         ArenaChat._playScript(liveScript, match);
       })
       .catch(function(){
-        if (state.cancelled || state.matchId !== match.id) return;
+        ArenaChat._appendSystem('Worker unreachable — falling back to scripted demo.');
         state.mode = 'static';
-        ArenaChat._setLiveBadge(false);
-        ArenaChat._appendSystem('Live model unavailable — falling back to scripted demo.');
         ArenaChat._playScript(script, match);
       });
     },
@@ -481,7 +455,7 @@
     var len = text.length;
     if (len < 140) return false;
     // Heuristic: contains a punchline indicator
-    var indicators = /(\. *$|—|exactly|the answer|that's the|tell that|for the spectators|i'll concede|that's a flex|case for me)/i;
+    var indicators = /(\.\s*$|—|exactly|the answer|that's the|tell that|for the spectators|i'll concede|that's a flex|case for me)/i;
     return indicators.test(text) || len > 320;
   }
 
@@ -703,7 +677,7 @@
     return name.split(/[\s\-]+/).map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
   }
 
-  // Augmented _playScript with join notices
+  // Inject "spectator chimes" between scripted lines
   Chat._playScript = function(script, match){
     if (!script || !script.lines) return origPlayScript(script, match);
 

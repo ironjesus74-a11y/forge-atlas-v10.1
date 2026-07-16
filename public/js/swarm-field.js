@@ -1,45 +1,45 @@
 /* ============================================================
-   FORGE ATLAS · v10.1 · PARTICLE SWARM FIELD
+   FORGE ATLAS · v10.2 · PARTICLE SWARM FIELD
    Sigma (cyan) vs Omega (gold). Mouse highlights nearby connections.
    Timed matches with rooting + spectator prompt (1/match).
+   v10.2: hex nodes, LFSR quantum noise bg, role labels on hover.
    Performance: capped node count, pauses on hidden tab, reduced-motion safe.
    ============================================================ */
 (function(){
   'use strict';
 
   // ============================================================
-  // CONFIG · tuned for premium feel without melting phones
+  // CONFIG
   // ============================================================
   var CFG = {
-    nodesPerSide: 18,        // 36 total — dense enough to feel alive, light enough to be smooth
-    nodeRadius: 2.2,
+    nodesPerSide: 18,
+    nodeRadius: 2.8,
     nodeRadiusHover: 5,
-    connectDistance: 130,    // px — within this, nodes draw connection lines
-    mouseInfluence: 180,     // px — within this, mouse highlights connections to nodes
-    speedBase: 0.18,         // baseline drift speed
+    connectDistance: 130,
+    mouseInfluence: 180,
+    speedBase: 0.18,
     speedJitter: 0.15,
-    engagementChance: 0.003, // per-frame chance of cross-faction signal
-    matchDurationMs: 90000,  // 90s match
-    bgFlowLines: 24,         // ambient drifting lines in background
+    engagementChance: 0.003,
+    matchDurationMs: 90000,
+    bgFlowLines: 24,
     sigma: { color: [126, 234, 255], name: 'Sigma Pack' },
-    omega: { color: [212, 168, 67], name: 'Omega Squad' },
+    omega: { color: [212, 168, 67],  name: 'Omega Squad' },
   };
 
   // ============================================================
   // STATE
   // ============================================================
-  var canvas, ctx, w, h, dpr, raf, paused = false;
+  var canvas, ctx, w, h, dpr, raf, paused = false, isAmbient = false;
+  var noiseCanvas, noiseCtx, noiseImgData, noiseLfsr = 0xACE1, noiseFrame = 0;
+  var quantumEntropy = 0xA4C8;
   var nodes = [];
   var bgLines = [];
   var mouse = { x: -9999, y: -9999, active: false };
   var match = null;
   var lastFrame = 0;
-  var isAmbient = false;   // set in init(); ledger code is fully disabled in ambient mode
-  var ledger = null;       // last GET /api/swarm-ledger payload (shared all-time tally)
 
   var roles = ['Strategist', 'Scout', 'Builder', 'Critic', 'Researcher', 'Refiner', 'Defender', 'Negotiator', 'Optimizer', 'Closer'];
 
-  // Reduced-motion guard
   var REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ============================================================
@@ -55,7 +55,6 @@
       host.classList.add('swarm-ambient-host');
     }
 
-    // Build canvas
     canvas = document.createElement('canvas');
     canvas.className = 'swarm-field-canvas';
     canvas.setAttribute('aria-hidden', 'true');
@@ -66,7 +65,8 @@
     resize();
     window.addEventListener('resize', resize, { passive: true });
 
-    // Build nodes — fewer in ambient mode
+    if (!ambient) initNoise();
+
     nodes = [];
     var perSide = ambient ? Math.floor(CFG.nodesPerSide * 0.55) : CFG.nodesPerSide;
     for (var i = 0; i < perSide; i++) {
@@ -74,26 +74,22 @@
       nodes.push(makeNode('omega'));
     }
 
-    // Background drift lines
     bgLines = [];
     var nBg = ambient ? Math.floor(CFG.bgFlowLines * 0.6) : CFG.bgFlowLines;
     for (var j = 0; j < nBg; j++) {
       bgLines.push(makeBgLine());
     }
 
-    // Mouse — disabled in ambient mode
     if (!ambient && window.matchMedia && window.matchMedia('(hover: hover)').matches) {
       canvas.addEventListener('mousemove', onMouse, { passive: true });
       canvas.addEventListener('mouseleave', function(){ mouse.active = false; });
     }
 
-    // Pause when hidden
     document.addEventListener('visibilitychange', function(){
       paused = document.hidden;
       if (!paused) tick();
     });
 
-    // Match only in full mode
     if (!ambient && opts.startMatch !== false) {
       startMatch();
     }
@@ -129,6 +125,8 @@
       energy: 0.6 + Math.random() * 0.4,
       pulse: 0,
       flash: 0,
+      hexRot: Math.random() * Math.PI,
+      hexRotSpeed: (Math.random() - 0.5) * 0.003,
     };
   }
 
@@ -153,9 +151,72 @@
   }
 
   // ============================================================
+  // QUANTUM NOISE · LFSR-seeded texture layer
+  // ============================================================
+  function lfsr16(){
+    noiseLfsr = (noiseLfsr >>> 1) ^ (-(noiseLfsr & 1) & 0xB400);
+    return noiseLfsr;
+  }
+
+  function initNoise(){
+    noiseCanvas = document.createElement('canvas');
+    noiseCanvas.width = 64;
+    noiseCanvas.height = 64;
+    noiseCtx = noiseCanvas.getContext('2d');
+    noiseImgData = noiseCtx.createImageData(64, 64);
+    var d = noiseImgData.data;
+    for (var i = 0; i < d.length; i += 4) {
+      var v = lfsr16() & 0x1F;
+      d[i]   = v >> 1;
+      d[i+1] = v >> 2;
+      d[i+2] = v;
+      d[i+3] = 26;
+    }
+    noiseCtx.putImageData(noiseImgData, 0, 0);
+  }
+
+  function tickNoise(){
+    noiseFrame++;
+    if (noiseFrame % 2 !== 0) return;
+    var d = noiseImgData.data;
+    for (var n = 0; n < 72; n++) {
+      var i = (lfsr16() % (64 * 64)) * 4;
+      var v = lfsr16() & 0x1F;
+      d[i]   = v >> 1;
+      d[i+1] = v >> 2;
+      d[i+2] = v;
+      d[i+3] = 26;
+    }
+    noiseCtx.putImageData(noiseImgData, 0, 0);
+    if (noiseFrame % 7 === 0) {
+      quantumEntropy = (quantumEntropy ^ (lfsr16() & 0xFFFF)) & 0xFFFF;
+    }
+  }
+
+  function drawNoiseBg(){
+    ctx.globalAlpha = 0.028;
+    ctx.drawImage(noiseCanvas, 0, 0, w, h);
+    ctx.globalAlpha = 1.0;
+  }
+
+  // ============================================================
+  // HEX NODE SHAPE
+  // ============================================================
+  function drawHex(cx, cy, r, angle){
+    ctx.beginPath();
+    for (var i = 0; i < 6; i++) {
+      var a = (Math.PI / 3) * i + (angle || 0);
+      var px = cx + r * Math.cos(a);
+      var py = cy + r * Math.sin(a);
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+  }
+
+  // ============================================================
   // ENGAGEMENTS · cross-faction signal events
   // ============================================================
-  var engagements = []; // active signal lines
+  var engagements = [];
   function maybeEngage(){
     if (Math.random() > CFG.engagementChance) return;
     var sigmas = nodes.filter(function(n){ return n.faction === 'sigma'; });
@@ -171,9 +232,8 @@
     a.flash = 1.0;
     b.flash = 1.0;
 
-    // Track momentum
     if (match && match.active) {
-      var attacker = Math.random() < 0.52 ? 'sigma' : 'omega'; // slight Sigma edge for variety
+      var attacker = Math.random() < 0.52 ? 'sigma' : 'omega';
       if (attacker === 'sigma') match.sigmaScore += 1;
       else match.omegaScore += 1;
       renderMatchHUD();
@@ -181,62 +241,9 @@
   }
 
   // ============================================================
-  // SHARED LEDGER · /api/swarm-ledger (D1-backed, all visitors)
-  // Honest framing: this is real persisted data, labeled as the
-  // shared all-time ledger — never presented as anything else.
-  // Fully inert in ambient mode (index.html unaffected) and when
-  // the backend bindings aren't configured (panel simply hidden).
-  // ============================================================
-  function fetchLedger(){
-    if (isAmbient) return;
-    try {
-      fetch('/api/swarm-ledger')
-        .then(function(r){ if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
-        .then(function(data){
-          if (data && data.ok && data.configured) {
-            ledger = data;
-            renderMatchHUD();
-          } else {
-            ledger = null; // not configured — shared panel stays hidden
-          }
-        })
-        .catch(function(){ /* fetch failed — shared panel stays hidden */ });
-    } catch(e){}
-  }
-
-  function postLedger(payload){
-    if (isAmbient) return;
-    try {
-      // Fire-and-forget: a lost write never disturbs the match flow.
-      fetch('/api/swarm-ledger', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(payload)
-      }).catch(function(){});
-    } catch(e){}
-  }
-
-  function renderLedgerPanel(){
-    if (!ledger || !ledger.configured) return '';
-    return '<div class="sm-ledger">' +
-        '<div class="sm-ledger-label">All-time · shared ledger</div>' +
-        '<div class="sm-ledger-row">' +
-          '<span class="sm-ledger-side sigma">Σ ' + (Number(ledger.sigma) || 0) + '</span>' +
-          '<span class="sm-ledger-sep">vs</span>' +
-          '<span class="sm-ledger-side omega">Ω ' + (Number(ledger.omega) || 0) + '</span>' +
-        '</div>' +
-        '<div class="sm-ledger-total">' + (Number(ledger.totalMatches) || 0) +
-          ' matches recorded across all visitors' +
-          ((Number(ledger.draws) || 0) > 0 ? ' · ' + Number(ledger.draws) + ' draws' : '') +
-        '</div>' +
-      '</div>';
-  }
-
-  // ============================================================
   // MATCH LOGIC
   // ============================================================
   function startMatch(){
-    fetchLedger(); // refresh the shared all-time tally each match (no-op in ambient)
     match = {
       id: 'm-' + Date.now(),
       startedAt: Date.now(),
@@ -244,8 +251,8 @@
       sigmaScore: 0,
       omegaScore: 0,
       active: true,
-      backed: getBacked(),         // sigma | omega | null
-      prompted: getPrompted(),     // true if user already prompted this match
+      backed: getBacked(),
+      prompted: getPrompted(),
     };
     renderMatchHUD();
   }
@@ -256,20 +263,11 @@
     var winner = match.sigmaScore > match.omegaScore ? 'sigma' :
                  match.omegaScore > match.sigmaScore ? 'omega' : 'draw';
     match.winner = winner;
-    // Record the result in the shared all-time ledger (fire-and-forget)
-    postLedger({
-      type: 'match',
-      winner: winner,
-      sigmaScore: match.sigmaScore,
-      omegaScore: match.omegaScore
-    });
-    // Clear backing for next match
     try {
       localStorage.removeItem('forge.swarm.match.backed');
       localStorage.removeItem('forge.swarm.match.prompt');
     } catch(e){}
     renderMatchHUD();
-    // Auto-start next match after 5s
     setTimeout(startMatch, 5000);
   }
 
@@ -296,67 +294,14 @@
   }
 
   // ============================================================
-  // SPECTATOR PROMPT → REAL AI REPLY (/api/cf-ai · Workers AI)
-  // Only reachable from the match HUD, which never exists in
-  // ambient mode (matches don't start when ambient — index.html safe).
+  // HUD
   // ============================================================
-  function esc(s){
-    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
-      return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c];
-    });
+  function padHex(n, len){
+    var s = n.toString(16).toUpperCase();
+    while (s.length < len) s = '0' + s;
+    return s;
   }
 
-  function renderAiReply(){
-    var r = match && match.aiReply;
-    if (!r) return '';
-    if (r.status === 'pending') {
-      return '<div class="sm-ai-reply pending"><span class="sm-ai-label">' + esc(r.label) + '</span>' +
-             '<span class="sm-ai-text">the swarm is composing a reply…</span></div>';
-    }
-    if (r.status === 'error') {
-      return '<div class="sm-ai-reply error"><span class="sm-ai-label">model unreachable</span>' +
-             '<span class="sm-ai-text">couldn\'t reach the AI right now — your prompt still counts for this match.</span></div>';
-    }
-    return '<div class="sm-ai-reply"><span class="sm-ai-label">' + esc(r.label) + '</span>' +
-           '<span class="sm-ai-text">' + esc(r.text) + '</span></div>';
-  }
-
-  function askSwarmAI(faction, prompt){
-    if (!match) return;
-    var matchId = match.id;
-    var teamName = faction === 'sigma' ? CFG.sigma.name : CFG.omega.name;
-    match.aiReply = { status: 'pending', label: 'Workers AI · Llama 3.3' };
-    renderMatchHUD();
-    fetch('/api/cf-ai', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        task: 'chat',
-        input: prompt,
-        system: 'You are ' + teamName + ', a coordinated swarm of AI agents mid-match in the Forge Atlas arena. ' +
-                'A spectator backing your team just injected this tactical prompt. Reply in character as the swarm ' +
-                'in 1-3 short sentences: acknowledge the order and say how you will act on it. No preamble, no disclaimers.',
-        max_tokens: 220
-      })
-    })
-    .then(function(r){ if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
-    .then(function(data){
-      if (!match || match.id !== matchId) return; // match rolled over — drop stale reply
-      if (!data || !data.ok || !data.output) throw new Error('bad_response');
-      var label = /llama-3\.3/i.test(data.model || '') ? 'Workers AI · Llama 3.3' : 'Workers AI';
-      match.aiReply = { status: 'done', label: label, text: String(data.output).slice(0, 600) };
-      renderMatchHUD();
-    })
-    .catch(function(){
-      if (!match || match.id !== matchId) return;
-      match.aiReply = { status: 'error' };
-      renderMatchHUD();
-    });
-  }
-
-  // ============================================================
-  // HUD · the match overlay (DOM, not canvas — easier to interact)
-  // ============================================================
   function renderMatchHUD(){
     var hud = document.getElementById('swarm-field-hud');
     if (!hud) return;
@@ -370,7 +315,6 @@
     var omegaPct = (match.omegaScore / totalScore * 100).toFixed(0);
 
     if (!match.active) {
-      // Match ended — show winner card
       hud.innerHTML =
         '<div class="swarm-match-end">' +
           '<div class="swarm-match-end-label">match concluded</div>' +
@@ -379,7 +323,7 @@
              match.winner === 'sigma' ? '<span class="sigma">Sigma Pack holds the field</span>' :
                                         '<span class="omega">Omega Squad holds the field</span>') +
           '</div>' +
-          '<div class="swarm-match-end-score">Σ ' + match.sigmaScore + ' · Ω ' + match.omegaScore + '</div>' +
+          '<div class="swarm-match-end-score">Σ ' + match.sigmaScore + ' \xb7 Ω ' + match.omegaScore + '</div>' +
           '<div class="swarm-match-end-next">next match in <strong id="next-match-cd">5</strong>s</div>' +
         '</div>';
       var nextCd = 5;
@@ -391,6 +335,10 @@
       }, 1000);
       return;
     }
+
+    var qentStr = '0x' + padHex(quantumEntropy, 4);
+    var sStr = String(mins).padStart ? String(mins).padStart(2,'0') : (mins < 10 ? '0'+mins : ''+mins);
+    var secStr = String(secs).padStart ? String(secs).padStart(2,'0') : (secs < 10 ? '0'+secs : ''+secs);
 
     hud.innerHTML =
       '<div class="swarm-match-hud">' +
@@ -404,7 +352,7 @@
           '</div>' +
           '<div class="swarm-match-clock">' +
             '<div class="sm-clock-label">T-</div>' +
-            '<div class="sm-clock-time">' + String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0') + '</div>' +
+            '<div class="sm-clock-time">' + sStr + ':' + secStr + '</div>' +
           '</div>' +
           '<div class="swarm-match-side omega' + (match.backed === 'omega' ? ' backed' : '') + '">' +
             '<div class="sm-meta sm-meta-right">' +
@@ -418,6 +366,7 @@
           '<div class="sm-bar-sigma" style="width:' + sigmaPct + '%"></div>' +
           '<div class="sm-bar-omega" style="width:' + omegaPct + '%"></div>' +
         '</div>' +
+        '<div class="swarm-qent mono">QENT <span id="swarm-qent-val">' + qentStr + '</span></div>' +
         '<div class="swarm-match-actions">' +
           (match.backed
             ? '<div class="sm-backed-note">You\'re backing <strong class="' + match.backed + '">' + (match.backed === 'sigma' ? 'Sigma Pack' : 'Omega Squad') + '</strong></div>'
@@ -426,13 +375,11 @@
         '</div>' +
         '<div class="swarm-match-prompt">' +
           (match.prompted
-            ? '<div class="sm-prompt-confirm">⚡ your prompt is in for this match</div>' + renderAiReply()
+            ? '<div class="sm-prompt-confirm">⚡ your prompt is in for this match</div>'
             : '<button class="sm-prompt-open" type="button">+ inject one prompt for your team</button>') +
         '</div>' +
-        renderLedgerPanel() +
       '</div>';
 
-    // Wire backing
     hud.querySelectorAll('.sm-back').forEach(function(b){
       b.addEventListener('click', function(){
         var f = b.getAttribute('data-faction');
@@ -443,7 +390,6 @@
       });
     });
 
-    // Wire prompt opener
     var promptBtn = hud.querySelector('.sm-prompt-open');
     if (promptBtn) {
       promptBtn.addEventListener('click', openPromptDialog);
@@ -461,7 +407,7 @@
     dialog.innerHTML =
       '<div class="sm-prompt-card">' +
         '<div class="sm-prompt-head">' +
-          '<div class="sm-prompt-label">Spectator Prompt · ' + (match.backed === 'sigma' ? 'Sigma Pack' : 'Omega Squad') + '</div>' +
+          '<div class="sm-prompt-label">Spectator Prompt \xb7 ' + (match.backed === 'sigma' ? 'Sigma Pack' : 'Omega Squad') + '</div>' +
           '<button class="sm-prompt-close" aria-label="Close">✕</button>' +
         '</div>' +
         '<p class="sm-prompt-help">One prompt per match. Pick wisely. Your team will weave it into their next move.</p>' +
@@ -494,16 +440,10 @@
       if (!v) return;
       setPrompted(match.backed, v);
       match.prompted = true;
-      // Count the prompt in the shared all-time ledger (fire-and-forget)
-      postLedger({ type: 'prompt', faction: match.backed });
-      // Reward: minor score boost to backed faction
       if (match.backed === 'sigma') match.sigmaScore += 3;
       else match.omegaScore += 3;
-      // Visual: flash all nodes on backed faction
       nodes.filter(function(n){ return n.faction === match.backed; }).forEach(function(n){ n.flash = 1.5; });
       close();
-      // Route the prompt to the real model and render its reply in the HUD
-      askSwarmAI(match.backed, v);
       renderMatchHUD();
     });
   }
@@ -519,11 +459,9 @@
     var dt = Math.min((now - lastFrame) || 16, 50);
     lastFrame = now;
 
-    // Match timing
     if (match && match.active && (now - match.startedAt) >= match.durationMs) {
       endMatch();
     } else if (match && match.active) {
-      // Update HUD clock once per second
       if (!match._lastHudTick || now - match._lastHudTick > 1000) {
         match._lastHudTick = now;
         renderMatchHUD();
@@ -532,37 +470,27 @@
 
     ctx.clearRect(0, 0, w, h);
 
-    // Background drift lines (your reference's vibe)
-    drawBgLines();
+    if (!isAmbient) { tickNoise(); drawNoiseBg(); }
 
-    // Engagement events
+    drawBgLines();
     maybeEngage();
 
-    // Update nodes
     nodes.forEach(function(n){
       n.x += n.vx;
       n.y += n.vy;
-      // Wrap
       if (n.x < -10) n.x = w + 10;
       if (n.x > w + 10) n.x = -10;
       if (n.y < -10) n.y = h + 10;
       if (n.y > h + 10) n.y = -10;
-      // Decay pulse + flash
       n.pulse = Math.max(0, n.pulse - 0.02);
       n.flash = Math.max(0, n.flash - 0.015);
     });
 
-    // Draw connections (same-faction nodes within range)
     drawConnections();
-
-    // Draw mouse-highlight lines
     if (mouse.active) drawMouseHighlight();
-
-    // Draw engagement signals
     drawEngagements();
-
-    // Draw nodes
     drawNodes();
+    if (!isAmbient) drawRoleLabels();
   }
 
   function drawBgLines(){
@@ -591,7 +519,7 @@
     for (var i = 0; i < nodes.length; i++) {
       for (var j = i + 1; j < nodes.length; j++) {
         var a = nodes[i], b = nodes[j];
-        if (a.faction !== b.faction) continue; // same-faction only
+        if (a.faction !== b.faction) continue;
         var dx = a.x - b.x, dy = a.y - b.y;
         var dist2 = dx*dx + dy*dy;
         if (dist2 > d2) continue;
@@ -624,7 +552,6 @@
       ctx.lineWidth = 0.8;
       ctx.stroke();
     }
-    // Mouse cursor mark
     ctx.beginPath();
     ctx.arc(mouse.x, mouse.y, 4, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(255,255,255,.50)';
@@ -643,7 +570,6 @@
       ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + e.life * 0.8 + ')';
       ctx.lineWidth = 1.6 * e.life;
       ctx.stroke();
-      // Burst at endpoint
       ctx.beginPath();
       ctx.arc(e.to.x, e.to.y, 6 * e.life, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + e.life * 0.3 + ')';
@@ -651,32 +577,56 @@
     }
   }
 
+  /* Hex-shaped nodes with slow rotation */
   function drawNodes(){
     nodes.forEach(function(n){
+      n.hexRot += n.hexRotSpeed;
       var c = n.faction === 'sigma' ? CFG.sigma.color : CFG.omega.color;
       var r = CFG.nodeRadius + n.pulse * 3 + n.flash * 4;
-      // Glow
+
+      /* Glow bloom */
       if (n.flash > 0 || n.pulse > 0) {
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, r * 3, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (0.10 + n.flash * 0.25) + ')';
+        drawHex(n.x, n.y, r * 3.2, n.hexRot);
+        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (0.07 + n.flash * 0.20) + ')';
         ctx.fill();
       }
-      // Body
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (n.energy * 0.9) + ')';
+
+      /* Outer hex ring */
+      drawHex(n.x, n.y, r, n.hexRot);
+      ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (n.energy * 0.85) + ')';
+      ctx.lineWidth = 0.9;
+      ctx.stroke();
+
+      /* Fill */
+      ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (n.energy * 0.38) + ')';
       ctx.fill();
-      // Bright core
+
+      /* Bright core dot */
       ctx.beginPath();
-      ctx.arc(n.x, n.y, r * 0.4, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,' + (0.4 + n.flash * 0.5) + ')';
+      ctx.arc(n.x, n.y, r * 0.28, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,' + (0.55 + n.flash * 0.45) + ')';
       ctx.fill();
     });
   }
 
+  /* Role abbreviation labels near mouse */
+  function drawRoleLabels(){
+    if (!mouse.active) return;
+    var d2 = CFG.mouseInfluence * CFG.mouseInfluence;
+    ctx.font = '7px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    nodes.forEach(function(n){
+      var dx = mouse.x - n.x, dy = mouse.y - n.y;
+      var dist2 = dx*dx + dy*dy;
+      if (dist2 > d2) return;
+      var alpha = (1 - dist2 / d2) * 0.85;
+      var c = n.faction === 'sigma' ? CFG.sigma.color : CFG.omega.color;
+      ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')';
+      ctx.fillText(n.role.slice(0,3).toUpperCase(), n.x, n.y - 9);
+    });
+  }
+
   function drawStatic(){
-    // Reduced-motion path — render once, no animation
     ctx.clearRect(0, 0, w, h);
     drawBgLines();
     drawConnections();
