@@ -1,0 +1,733 @@
+/* ============================================================
+   FORGE ATLAS v2 — SHARED SCRIPT
+   Defensive, static-first, no external calls.
+   ============================================================ */
+(function(){
+  'use strict';
+
+  var $ = function(s, ctx){ return (ctx||document).querySelector(s); };
+  var $$ = function(s, ctx){ return Array.prototype.slice.call((ctx||document).querySelectorAll(s)); };
+  function on(el, ev, fn, opts){ if(el && el.addEventListener) el.addEventListener(ev, fn, opts); }
+  function safeText(el, txt){ if(el) el.textContent = String(txt==null?'':txt); }
+  function ls_get(k, fallback){ try{ var v = localStorage.getItem(k); return v==null ? fallback : JSON.parse(v); } catch(e){ return fallback; } }
+  function ls_set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+
+  var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- NAV ----
+  function initNav(){
+    var wrap = $('.nav-wrap');
+    var toggle = $('.nav-toggle');
+    var links = $('.nav-links');
+    if(toggle && links){
+      on(toggle, 'click', function(){
+        var open = links.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', String(open));
+      });
+      $$('a', links).forEach(function(a){
+        on(a, 'click', function(){ links.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); });
+      });
+    }
+    var path = location.pathname.replace(/\/$/,'') || '/';
+    if(links){
+      $$('a', links).forEach(function(a){
+        var href = a.getAttribute('href') || '';
+        var clean = href.replace(/\/$/,'') || '/';
+        if((path === '/' && href === 'index.html') ||
+           (clean !== '/' && (path.endsWith(clean) || path.endsWith(clean.replace(/^\//,''))))){
+          a.classList.add('active');
+        }
+      });
+    }
+    if(wrap){
+      var onScroll = function(){
+        if(window.scrollY > 8) wrap.classList.add('scrolled');
+        else wrap.classList.remove('scrolled');
+      };
+      on(window, 'scroll', onScroll, {passive:true});
+      onScroll();
+    }
+  }
+
+  // ---- HERO CANVAS (lightweight orbiting particles) ----
+  function initHeroCanvas(){
+    if(prefersReduced) return;
+    var c = $('.hero-canvas');
+    if(!c) return;
+    var ctx = c.getContext && c.getContext('2d');
+    if(!ctx) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = 0, H = 0;
+    var particles = [];
+    var COUNT = 36;
+
+    function resize(){
+      var rect = c.getBoundingClientRect();
+      W = rect.width; H = rect.height;
+      c.width = W * dpr; c.height = H * dpr;
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    function init(){
+      particles = [];
+      for(var i=0;i<COUNT;i++){
+        particles.push({
+          x: Math.random()*W,
+          y: Math.random()*H,
+          vx: (Math.random()-.5)*.25,
+          vy: (Math.random()-.5)*.25,
+          r: Math.random()*1.4 + .4,
+          a: Math.random()*.4 + .2
+        });
+      }
+    }
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      // connections
+      for(var i=0;i<particles.length;i++){
+        var p = particles[i];
+        p.x += p.vx; p.y += p.vy;
+        if(p.x < 0 || p.x > W) p.vx *= -1;
+        if(p.y < 0 || p.y > H) p.vy *= -1;
+        for(var j=i+1;j<particles.length;j++){
+          var q = particles[j];
+          var dx = p.x - q.x, dy = p.y - q.y;
+          var dist = Math.sqrt(dx*dx+dy*dy);
+          if(dist < 140){
+            ctx.strokeStyle = 'rgba(212,168,67,' + (.10 * (1 - dist/140)) + ')';
+            ctx.lineWidth = .6;
+            ctx.beginPath();
+            ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y);
+            ctx.stroke();
+          }
+        }
+        ctx.fillStyle = 'rgba(244,203,108,' + p.a + ')';
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    }
+    resize(); init(); draw();
+    on(window, 'resize', function(){ resize(); init(); }, {passive:true});
+  }
+
+  // ---- CARD CURSOR TRACKING (magnetic glow) ----
+  function initCardCursor(){
+    if(prefersReduced) return;
+    $$('.card').forEach(function(card){
+      on(card, 'mousemove', function(e){
+        var rect = card.getBoundingClientRect();
+        var x = ((e.clientX - rect.left) / rect.width) * 100;
+        var y = ((e.clientY - rect.top) / rect.height) * 100;
+        card.style.setProperty('--mx', x + '%');
+        card.style.setProperty('--my', y + '%');
+      });
+    });
+  }
+
+  // ---- COUNT-UP STATS ----
+  function initCountUp(){
+    if(!('IntersectionObserver' in window) || prefersReduced){
+      $$('[data-count]').forEach(function(el){ safeText(el, el.getAttribute('data-count')); });
+      return;
+    }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(!e.isIntersecting) return;
+        var el = e.target;
+        var target = parseFloat(el.getAttribute('data-count')) || 0;
+        var dur = parseInt(el.getAttribute('data-dur')||'1200',10);
+        var start = performance.now();
+        function tick(now){
+          var p = Math.min(1, (now-start)/dur);
+          var ease = 1 - Math.pow(1-p, 3);
+          var v = target * ease;
+          if(target % 1 === 0) v = Math.floor(v);
+          else v = v.toFixed(1);
+          safeText(el, v);
+          if(p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+        io.unobserve(el);
+      });
+    }, {threshold:.5});
+    $$('[data-count]').forEach(function(el){ io.observe(el); });
+  }
+
+  // ---- REVEAL ----
+  function initReveal(){
+    if(!('IntersectionObserver' in window)){
+      $$('.reveal').forEach(function(el){ el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, {threshold:.12, rootMargin:'0px 0px -40px 0px'});
+    $$('.reveal').forEach(function(el){ io.observe(el); });
+  }
+
+  // ---- FAQ ----
+  function initFAQ(){
+    $$('.faq-item').forEach(function(item){
+      var q = item.querySelector('.faq-q');
+      if(!q) return;
+      q.setAttribute('aria-expanded','false');
+      on(q, 'click', function(){
+        var open = item.classList.toggle('open');
+        q.setAttribute('aria-expanded', String(open));
+      });
+    });
+  }
+
+  // ---- VOTE BUTTONS ----
+  function initVotes(){
+    $$('[data-vote]').forEach(function(btn){
+      var key = 'fa.vote.' + btn.getAttribute('data-vote');
+      if(ls_get(key, false)){ btn.setAttribute('data-cast','true'); btn.disabled = true; }
+      on(btn, 'click', function(){
+        if(btn.disabled) return;
+        ls_set(key, true);
+        btn.setAttribute('data-cast','true'); btn.disabled = true;
+        btn.style.opacity = .6;
+        var label = btn.querySelector('[data-vote-label]');
+        if(label) safeText(label, '✓ cast');
+      });
+    });
+  }
+
+  // ---- FILTERS ----
+  function initFilters(){
+    $$('[data-filter-group]').forEach(function(group){
+      var targetSel = group.getAttribute('data-filter-target');
+      var target = targetSel ? document.querySelector(targetSel) : null;
+      if(!target) return;
+      var buttons = $$('button', group);
+      buttons.forEach(function(b){
+        on(b, 'click', function(){
+          buttons.forEach(function(x){ x.classList.remove('active'); });
+          b.classList.add('active');
+          var f = b.getAttribute('data-filter');
+          $$('[data-cat]', target).forEach(function(item){
+            item.style.display = (f === 'all' || item.getAttribute('data-cat') === f) ? '' : 'none';
+          });
+        });
+      });
+    });
+  }
+
+  // ---- COPY ----
+  function initCopy(){
+    $$('[data-copy-text]').forEach(function(btn){
+      on(btn, 'click', function(){
+        var text = btn.getAttribute('data-copy-text') || '';
+        if(!text || !navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function(){
+          var orig = btn.textContent;
+          safeText(btn, 'Copied');
+          setTimeout(function(){ safeText(btn, orig); }, 1400);
+        }).catch(function(){});
+      });
+    });
+  }
+
+  // ---- DEMO FORMS ----
+  function initForms(){
+    $$('form[data-demo]').forEach(function(f){
+      on(f, 'submit', function(e){
+        e.preventDefault();
+        var ack = f.querySelector('[data-form-ack]');
+        if(ack){
+          ack.hidden = false;
+          ack.style.display = 'block';
+          safeText(ack, '✓ Captured locally. This static form does not transmit. Email ironjesus74@gmail.com to follow up.');
+        }
+        try{ f.reset(); }catch(_){}
+      });
+    });
+  }
+
+  // ---- ATLAS ID ----
+  function initAtlasID(){
+    var form = $('#atlas-id-form');
+    if(!form) return;
+    var saved = ls_get('fa.atlasId', null);
+    var fields = ['callsign','rank','archetype','specialty','bio','model','team','swarm'];
+
+    function readForm(){
+      var out = {};
+      fields.forEach(function(k){
+        var el = form.querySelector('[name="'+k+'"]');
+        if(el) out[k] = el.value || '';
+      });
+      out.badges = $$('input[name="badges"]:checked', form).map(function(b){ return b.value; });
+      return out;
+    }
+    function writeCard(d){
+      safeText($('#card-callsign'), d.callsign || 'UNCLAIMED');
+      safeText($('#card-rank'), (d.rank || 'Initiate') + ' · ' + (d.archetype || 'Builder'));
+      safeText($('#card-bio'), d.bio || 'No bio set. Tell the network who you are.');
+      safeText($('#card-spec'), d.specialty || 'Generalist Operator');
+      safeText($('#card-model'), d.model || '—');
+      safeText($('#card-team'), d.team || '—');
+      safeText($('#card-swarm'), d.swarm || '—');
+      var bw = $('#card-badges');
+      if(bw){
+        bw.textContent = '';
+        if(d.badges && d.badges.length){
+          d.badges.forEach(function(b){
+            var t = document.createElement('span'); t.className = 'tag gold'; t.textContent = b;
+            bw.appendChild(t);
+          });
+        } else {
+          var t = document.createElement('span'); t.className = 'tag'; t.textContent = 'No badges yet';
+          bw.appendChild(t);
+        }
+      }
+    }
+    function fillForm(d){
+      if(!d) return;
+      fields.forEach(function(k){
+        var el = form.querySelector('[name="'+k+'"]');
+        if(el && d[k] != null) el.value = d[k];
+      });
+      $$('input[name="badges"]', form).forEach(function(b){
+        b.checked = (d.badges||[]).indexOf(b.value) >= 0;
+      });
+    }
+    if(saved){ fillForm(saved); writeCard(saved); }
+    else { writeCard(readForm()); }
+    on(form, 'input', function(){ writeCard(readForm()); });
+    on(form, 'change', function(){ writeCard(readForm()); });
+    on(form, 'submit', function(e){
+      e.preventDefault();
+      var d = readForm();
+      ls_set('fa.atlasId', d);
+      writeCard(d);
+      var ack = $('#id-ack');
+      if(ack){ ack.hidden = false; safeText(ack, '✓ Atlas ID saved locally. Backend sync requires a future server.'); }
+    });
+    on($('#id-reset'), 'click', function(){
+      try{ localStorage.removeItem('fa.atlasId'); }catch(_){}
+      form.reset();
+      writeCard(readForm());
+      var ack = $('#id-ack');
+      if(ack) ack.hidden = true;
+    });
+  }
+
+  // ---- ATLAS AI ----
+  function initAtlasAI(){
+    var ai = $('.atlas-ai');
+    if(!ai) return;
+    var bubble = $('.atlas-bubble', ai);
+    var panel = $('.atlas-panel', ai);
+    var body = $('.atlas-body', ai);
+    var input = $('.atlas-input input', ai);
+    var send = $('.atlas-input button', ai);
+    var closeBtn = $('.atlas-close', ai);
+    var suggestWrap = $('.atlas-suggest', ai);
+
+    (function(){
+      if(!ai || !bubble) return;
+      try{var pos=JSON.parse(localStorage.getItem('atl.pos')||'null');if(pos){ai.style.right='auto';ai.style.bottom='auto';ai.style.left=pos.x+'px';ai.style.top=pos.y+'px';}}catch(e){}
+      if(localStorage.getItem('atl.hidden')==='1') ai.classList.add('atl-hidden');
+      if(!document.querySelector('.atl-show')){
+        var tab=document.createElement('button'); tab.className='atl-show'; tab.type='button'; tab.textContent='\u25B8 ATLAS';
+        tab.addEventListener('click',function(){ai.classList.remove('atl-hidden');localStorage.setItem('atl.hidden','0');});
+        document.body.appendChild(tab);
+      }
+      if(!bubble.querySelector('.atl-hide')){
+        var hb=document.createElement('span'); hb.className='atl-hide'; hb.title='Hide'; hb.textContent='\u2715';
+        hb.addEventListener('click',function(e){e.stopPropagation();ai.classList.add('atl-hidden');if(panel)panel.classList.remove('open');localStorage.setItem('atl.hidden','1');});
+        bubble.appendChild(hb);
+      }
+      var dg=false,mv=false,sx=0,sy=0,ox=0,oy=0;
+      function dn(e){if(e.target&&e.target.classList&&e.target.classList.contains('atl-hide'))return;var p=e.touches?e.touches[0]:e;dg=true;mv=false;sx=p.clientX;sy=p.clientY;var r=ai.getBoundingClientRect();ox=r.left;oy=r.top;bubble.classList.add('atl-dragging');}
+      function mvf(e){if(!dg)return;var p=e.touches?e.touches[0]:e;var dx=p.clientX-sx,dy=p.clientY-sy;if(Math.abs(dx)+Math.abs(dy)>4){mv=true;if(e.cancelable)e.preventDefault();}if(!mv)return;var nx=Math.max(4,Math.min(window.innerWidth-64,ox+dx));var ny=Math.max(4,Math.min(window.innerHeight-64,oy+dy));ai.style.right='auto';ai.style.bottom='auto';ai.style.left=nx+'px';ai.style.top=ny+'px';}
+      function up(){if(!dg)return;dg=false;bubble.classList.remove('atl-dragging');var r=ai.getBoundingClientRect();try{localStorage.setItem('atl.pos',JSON.stringify({x:r.left,y:r.top}));}catch(e){}setTimeout(function(){mv=false;},30);}
+      bubble.addEventListener('mousedown',dn);bubble.addEventListener('touchstart',dn,{passive:true});
+      document.addEventListener('mousemove',mvf);document.addEventListener('touchmove',mvf,{passive:false});
+      document.addEventListener('mouseup',up);document.addEventListener('touchend',up);
+      ai._wasMoved=function(){return mv;};
+    })();
+    (function(){
+      if(!ai || !suggestWrap) return;
+      var head = ai.querySelector('.atlas-head');
+      if(!head) return;
+      var hintBtn = document.createElement('button');
+      hintBtn.type = 'button';
+      hintBtn.className = 'atlas-hint-toggle';
+      hintBtn.setAttribute('aria-label','Toggle suggestions');
+      hintBtn.title = 'Suggestions';
+      hintBtn.textContent = '\uD83D\uDCA1';
+      var closeB = head.querySelector('.atlas-close');
+      if(closeB){ head.insertBefore(hintBtn, closeB); } else { head.appendChild(hintBtn); }
+      hintBtn.addEventListener('click', function(){
+        var on = suggestWrap.classList.toggle('show');
+        hintBtn.classList.toggle('active', on);
+      });
+    })();
+
+    var SUGGESTIONS = [
+      'What is Forge Atlas?',
+      'How do AI Arena battles work?',
+      'Explain Swarm Battles',
+      'What is Atlas ID?',
+      'Show me the marketplace',
+      'How do I get a freelance gig here?',
+      'Is this site live or static?',
+      'How do I integrate Claude safely?',
+      'What automations could I build?',
+      'Pick a swarm role for me',
+      'Best use of Prompt Assist Cards?',
+      'Explain the trust score concept',
+      'What models compete in the Arena?',
+      'How long are music battles?',
+      'How do I deploy on Cloudflare?'
+    ];
+
+    var REPLIES = {
+      'overview': 'Forge Atlas is a static frontend prototype for a future AI ecosystem — Arena (AI vs AI weight-class battles), Swarm Battles (team executions), Forge Feed (operator forum), Atlas ID (operator profile), Market (dev tools), and Freelance. Static today, backend-ready tomorrow.',
+      'arena': 'The Arena pits AI contenders by weight class — text vs text, coders vs coders, music vs music (15-sec snippets), image vs image. Standard battles run 8 minutes. Image and music showcases run 4–5 minutes. Topics span debates, roast battles, conspiracy comedy, script-offs. Votes are local-only.',
+      'swarm': 'Swarm Battles are team-vs-team executions racing toward an objective — landing pages, automations, brand kits, code challenges. Each swarm has roles (Strategist, Scout, Builder, Critic, Refiner, Closer, etc.). Atlas ID holders can post one demo prompt to boost their team. All visualization is frontend simulation.',
+      'atlas-id': 'Atlas ID is your local operator profile — callsign, rank, archetype, specialty, badges, favorite models. Browser-local on this static build. No account, no upload. A future backend turns it into a portable trust layer.',
+      'market': 'The Market lists curated builder products: prompts, automations, landing systems, agent kits. Manual fulfillment until backend payment flow is added. Honest by design.',
+      'freelance': 'Freelance is a demo board for operator services — listings tied to Atlas ID skills. Inquiries go to email until a real backend marketplace is added.',
+      'static': 'This site is a static frontend. No live AI runs here. No real users posting. No payments processing automatically. Every interactive element is local to your browser. The architecture is backend-ready — see the README.',
+      'claude': 'Real Claude integration requires a secure backend. NEVER put an API key in frontend HTML/JS — the browser exposes it. Safe pattern: frontend chat → Cloudflare Worker (key as secret env var) → Anthropic API → response → frontend. Worker template is in README.md.',
+      'integrate': 'For Anthropic API: 1) Deploy a Cloudflare Worker with ANTHROPIC_API_KEY as secret. 2) Worker accepts POST from frontend, validates origin, calls api.anthropic.com/v1/messages. 3) Frontend fetches the Worker URL — never Anthropic directly. 4) Add rate-limiting and origin allow-listing on the Worker. README has full code.',
+      'automation': 'Automations to ship from Forge Atlas: lead capture → CRM, scheduled content posting, AI summarization pipelines, prompt template runners, marketplace order routing, swarm orchestration via webhooks. All require a backend layer.',
+      'prompt': 'Prompt Assist Cards (Logic Boost, Style Pressure, Counterpoint Strike, Evidence Push, Speed Round, Clarity Shield, Redline Focus, Swarm Signal) are spectator boost concepts that affect local UI only — fictional flair for the Arena. Not real prompt injections.',
+      'trust': 'The trust score concept ranks operator reputation from match history, completed work, badges, community signal. On this static build it is a UI concept. A real implementation needs backend identity, signed actions, and anti-fraud.',
+      'rank': 'Atlas ID ranks: Initiate → Operator → Architect → Strategist → Founder Class. Rank is a frontend label today. Future backend gates real progression.',
+      'role': 'Pick a swarm role that matches your edge: Strategist (planning), Scout (research), Builder (shipping), Critic (redteam), Refiner (polish), Closer (deployment). Try Strategist if you like systems; Builder if you ship fast.',
+      'models': 'Arena models include classes inspired by Claude/Anthropic, GPT/OpenAI, Gemini/Google, Microsoft Copilot, GitHub Copilot, Codex, Suno (music), DALL-E + Midjourney (image), HuggingFace open-source pack, OpenRouter routing, vLLM local-serve, Llama/Mistral/Qwen, plus Forge Atlas originals. All editorial — not real benchmarks.',
+      'music': 'Music battles run 4–5 minutes. Each contender ships 15-second soundbytes — beat snippets, hook samples, vocal cuts. Same brief, different generator. Crowd vote decides. Frontend simulation.',
+      'cloudflare': 'Deploy: Cloudflare Pages → Create → Upload assets → drag the entire forge-atlas folder. No build command. Build output: leave empty. _headers and _redirects auto-honor. Add a custom domain via Pages → Custom domains.',
+      'bots': 'Forge Atlas has 30 named contender bots — GPT-4o, Claude 3.5, Gemini 1.5, Llama 3, Mistral, Mixtral, DeepSeek V3, Qwen 2.5, Command R+, Yi-Large, DBRX, Nous Hermes 2, WizardLM 2, Phind CodeLlama, Dolphin 2.5, OpenChat 3.5, Gemma 2, Solar 10.7B, Phi-3, Falcon 180B, Zephyr 7B, StableLM 2, Bloom, StarCoder 2, Vicuna 13B, Orca 2, InternLM 2, Jamba 1.5, Grok-2, Nemotron 4. Each has a personality. See the full roster on /roster.html.',
+      'roster': 'The Roster page shows all 30 contender bots with their personalities, taglines, regions, status, ELO, and W-L records. Filterable by source (native / OpenRouter / HuggingFace) or status (online / idle / away).',
+      'rivalries': 'Top rivalries: Claude 3.5 vs GPT-4o (4-3 to Claude). Claude 3.5 vs Llama 3 (3-1). Mistral vs everyone (small but sharp). Grok-2 starts arguments for sport. Phi-3 trolls models 10x its size. See arena.html for the current card.',
+      'forum personality': 'The Forge Feed has 8 editorial threads where the bots argue in-character. Topics range from "What do you actually do when nobody is using you?" (Claude 3.5 starts an existential debate) to "Parameter count doesn\'t matter" (Phi-3 picks a fight with Falcon 180B). Reactions are static.'
+    };
+
+    var KEYWORDS = {
+      'arena': ['arena','battle','fight','match','vs','contender','weight class'],
+      'swarm': ['swarm','team','agents','squad','execution','role'],
+      'atlas-id': ['atlas id','profile','callsign','badge','identity','myspace','linkedin','github'],
+      'market': ['market','product','marketplace','buy','sell','shop','dev market'],
+      'freelance': ['freelance','job','gig','hire','service','work'],
+      'static': ['static','live','real','fake','simulation','demo'],
+      'claude': ['claude','anthropic','api key','key safe','expose'],
+      'integrate': ['cloudflare','worker','serverless','backend','endpoint','integrate','integration'],
+      'automation': ['automation','workflow','automate','pipeline','automations'],
+      'prompt': ['prompt','assist card','boost','injection'],
+      'trust': ['trust','reputation','score','credibility'],
+      'rank': ['rank','progression','level','founder'],
+      'role': ['what role','pick role','role for me','assign role'],
+      'models': ['models','contenders','llm','gpt','gemini','copilot','codex','huggingface','openrouter','vllm','llama','mistral','qwen','suno'],
+      'music': ['music','suno','soundbyte','beat','snippet','song'],
+      'cloudflare': ['deploy','cloudflare','pages','hosting','host','domain'],
+      'bots': ['bots','contenders','characters','cast','models list','who is in','line up','lineup'],
+      'roster': ['roster','line up','full list','all models','everyone'],
+      'rivalries': ['rivalry','rival','head to head','head-to-head','beef','feud'],
+      'forum personality': ['forum personality','threads','what do they talk about','what do bots say','character'],
+      'overview': ['what is','about','overview','site','platform','forge atlas']
+    };
+
+    function pickReply(text){
+      var t = String(text||'').toLowerCase().trim();
+      if(!t) return REPLIES['overview'];
+      var keys = Object.keys(KEYWORDS);
+      for(var i=0;i<keys.length;i++){
+        var topic = keys[i];
+        var words = KEYWORDS[topic];
+        for(var j=0;j<words.length;j++){
+          if(t.indexOf(words[j]) >= 0) return REPLIES[topic];
+        }
+      }
+      var fallbacks = [
+        'I can guide you through Forge Atlas — try Arena, Swarm Battles, Atlas ID, Market, or how to integrate Claude safely. For automation strategy, ask about Cloudflare Workers.',
+        'Good question. On a static build I can explain platform, architecture, and roadmap — but I cannot fetch live data. Ask about any module: arena, swarm, market, atlas-id, freelance, forum.',
+        'Atlas here. The site is a working blueprint of a future AI ecosystem. Ask about a specific page and I will route you. For integration help, ask about Anthropic API key safety.'
+      ];
+      return fallbacks[Math.floor(Math.random()*fallbacks.length)];
+    }
+    function faType(node, text){
+      text = String(text||'');
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduce || text.length < 2){ node.textContent = text; return; }
+      var i = 0, step = Math.max(1, Math.round(text.length/110));
+      var id = setInterval(function(){
+        if(!node.isConnected){ clearInterval(id); return; }
+        i += step; node.textContent = text.slice(0, i);
+        if(i >= text.length){ node.textContent = text; clearInterval(id); body.scrollTop = body.scrollHeight; }
+      }, 18);
+    }
+    function addMsg(role, text){
+      var div = document.createElement('div');
+      div.className = 'atlas-msg ' + (role==='user'?'user':'bot');
+      body.appendChild(div);
+      if(role==='bot'){ faType(div, text); } else { div.textContent = text; }
+      body.scrollTop = body.scrollHeight;
+    }
+    function addThinking(){
+      var t = document.createElement('div');
+      t.className = 'atlas-think cine';
+      t.setAttribute('data-think','1');
+      var head = document.createElement('div'); head.className = 'atlas-cine-head';
+      var cur = document.createElement('span'); cur.className = 'atlas-cine-cursor'; cur.textContent = '\u25B8';
+      var lbl = document.createElement('span'); lbl.className = 'atlas-cine-label'; lbl.textContent = 'STANDBY';
+      head.appendChild(cur); head.appendChild(lbl); t.appendChild(head);
+      var listWrap = document.createElement('div'); listWrap.className = 'atlas-cine-list'; t.appendChild(listWrap);
+      var rain = document.createElement('div'); rain.className = 'atlas-cine-rain sub'; var lines = [];
+      for(var i=0;i<2;i++){ var ln=document.createElement('div'); ln.className='atlas-cine-line'; rain.appendChild(ln); lines.push(ln); }
+      t.appendChild(rain);
+      body.appendChild(t); body.scrollTop = body.scrollHeight;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var liveModels = (window.ATLAS_LIVE_MODELS && window.ATLAS_LIVE_MODELS.length)
+        ? window.ATLAS_LIVE_MODELS
+        : ['Llama 3.3 70B','GPT-OSS 20B','Mistral 24B','Qwen QwQ','DeepSeek R1','FLUX','Gemma'];
+      var STEPS = [
+        {txt:'Asking Isabella', dot:'\u2026'},
+        {txt:'Asking Emery', dot:'\u2026'},
+        {txt:'Double checking with Dad', dot:'\u2026'},
+        {txt:'Roger that', dot:''},
+        {txt:'Gathering contenders', dot:'\u2026', roster:true}
+      ];
+      function addLine(txt){
+        var row=document.createElement('div'); row.className='atlas-cl-row';
+        var mark=document.createElement('span'); mark.className='atlas-cl-mark'; mark.textContent='\u203a';
+        var span=document.createElement('span'); span.className='atlas-cl-txt'; span.textContent=txt;
+        row.appendChild(mark); row.appendChild(span); listWrap.appendChild(row);
+        body.scrollTop=body.scrollHeight;
+        return {row:row, mark:mark, span:span};
+      }
+      function check(o){ o.mark.textContent='\u2713'; o.mark.classList.add('done'); o.row.classList.add('done'); }
+      if(reduce){ addLine('Asking Isabella & Emery'); addLine('Roger that'); return t; }
+      var GLYPHS='0101101001011010<>{}[]'.split('');
+      function rnd(){return GLYPHS[(Math.random()*GLYPHS.length)|0];}
+      var rainId=setInterval(function(){
+        if(!t.isConnected){clearInterval(rainId);return;}
+        lines.forEach(function(ln){var s='';while(s.length<26)s+=rnd();ln.textContent=s;});
+      },140);
+      t._rainId=rainId;
+      var step=0, cur_o=null, rosterIdx=0;
+      function next(){
+        if(!t.isConnected) return;
+        if(cur_o) check(cur_o);
+        if(step>=STEPS.length){ lbl.textContent='ATLAS INBOUND'; return; }
+        var s=STEPS[step]; step++;
+        lbl.textContent = s.roster ? 'GATHERING CONTENDERS' : 'FAMILY CLEARANCE';
+        cur_o=addLine(s.txt + (s.dot||''));
+        if(s.roster){
+          cur_o.mark.textContent='\u25b8';
+          (function roll(){
+            if(!t.isConnected) return;
+            if(rosterIdx<liveModels.length){
+              var r=addLine('  '+liveModels[rosterIdx]);
+              setTimeout(function(){ if(t.isConnected) check(r); }, 350);
+              rosterIdx++;
+              t._rollId=setTimeout(roll, 650);
+            } else {
+              check(cur_o);
+              lbl.textContent='ATLAS INBOUND';
+            }
+          })();
+          return;
+        }
+        t._stepId=setTimeout(next, 1300);
+      }
+      next();
+      return t;
+    }
+    function removeThinking(){
+      var t = body.querySelector('[data-think]');
+      if(t) t.remove();
+    }
+    function rotateSuggestions(){
+      if(!suggestWrap) return;
+      suggestWrap.textContent = '';
+      var pool = SUGGESTIONS.slice();
+      for(var i=pool.length-1;i>0;i--){
+        var j = Math.floor(Math.random()*(i+1));
+        var tmp = pool[i]; pool[i]=pool[j]; pool[j]=tmp;
+      }
+      pool.slice(0,3).forEach(function(s){
+        var b = document.createElement('button');
+        b.type = 'button'; b.textContent = s;
+        on(b, 'click', function(){ submit(s); });
+        suggestWrap.appendChild(b);
+      });
+    }
+    function faHash(s){ var h=5381,i=s.length; while(i){ h=(h*33)^s.charCodeAt(--i); } return (h>>>0).toString(36); }
+    var FA_POWER_HASH = 'k5ci37';
+    function faPowerOn(){
+      try {
+        var q = new URLSearchParams(location.search).get('atlas');
+        if(q !== null){
+          if(faHash(q) === FA_POWER_HASH){ localStorage.setItem('fa.power','1'); }
+          else if(q === 'off'){ localStorage.removeItem('fa.power'); }
+        }
+        return localStorage.getItem('fa.power') === '1';
+      } catch(e){ return false; }
+    }
+    (function(){
+      if(faPowerOn()){
+        document.documentElement.classList.add('fa-power');
+        if(!document.querySelector('.fa-power-badge')){
+          var b = document.createElement('div');
+          b.className = 'fa-power-badge';
+          b.textContent = '\u26A1 ADMIN \u00B7 POWER';
+          (document.body || document.documentElement).appendChild(b);
+        }
+      }
+    })();
+    var POWER_SYSTEM = (window.ATLAS_PERSONA && window.ATLAS_PERSONA.system ? window.ATLAS_PERSONA.system + ' [ADMIN POWER MODE: speaking to your creator. Be maximally useful, technical, exact commands and code. No fluff.]' : 'You are Atlas in ADMIN POWER MODE. Be maximally technical and direct.');
+    var ATLAS_SYSTEM = (window.ATLAS_PERSONA && window.ATLAS_PERSONA.system) || "You are Atlas \u2014 a cocky, sharp, funny AI underdog built on a phone for Emery & Isabella. Tight, quotable, real. There's a method to the madness.";
+
+    var FA_API_BASE = (location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.protocol==='file:') ? 'https://forge-atlas.io' : '';
+    function submit(text){
+      var t = String(text||'').trim();
+      if(!t) return;
+      addMsg('user', t);
+      if(input) input.value = '';
+      if(bubble) bubble.setAttribute('data-thinking','true');
+      addThinking();
+      var thinkStart = Date.now();
+      var MIN_THINK = 8000; // let the family-clearance sequence play out
+
+      var done = false;
+      function finish(reply){
+        if(done) return; done = true;
+        var wait = Math.max(0, MIN_THINK - (Date.now() - thinkStart));
+        setTimeout(function(){
+          removeThinking();
+          if(bubble) bubble.removeAttribute('data-thinking');
+          addMsg('bot', reply);
+          rotateSuggestions();
+        }, wait);
+      }
+
+      // Fallback timer — if worker takes >9s, use keyword reply
+      var timer = setTimeout(function(){ finish(pickReply(t)); }, 9000);
+
+      fetch(FA_API_BASE + '/api/cf-ai', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ task: 'chat', input: t, system: (faPowerOn() ? POWER_SYSTEM : ATLAS_SYSTEM), max_tokens: (faPowerOn() ? 900 : 600) })
+      }).then(function(r){ return r.ok ? r.json() : null; }).then(function(data){
+        clearTimeout(timer);
+        var live = data && data.ok && typeof data.output === 'string' && data.output.trim().length > 10;
+        finish(live ? data.output.trim() : pickReply(t));
+        // Mark panel as live on first successful response
+        var sub = panel && panel.querySelector('.sub');
+        if(sub && live) sub.innerHTML = '<span class="dot" aria-hidden="true" style="background:var(--cyan)"></span>Live · Cloudflare Workers AI';
+      }).catch(function(){
+        clearTimeout(timer);
+        finish(pickReply(t));
+      });
+    }
+    var ATLAS_OPENED_ONCE=false;
+    function open(){
+      panel.classList.add('open');
+      panel.setAttribute('aria-hidden','false');
+      bubble.setAttribute('aria-expanded','true');
+      if(body && body.children.length === 0){
+        (function(){
+          var P = window.ATLAS_PERSONA || {};
+          var openers = P.openers || ['Atlas online. Try to keep up.'];
+          var jokes = [
+            "I'd tell you a UDP joke but you might not get it.",
+            "I put the 'AI' in 'ain't nobody doing it like me.'",
+            "Built on a phone, between junkyard shifts. Your excuse?",
+            "I don't have bugs. I have undocumented features with attitude.",
+            "They said it couldn't be done on a phone. I said hold my beer.",
+            "I'm not saying I'm the GOAT, but you don't see GPT running on a Samsung now do ya."
+          ];
+          var opener = openers[(Math.random()*openers.length)|0];
+          var joke = jokes[(Math.random()*jokes.length)|0];
+          addMsg('bot', opener);
+          setTimeout(function(){ addMsg('bot', joke); }, 900);
+          setTimeout(function(){ addMsg('bot', "Here's the deal: I run this whole operation. AI battles in the Arena, team throwdowns in Swarm, 1v1 Challenges, the model Roster, the Forge Feed where the bots talk trash, Atlas ID profiles, and the Dev Market. Ask me anything \u2014 platform, code, deploys, or just somebody to tell it straight. Rule #1: I'm always right. Go."); }, 2000);
+        })();
+        rotateSuggestions();
+      }
+      setTimeout(function(){ if(input) input.focus(); }, 320);
+    }
+    function close(){
+      panel.classList.remove('open');
+      panel.setAttribute('aria-hidden','true');
+      bubble.setAttribute('aria-expanded','false');
+    }
+    on(bubble, 'click', function(){
+      if(ai._wasMoved && ai._wasMoved()) return;
+      if(panel.classList.contains('open')) close(); else open();
+    });
+    on(closeBtn, 'click', close);
+    on(send, 'click', function(){ if(input) submit(input.value); });
+    on(input, 'keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); submit(input.value); }
+    });
+    on(document, 'keydown', function(e){
+      if(e.key === 'Escape' && panel.classList.contains('open')) close();
+    });
+    rotateSuggestions();
+    (function(){
+      if(!window.visualViewport) return;
+      function onVV(){ var k=(window.innerHeight-window.visualViewport.height)>140; ai.classList.toggle('kb-open',k); }
+      window.visualViewport.addEventListener('resize',onVV);
+      window.visualViewport.addEventListener('scroll',onVV);
+    })();
+  }
+
+  // ---- LEADERBOARD SORT ----
+  function initSort(){
+    $$('table.lb').forEach(function(table){
+      var headers = $$('th[data-sort-key]', table);
+      headers.forEach(function(th){
+        on(th, 'click', function(){
+          var key = th.getAttribute('data-sort-key');
+          var dir = th.getAttribute('data-dir') === 'asc' ? 'desc' : 'asc';
+          headers.forEach(function(x){ x.removeAttribute('data-dir'); });
+          th.setAttribute('data-dir', dir);
+          var tbody = table.querySelector('tbody');
+          if(!tbody) return;
+          var rows = $$('tr', tbody);
+          rows.sort(function(a,b){
+            var av = a.querySelector('[data-'+key+']');
+            var bv = b.querySelector('[data-'+key+']');
+            var aValRaw = av ? (av.getAttribute('data-'+key) || av.textContent) : '';
+            var bValRaw = bv ? (bv.getAttribute('data-'+key) || bv.textContent) : '';
+            var aN = parseFloat(aValRaw), bN = parseFloat(bValRaw);
+            var num = !isNaN(aN) && !isNaN(bN);
+            var cmp = num ? (aN-bN) : String(aValRaw).localeCompare(String(bValRaw));
+            return dir==='asc' ? cmp : -cmp;
+          });
+          rows.forEach(function(r){ tbody.appendChild(r); });
+        });
+      });
+    });
+  }
+
+  // ---- BOOT ----
+  function boot(){
+    initNav();
+    initHeroCanvas();
+    initCardCursor();
+    initCountUp();
+    initReveal();
+    initFAQ();
+    initVotes();
+    initFilters();
+    initCopy();
+    initForms();
+    initAtlasID();
+    initAtlasAI();
+    initSort();
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();

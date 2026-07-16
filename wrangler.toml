@@ -1,11 +1,4 @@
-name = "forge-atlas-gateway"
-main = "src/worker.js"
-compatibility_date = "2024-03-20"
-
-# Bind Cloudflare's native AI models to the worker
-[ai]
-binding = "AI"
-
-# Limits execution strictly to your production domain to prevent abuse
-[env.production]
-route = "*forge-atlas.io/api/*"
+name = "forge-atlas-v10-1"
+pages_build_output_dir = "./dist"
+compatibility_date = "2026-07-13"
+send_metrics = false
