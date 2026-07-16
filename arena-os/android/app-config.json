@@ -1,0 +1,16 @@
+{
+"name":"Arena OS",
+"package":"com.forgeatlas.arena",
+
+"versionName":"11.0",
+"versionCode":11,
+
+"features":[
+"Atlas Chat",
+"Agent Control",
+"AI Arena",
+"RAG Search",
+"Website Control",
+"System Monitor"
+]
+}
