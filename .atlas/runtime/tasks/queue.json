@@ -1,0 +1,15 @@
+{
+"name":"Atlas Task Queue",
+
+"tasks":[],
+
+"states":[
+"created",
+"assigned",
+"running",
+"testing",
+"completed",
+"failed"
+]
+
+}

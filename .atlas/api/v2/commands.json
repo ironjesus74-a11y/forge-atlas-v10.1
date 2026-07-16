@@ -1,0 +1,38 @@
+{
+"api":"Atlas Command API v2",
+
+"commands":[
+
+{
+"id":"chat",
+"action":"ask Atlas"
+},
+
+{
+"id":"build",
+"action":"create application"
+},
+
+{
+"id":"repair",
+"action":"system recovery"
+},
+
+{
+"id":"battle",
+"action":"AI Arena comparison"
+},
+
+{
+"id":"memory",
+"action":"search knowledge"
+},
+
+{
+"id":"deploy",
+"action":"deployment pipeline"
+}
+
+]
+
+}

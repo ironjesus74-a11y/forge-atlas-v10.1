@@ -1,0 +1,23 @@
+{
+"name":"Atlas Intelligence Runtime",
+"version":"10.3",
+
+"architecture":"agent-orchestration",
+
+"bootSequence":[
+"load-config",
+"check-health",
+"load-memory",
+"initialize-agents",
+"connect-providers",
+"ready"
+],
+
+"rules":[
+"never modify without backup",
+"always verify output",
+"log every operation",
+"protect user projects"
+]
+
+}
