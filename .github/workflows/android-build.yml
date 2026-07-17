@@ -21,7 +21,7 @@ jobs:
           java-version: 17
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v3a9c9f7b8f9f3d1
 
       - name: Build APK
         working-directory: arena-os/android
@@ -30,7 +30,7 @@ jobs:
           ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.3.4
         with:
           name: ForgeAtlas-v11-debug
           path: arena-os/android/app/build/outputs/apk/debug/app-debug.apk
