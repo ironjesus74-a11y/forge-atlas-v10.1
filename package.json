@@ -1,0 +1,9 @@
+{
+  "name": "forge-atlas-v10-1",
+  "private": true,
+  "version": "10.1.0",
+  "description": "Forge Atlas v10.1 static Cloudflare Pages build",
+  "scripts": {
+    "build": "bash scripts/build-static-site.sh"
+  }
+}
