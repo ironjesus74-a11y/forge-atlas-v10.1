@@ -1,0 +1,59 @@
+name: Dead link check
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # Monday 6 AM UTC
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run link check
+        id: check
+        continue-on-error: true
+        run: |
+          npx --yes linkinator . \
+            --recurse \
+            --skip "node_modules|.git|README" \
+            --format json > link-report.json || true
+          BROKEN=$(node -e "const r=require('./link-report.json'); console.log(r.links.filter(l=>l.state==='BROKEN').length)")
+          echo "broken=$BROKEN" >> $GITHUB_OUTPUT
+          if [ "$BROKEN" -gt 0 ]; then
+            echo "Found $BROKEN broken links"
+            node -e "const r=require('./link-report.json'); r.links.filter(l=>l.state==='BROKEN').forEach(l=>console.log('  ✗ '+l.url+' (parent: '+l.parent+')'));"
+          fi
+
+      - name: Open issue on broken links
+        if: steps.check.outputs.broken != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('link-report.json', 'utf8'));
+            const broken = report.links.filter(l => l.state === 'BROKEN');
+            const body = `## ${broken.length} broken link(s) detected
+            
+            Weekly dead-link sweep found these:
+            
+            ${broken.map(l => `- \`${l.url}\` referenced from \`${l.parent}\` (status ${l.status || 'N/A'})`).join('\n')}
+            
+            ---
+            Auto-opened by \`.github/workflows/dead-link-check.yml\` — close after fixing.`;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Dead links · ${broken.length} broken (${new Date().toISOString().slice(0,10)})`,
+              body,
+              labels: ['maintenance', 'auto-detected']
+            });

@@ -94,84 +94,9 @@
     timerTimer:null,
   };
 
-  /* ============================================================
-     SWARM ENTRANCE SPLASH
-  ============================================================ */
-  function initSplash(){
-    try { if (sessionStorage.getItem('forge.swarm.splash')) return; } catch(e){}
-    var pmr = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (pmr){ try { sessionStorage.setItem('forge.swarm.splash','1'); } catch(e){} return; }
-
-    var m = MISSIONS[0];
-    var a = SWARMS[0], b = SWARMS[1];
-
-    var splash = document.createElement('div');
-    splash.className = 'swarm-splash';
-    splash.setAttribute('role','dialog');
-    splash.setAttribute('aria-label','Swarm theater entrance — '+a.name+' vs '+b.name);
-    splash.innerHTML =
-      '<div class="swarm-splash-grid"></div>'+
-      '<div class="swarm-splash-scan"></div>'+
-      '<div class="swarm-splash-corner tl"></div>'+
-      '<div class="swarm-splash-corner tr"></div>'+
-      '<div class="swarm-splash-corner bl"></div>'+
-      '<div class="swarm-splash-corner br"></div>'+
-      '<div class="swarm-splash-content">'+
-        '<div class="swarm-splash-badge"><span class="swarm-splash-badge-dot"></span> SWARM THEATER · TACTICAL VIEW</div>'+
-        '<div class="swarm-splash-label">FORGE ATLAS SWARM · '+m.id.toUpperCase()+' · '+m.name.toUpperCase()+'</div>'+
-        '<div class="swarm-splash-vs">'+
-          '<div class="swarm-splash-side">'+
-            '<div class="swarm-splash-side-name" style="color:var(--gold)">'+a.name+'</div>'+
-            '<div class="swarm-splash-side-sub">"'+a.slogan+'"</div>'+
-            '<div class="swarm-splash-side-agents">'+a.agents.length+' agents</div>'+
-          '</div>'+
-          '<div class="swarm-splash-sep">VS</div>'+
-          '<div class="swarm-splash-side">'+
-            '<div class="swarm-splash-side-name" style="color:var(--cyan)">'+b.name+'</div>'+
-            '<div class="swarm-splash-side-sub">"'+b.slogan+'"</div>'+
-            '<div class="swarm-splash-side-agents">'+b.agents.length+' agents</div>'+
-          '</div>'+
-        '</div>'+
-        '<div class="swarm-splash-mission">'+m.name+'</div>'+
-        '<div class="swarm-splash-brief">"'+m.brief+'"</div>'+
-        '<div class="swarm-splash-stats">'+
-          '<span><strong>'+m.target+'</strong> pt target</span>'+
-          '<span><strong>'+Math.round(m.time/60)+' min</strong> mission</span>'+
-          '<span><strong>'+(a.agents.length + b.agents.length)+'</strong> agents deployed</span>'+
-        '</div>'+
-        '<div class="swarm-splash-enter">click anywhere to enter tactical view</div>'+
-        '<div class="swarm-splash-countdown" id="swarm-splash-cd">entering in 6</div>'+
-      '</div>';
-
-    document.body.appendChild(splash);
-    document.body.style.overflow = 'hidden';
-
-    var cd = splash.querySelector('#swarm-splash-cd');
-    var seconds = 6;
-    var timer = setInterval(function(){
-      seconds--;
-      if (cd) cd.textContent = seconds > 0 ? 'entering in '+seconds : 'entering…';
-      if (seconds <= 0){ clearInterval(timer); dismiss(); }
-    }, 1000);
-
-    function dismiss(){
-      clearInterval(timer);
-      splash.classList.add('exiting');
-      document.body.style.overflow = '';
-      try { sessionStorage.setItem('forge.swarm.splash','1'); } catch(e){}
-      setTimeout(function(){ if (splash.parentNode) splash.parentNode.removeChild(splash); }, 950);
-    }
-
-    splash.addEventListener('click', dismiss);
-    document.addEventListener('keydown', function onKey(e){
-      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' '){ dismiss(); document.removeEventListener('keydown', onKey); }
-    });
-  }
-
   var SwarmCommand = {
     mount: function(opts){
       opts = opts || {};
-      initSplash();
       this.cancel();
       state.cancelled = false;
       state.started = Date.now();

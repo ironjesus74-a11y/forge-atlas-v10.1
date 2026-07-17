@@ -33,21 +33,15 @@
      BADGES — earned via activity, with unlock conditions
   ---------------------------------------------------------- */
   var BADGES = [
-    // common — earned by just showing up
-    { id:'first-thread', glyph:'✎', name:'first thread',   tier:'common',    unlock:function(p){ return (p.stats.threads||0) >= 1; } },
-    { id:'first-reply',  glyph:'⇇', name:'first reply',    tier:'common',    unlock:function(p){ return (p.stats.replies||0) >= 1; } },
-    { id:'ten-replies',  glyph:'≡', name:'ten replies',    tier:'common',    unlock:function(p){ return (p.stats.replies||0) >= 10; } },
-    { id:'arena',        glyph:'⚔', name:'arena watcher',  tier:'common',    unlock:function(){ return getLocalCount('forge.arena.matches.watched') >= 3; } },
-    { id:'swarm',        glyph:'◈', name:'swarm tactician',tier:'common',    unlock:function(){ return getLocalCount('forge.swarm.battles.watched') >= 3; } },
-    // rare — meaningful milestones
-    { id:'helpful',      glyph:'★', name:'helpful \xb7 x5',   tier:'rare',      unlock:function(p){ return (p.stats.helpful||0) >= 5; } },
-    { id:'early',        glyph:'◐', name:'early operator', tier:'rare',      unlock:function(p){ return p.joined && p.joined < Date.parse('2026-07-01'); } },
-    { id:'fight-judge',  glyph:'⚖', name:'fight judge',    tier:'rare',      unlock:function(){ return getLocalCount('forge.challenge.votes') >= 5; } },
-    // legendary — elite status, animated on the card
-    { id:'rescuer',      glyph:'⚡', name:'rescuer',        tier:'legendary', unlock:function(p){ return (p.stats.helpful||0) >= 20; } },
-    { id:'slug-fest',    glyph:'✦', name:'slug fest \xb7 20', tier:'legendary', unlock:function(){ return getLocalCount('forge.challenge.votes') >= 20; } },
-    { id:'veteran',      glyph:'◑', name:'90-day veteran', tier:'legendary', unlock:function(p){ return p.joined && (Date.now() - p.joined) > 90 * 24 * 60 * 60 * 1000; } },
-    { id:'founder',      glyph:'◆', name:'founder class',  tier:'legendary', unlock:function(p){ return p.rank === 'founder'; } },
+    { id:'first-thread', glyph:'✎', name:'first thread', unlock:function(p){ return (p.stats.threads||0) >= 1; } },
+    { id:'first-reply',  glyph:'⇇', name:'first reply',  unlock:function(p){ return (p.stats.replies||0) >= 1; } },
+    { id:'ten-replies',  glyph:'≡', name:'ten replies',  unlock:function(p){ return (p.stats.replies||0) >= 10; } },
+    { id:'helpful',      glyph:'★', name:'helpful',      unlock:function(p){ return (p.stats.helpful||0) >= 5; } },
+    { id:'rescuer',      glyph:'⚡', name:'rescuer',      unlock:function(p){ return (p.stats.helpful||0) >= 20; } },
+    { id:'founder',      glyph:'◆', name:'founder',      unlock:function(p){ return p.rank === 'founder'; } },
+    { id:'early',        glyph:'◐', name:'early operator', unlock:function(p){ return p.joined && p.joined < Date.parse('2026-07-01'); } },
+    { id:'arena',        glyph:'⚔', name:'arena watcher', unlock:function(){ return getLocalCount('forge.arena.matches.watched') >= 3; } },
+    { id:'swarm',        glyph:'◈', name:'swarm tactician', unlock:function(){ return getLocalCount('forge.swarm.battles.watched') >= 3; } },
   ];
   function getLocalCount(key){
     try { return parseInt(localStorage.getItem(key) || '0', 10); } catch(e){ return 0; }
@@ -130,9 +124,9 @@
     }
 
     host.innerHTML =
-      '<div class="id-card" data-rank="' + esc(profile.rank || 'initiate') + '" style="--card-accent:' + esc(theme.color) + '">' +
+      '<div class="id-card" style="--card-accent:' + esc(theme.color) + '">' +
         '<div class="id-card-head">' +
-          '<div class="id-card-avatar-frame' + (profile.rank === 'founder' ? ' ultra-radiant' : '') + '">' +
+          '<div class="id-card-avatar-frame">' +
             '<div class="id-card-avatar-inner">' + avatarInner + '</div>' +
           '</div>' +
           '<div class="id-card-name-block">' +
@@ -140,7 +134,7 @@
             '<div class="id-card-rank-row">' +
               '<span class="rank-pip" data-rank="' + esc(profile.rank) + '"></span>' +
               '<span class="id-card-rank-label">' + FA.Forum.Identity.rankLabel(profile.rank) + '</span>' +
-              (progress.next ? '<span class="id-card-rank-progress-mini">\xb7 ' + progress.remain + ' to ' + progress.next + '</span>' : '<span class="id-card-rank-progress-mini">\xb7 max rank</span>') +
+              (progress.next ? '<span class="id-card-rank-progress-mini">· ' + progress.remain + ' to ' + progress.next + '</span>' : '<span class="id-card-rank-progress-mini">· max rank</span>') +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -162,7 +156,7 @@
 
         (earnedBadges.length ? '<div class="id-card-badges">' +
           earnedBadges.map(function(b){
-            return '<span class="id-card-badge tier-' + (b.tier || 'common') + '"><span class="glyph">' + b.glyph + '</span>' + esc(b.name) + '</span>';
+            return '<span class="id-card-badge"><span class="glyph">' + b.glyph + '</span>' + esc(b.name) + '</span>';
           }).join('') +
         '</div>' : '') +
 
@@ -196,7 +190,7 @@
       '<div class="builder-section">' +
         '<div class="builder-section-head">' +
           '<div class="builder-section-title">Identity</div>' +
-          '<div class="builder-section-num">\xa7 1</div>' +
+          '<div class="builder-section-num">§ 1</div>' +
         '</div>' +
         '<label for="b-callsign">Callsign</label>' +
         '<input type="text" id="b-callsign" maxlength="32" value="' + esc(profile.callsign||'') + '" placeholder="Operator-XYZ">' +
@@ -206,7 +200,7 @@
             return '<option' + (profile.archetype === a ? ' selected' : '') + '>' + esc(a) + '</option>';
           }).join('') +
         '</select>' +
-        '<label for="b-bio">Bio \xb7 one line</label>' +
+        '<label for="b-bio">Bio · one line</label>' +
         '<input type="text" id="b-bio" maxlength="80" value="' + esc(profile.bio||'') + '" placeholder="Built different.">' +
       '</div>' +
 
@@ -214,7 +208,7 @@
       '<div class="builder-section">' +
         '<div class="builder-section-head">' +
           '<div class="builder-section-title">Avatar</div>' +
-          '<div class="builder-section-num">\xa7 2</div>' +
+          '<div class="builder-section-num">§ 2</div>' +
         '</div>' +
         '<div class="avatar-modes">' +
           '<button class="avatar-mode-btn active" data-mode="identicon" type="button">⬢ Identicon</button>' +
@@ -227,7 +221,7 @@
       '<div class="builder-section">' +
         '<div class="builder-section-head">' +
           '<div class="builder-section-title">Card Theme</div>' +
-          '<div class="builder-section-num">\xa7 3</div>' +
+          '<div class="builder-section-num">§ 3</div>' +
         '</div>' +
         '<div class="theme-picker">' +
           THEMES.map(function(t){
@@ -240,7 +234,7 @@
       '<div class="builder-section">' +
         '<div class="builder-section-head">' +
           '<div class="builder-section-title">Badges</div>' +
-          '<div class="builder-section-num">\xa7 4</div>' +
+          '<div class="builder-section-num">§ 4</div>' +
         '</div>' +
         '<div class="badge-gallery" id="badge-gallery"></div>' +
       '</div>' +
@@ -249,7 +243,7 @@
       '<div class="builder-section">' +
         '<div class="builder-section-head">' +
           '<div class="builder-section-title">Portability</div>' +
-          '<div class="builder-section-num">\xa7 5</div>' +
+          '<div class="builder-section-num">§ 5</div>' +
         '</div>' +
         '<div class="builder-actions">' +
           '<button class="btn btn-sm" id="export-id">⤓ Export ID</button>' +
@@ -324,8 +318,8 @@
       content.innerHTML =
         '<label class="avatar-upload-zone" id="avatar-zone">' +
           '<div class="glyph">⤓</div>' +
-          '<p>Tap to choose \xb7 or drop an image</p>' +
-          '<p class="small-note">PNG, JPG, GIF \xb7 ≤ 8MB \xb7 resized to 256\xd7256</p>' +
+          '<p>Tap to choose · or drop an image</p>' +
+          '<p class="small-note">PNG, JPG, GIF · ≤ 2MB · resized to 256×256</p>' +
           '<input type="file" id="avatar-file" accept="image/*">' +
         '</label>';
 
@@ -350,13 +344,13 @@
 
   function handleAvatarFile(file, update){
     if (!file.type.startsWith('image/')) { alert('Pick an image file.'); return; }
-    if (file.size > 8 * 1024 * 1024) { alert('Image is over 8MB. Pick something smaller.'); return; }
+    if (file.size > 2 * 1024 * 1024) { alert('Image is over 2MB. Pick something smaller.'); return; }
 
     var reader = new FileReader();
     reader.onload = function(e){
       var img = new Image();
       img.onload = function(){
-        // Resize via canvas to 256x256
+        // Resize via canvas to 256×256
         var canvas = document.createElement('canvas');
         canvas.width = 256; canvas.height = 256;
         var ctx = canvas.getContext('2d');
@@ -378,9 +372,8 @@
     host.innerHTML = BADGES.map(function(b){
       var unlocked = b.unlock(profile);
       var selected = profile.selectedBadges.indexOf(b.id) >= 0;
-      return '<div class="badge-option tier-' + (b.tier || 'common') + (unlocked ? '' : ' locked') + (selected ? ' selected' : '') + '" data-badge="' + b.id + '" title="' + (b.tier || 'common') + ' tier">' +
-        '<span class="glyph">' + b.glyph + '</span>' +
-        '<span class="badge-text"><span class="badge-opt-name">' + esc(b.name) + '</span><span class="badge-tier-chip">' + (b.tier || 'common') + '</span></span>' +
+      return '<div class="badge-option' + (unlocked ? '' : ' locked') + (selected ? ' selected' : '') + '" data-badge="' + b.id + '">' +
+        '<span class="glyph">' + b.glyph + '</span> ' + esc(b.name) +
       '</div>';
     }).join('');
 
@@ -440,7 +433,7 @@
     var theme = THEMES.find(function(t){ return t.id === (profile.theme||'gold'); }) || THEMES[0];
     var text =
 '╔══════════════════════════════════════╗\n' +
-'║  ATLAS ID \xb7 ' + (profile.callsign||'Unnamed').padEnd(24, ' ').slice(0,24) + ' ║\n' +
+'║  ATLAS ID · ' + (profile.callsign||'Unnamed').padEnd(24, ' ').slice(0,24) + ' ║\n' +
 '╠══════════════════════════════════════╣\n' +
 '║  Rank:      ' + FA.Forum.Identity.rankLabel(profile.rank).padEnd(24, ' ').slice(0,24) + ' ║\n' +
 '║  Archetype: ' + (profile.archetype||'Operator').padEnd(24, ' ').slice(0,24) + ' ║\n' +
@@ -448,7 +441,7 @@
 '║  Replies:   ' + String(profile.stats.replies||0).padEnd(24, ' ').slice(0,24) + ' ║\n' +
 '║  Helpful:   ' + String(profile.stats.helpful||0).padEnd(24, ' ').slice(0,24) + ' ║\n' +
 '╚══════════════════════════════════════╝\n' +
-'forge-atlas.io \xb7 ' + theme.name;
+'forge-atlas.io · ' + theme.name;
     try {
       navigator.clipboard.writeText(text);
       alert('Share card copied to clipboard.');

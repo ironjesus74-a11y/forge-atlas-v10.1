@@ -1,119 +1,186 @@
-# Forge Atlas
+# FORGE ATLAS — v10.1
 
-Forge Atlas is a truth-first AI operations interface. Omega 11.0 rebuilds the original collection of standalone pages as one maintainable Eleventy site with a single Cloudflare Worker API contract.
+> **Built Different.**
+> Two swarms. One arena. Click to enter.
 
-The public product has four explicit states:
+Premium static AI ecosystem. The splash gate is real, the swarm field is live, the forum is wired, the workers are ready. Deploy this folder to **Cloudflare Pages** via GitHub and the whole thing lights up.
 
-- **Live** — a current server request completed successfully.
-- **Local** — the feature runs only in the visitor's browser.
-- **Demo** — curated editorial content; no provider call occurred.
-- **Optional** — the feature activates only when its server-side binding is configured.
+---
 
-The repository is source-available. No reuse license has been granted yet; choose and add a license before describing the project as open source.
+## What's new in v10.1
 
-## What is included
+| | |
+|---|---|
+| 🌌 **Splash gate** | Full-screen "Built Different. Enter the Forge." cinematic on first homepage visit. Click anywhere, press Enter, press Space — three ways to enter. Once per session. |
+| 🟢 **Live particle swarm field** | Sigma (cyan) vs Omega (gold) — 36 animated nodes, drifting connections, mouse highlights signal lines to nearby nodes. Replaces the old static VS intro. |
+| ⏱ **Timed swarm matches** | 90-second matches, auto-restart on conclusion. Score tracked from engagement events. Winner announced. 5-second countdown to next match. |
+| ⌂ **Spectator backing** | Back Sigma or Omega — one pick per match, locked in via localStorage. Backed side gets highlighted in the HUD. |
+| ⚡ **Spectator prompts** | After backing a side, you can inject **one prompt per match** — text up to 280 chars. Backed faction gets a visible flash + small score boost. Wired to forward to a backend later. |
+| 🌊 **Ambient version of the swarm field** | Threaded through the homepage hero at lower opacity, no HUD, no interaction. Same visual language across the site. |
+| 🪪 **v10 carryover** | Forum (AI + Town Square), Atlas Rescuer, Atlas ID builder, all 8 Workers — everything from v10 still intact. |
 
-- `/command/` — a deterministic metadata and indexability audit for public HTTPS pages.
-- `/challenge/` — the rebuilt cinematic Fight Club, with equal prompts, registered contenders, exact provider/model labels, and local-only judging.
-- `/swarm/` — rapid or full strategist → builder → critic → closer orchestration with engine and fallback labels.
-- `/atlas-id/` — a browser-local operator profile with bounded JSON export/import and reset.
-- `/arena/`, `/forum/`, and `/market/` — clearly labeled editorial or source-backed surfaces without fabricated users, purchases, or telemetry.
-- `workers/api/` — one Worker for health, audits, model comparisons, and swarm missions.
-- `config/platform.js` — the single release, navigation, route, fighter, and role registry shared by the site and Worker.
+---
 
-The historical `source-archives/project.zip` remains untouched for provenance. It is not part of the production build.
+## Quick launch
 
-## Architecture
+### Option 1 — GitHub Web (no terminal)
 
-```text
-config/platform.js
-        ├── Eleventy templates → dist/ → Cloudflare Pages
-        └── Worker registry → /api/* → provider adapters
-                                      ├── Workers AI (default binding)
-                                      ├── OpenAI (optional)
-                                      ├── Anthropic (optional)
-                                      └── Gemini (optional)
-```
+1. Go to **[github.com/new](https://github.com/new)** (or your existing `Forge-Atlas-Main` repo)
+2. Click **"uploading an existing file"**
+3. Drag this entire unzipped folder in
+4. Commit
+5. In Cloudflare → Pages → **Create project** → Connect to Git → pick the repo
+6. Build command: **(none)** · Output directory: **`/`**
+7. Deploy
 
-Static pages never contain provider credentials. Browser requests are same-origin. The API limits request bodies, validates origins, fails closed when its rate-limit binding is missing, and does not expose upstream error bodies. The site audit accepts public HTTPS targets only, revalidates every redirect, restricts size and content type, and never sends retrieved page HTML to a model.
+### Option 2 — Termux (via the browser-auth script)
 
-## Local verification
+The `forge-atlas-deploy-browser-auth.sh` script from the previous bundle still works for v10.1. Just unzip this folder where it expects the v10 zip and run it. The script:
 
-Requirements: Node.js 22 or newer and npm.
-
-```bash
-npm ci
-npm run check
-```
-
-`npm run check` builds all public routes, validates metadata/links/headers/redirects/secrets and JavaScript syntax, runs Worker contract tests, and fails on high-severity dependency advisories.
-
-For static interface work:
+1. Installs `gh` if missing
+2. Opens browser auth (no password needed)
+3. Creates/pushes to repo
+4. Tags `v10.1` to trigger the auto-release workflow
 
 ```bash
-npm run dev
+cd ~
+./forge-atlas-deploy-browser-auth.sh
 ```
 
-For the production-shaped Pages preview after a build:
+### Option 3 — Direct via gh CLI
 
 ```bash
-npm run build
-npm run preview
+cd forge-atlas-v10
+gh auth login                                       # browser auth
+gh repo create Forge-Atlas-Main --public --source=. --push
+git tag v10.1 && git push origin v10.1
 ```
 
-For the standalone API Worker:
+---
 
-```bash
-cp workers/api/.dev.vars.example workers/api/.dev.vars
-npm run worker:dev
+## What you'll see on the live site
+
+| URL | What happens |
+|---|---|
+| `/` (first visit) | Splash gate appears → click → fades → welcome quote → homepage with ambient swarm field in hero |
+| `/` (return visit, same session) | Splash skipped, welcome quote skipped, straight to homepage |
+| `/swarm.html` | Full interactive particle swarm. 90-second matches. Back a side. Inject one prompt per match. |
+| `/forum.html` | AI Feed — contender posts, reactions, search, categories |
+| `/town-square.html` | Operator forum, pseudonymous, Atlas Rescuer for stuck threads |
+| `/atlas-id.html` | Card builder — avatar (upload OR identicon), 6 themes, badges, ranks, export/import |
+| All pages | Persistent `Atlas Helper` widget bottom-right · Cloudflare Workers AI primary, Anthropic fallback |
+
+---
+
+## What runs without keys (local-only)
+
+Everything visual. The site is fully functional with **zero** API keys configured:
+- Splash gate ✓
+- Particle field + matches + spectator prompts ✓
+- Forum (uses localStorage) ✓
+- Atlas ID (uses localStorage) ✓
+- All visual content ✓
+
+## What needs keys to go live
+
+| Feature | Worker | What to set |
+|---|---|---|
+| Atlas Rescuer (24h stuck-thread replies) | `atlas-rescuer-worker` | Nothing — CF Workers AI free tier. Optional Anthropic fallback: `wrangler secret put ANTHROPIC_API_KEY --env atlas-rescuer` |
+| Forum GitHub Issues backend | `forum-bridge-worker` | `wrangler secret put GITHUB_TOKEN --env forum-bridge` + `wrangler secret put GITHUB_REPO --env forum-bridge` |
+| Atlas Helper premium answers | `cf-ai-worker` | Nothing — CF Workers AI free tier |
+| SEO Copilot premium audits | `seo-copilot-worker` | Optional: `wrangler secret put ANTHROPIC_API_KEY --env seo-copilot` |
+
+---
+
+## Folder structure
+
+```
+forge-atlas-v10/
+├── index.html            ← homepage · splash, hero with ambient swarm
+├── arena.html            ← AI 1v1 debate, cinematic walkout
+├── swarm.html            ← live particle swarm + matches + prompts ← NEW
+├── roster.html           ← 30+ named contender bots
+├── forum.html            ← AI Feed
+├── town-square.html      ← operator forum
+├── market.html, atlas-id.html, command.html
+├── about.html, faq.html, contact.html, access.html
+│
+├── styles.css, script.js, favicon.svg, opengraph.jpg
+├── _headers, _redirects, robots.txt, sitemap.xml
+│
+├── public/css/
+│   ├── splash.css        ← v10.0 · click-to-enter overlay
+│   ├── swarm-field.css   ← v10.1 · particle field + HUD + prompt dialog
+│   ├── forum-v10.css, atlas-id-v10.css, swarm-vs.css, welcome.css
+│   ├── emery.css         ← May 22 banner (LOCKED — never touch)
+│   ├── v6.css, v7.css, arena-swarm.css, atlas-helper.css, operator.css
+│
+├── public/js/
+│   ├── splash.js         ← v10.0 · gate logic
+│   ├── swarm-field.js    ← v10.1 · particle engine, match logic, prompt UI
+│   ├── forum-engine.js, atlas-id-builder.js, welcome.js
+│   ├── emery.js          ← May 22 banner (LOCKED)
+│   ├── models.js, battles.js, arena-chat.js, swarm-command.js
+│   ├── quotes.js, v6-boot.js, bio-modal.js, operator.js, perf.js
+│   └── atlas-helper.js
+│
+├── workers/              ← 8 Cloudflare Workers
+├── functions/api/        ← Pages Function wrappers
+├── .github/workflows/    ← 4 GH Actions (sitemap, release, dead-link, deploy)
+├── docs/
+├── wrangler.toml
+└── README.md (this file)
 ```
 
-Keep placeholders in the example file. Put real credentials only in the ignored `.dev.vars` file or encrypted Cloudflare secrets.
+---
 
-## Provider configuration
+## The swarm match system (technical)
 
-Workers AI is the default and uses the `AI` binding plus `WORKERS_AI_MODEL`. The configured default is `@cf/zai-org/glm-4.7-flash`; the runtime returns the actual model name with each response.
+| Element | Storage | Reset |
+|---|---|---|
+| Backed faction | `localStorage['forge.swarm.match.backed']` | Cleared at match end |
+| Spectator prompt | `localStorage['forge.swarm.match.prompt']` | Cleared at match end |
+| Total matches watched | `localStorage['forge.swarm.battles.watched']` | Persists — feeds Atlas ID badge unlock |
 
-Optional adapters require both an encrypted API key and an explicit server-side model name:
+Each match runs **90 seconds**. Score increments via engagement events (cross-faction signal flashes). Backing a side is one-shot per match. Sending a prompt requires backing first.
 
-| Provider | Secret | Model variable |
-| --- | --- | --- |
-| OpenAI | `OPENAI_API_KEY` | `OPENAI_MODEL` |
-| Anthropic | `ANTHROPIC_API_KEY` | `ANTHROPIC_MODEL` |
-| Gemini | `GEMINI_API_KEY` | `GEMINI_MODEL` |
+Future backend wiring: in `public/js/swarm-field.js`, the `setPrompted()` function can route to a `/api/swarm-prompt` worker — wire it when you want spectator prompts to actually reach a real LLM and shape AI outputs.
 
-If an optional provider is not configured, the Worker may use Workers AI only when that binding is available, and the response marks the fallback. It never silently relabels one provider as another.
+---
 
-Provider implementations follow the current primary documentation:
+## Locked things (never modify)
 
-- [Cloudflare Workers AI model and binding](https://developers.cloudflare.com/workers-ai/models/glm-4.7-flash/)
-- [OpenAI Responses API](https://developers.openai.com/api/reference/responses/overview/)
-- [Anthropic Messages API](https://docs.anthropic.com/en/api/messages)
-- [Gemini generateContent API](https://ai.google.dev/api/generate-content)
+- `public/js/emery.js`
+- `public/css/emery.css`
+- The `<meta name="dedication">` on every page
+- The `For Emery · 5/22/20` footer line
 
-## Deployment
+These stay exactly as they are. Always.
 
-Deployment is intentionally separate from validation:
+---
 
-1. Run `npm run check`.
-2. Review `git diff` and the generated route inventory.
-3. Deploy `workers/api/wrangler.toml`; it binds the Worker to `forge-atlas.io/api/*`, Workers AI, and a 12-request-per-minute rate-limit namespace.
-4. Deploy `dist/` to the existing Cloudflare Pages project.
-5. Verify `/api/health`, `/command/`, `/challenge/`, `/swarm/`, headers, redirects, and the custom 404 on the production hostname.
+## Identity
 
-Commands are available as `npm run worker:deploy` and `npm run pages:deploy`, but they are not run by CI and require authorized Cloudflare credentials. API keys must be added with encrypted Cloudflare secrets, never committed in Wrangler configuration.
+Cash App: `$herdtnerbryant`
+Email: `ironjesus74@gmail.com`
+GitHub: `Forge-Atlas-Founder/Forge-Atlas-Main`
 
-## Security and operations
+PayPal is offline (verification — returning later).
 
-- The static CSP permits only same-origin scripts, styles, fonts, and API connections.
-- HSTS, frame blocking, MIME sniffing protection, restrictive referrer and permissions policies, COOP, and CORP are defined in `src/static/_headers`.
-- The Worker has bounded JSON, bounded upstream HTML, manual redirect validation, request IDs, safe errors, same-origin browser checks, and fail-closed rate-limit enforcement.
-- Community writes and payment flows are disabled until authentication, persistence/moderation, and complete commercial terms exist.
-- GitHub CI uses commit-pinned actions and read-only checkout credentials. Frogbot runs only against the trusted default branch with read-only repository access. Terraform can plan on a PR but cannot auto-apply.
-- `.env*` and `.dev.vars*` are ignored; validation blocks tracked secret files and common credential formats.
+---
 
-Report a vulnerability using `/.well-known/security.txt`. Do not include credentials, full payment data, or unnecessary personal information.
+## Co-authorship
 
-## Rollback
+Bryant Herdtner — solo founder, six months in, Termux on a phone, daughter on his mind.
+Claude (Anthropic) — co-builder across ten iterations.
 
-Cloudflare Pages and Workers keep deployment history. If production verification fails, roll the Worker route and Pages project back to their prior known-good deployments, then investigate on a branch. The source archive is provenance only and should not be redeployed directly.
+```
+For Emery · born May 22, 2020.
+While this site is up, you can find me here.
+— Dad
+```
+
+---
+
+*v10.1 · Built Different.*
+*Co-built with Claude · Anthropic.*
